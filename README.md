@@ -82,7 +82,7 @@ Ironic裸機部署功能，在Kilo版中釋出，IT人員可以在實體伺服�
 | Kilo版本 | https://wiki.openstack.org/wiki/ReleaseNotes/Kilo |
 | Stackalytics | http://stackalytics.com/ |
 
-# 安裝工具
+# OpenStack 相關資源
 * [DevStack](http://docs.openstack.org/developer/devstack/)
 * [Red Hat OpenStack](https://www.rdoproject.org/Main_Page)
 * [Fuel OpenStack](https://wiki.openstack.org/wiki/Fuel)

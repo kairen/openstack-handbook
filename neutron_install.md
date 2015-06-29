@@ -318,7 +318,7 @@ Layer-3 (L3) 代理為虛擬網路提供路由服務。編輯```/etc/neutron/l3_
 [DEFAULT]
 ...
 interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver
-external_network_bridge =
+external_network_bridge = br-ex
 router_delete_namespaces = True
 ```
 > external_network_bridge 選項預留一個值，用來在單個代理上啟用多個外部網路。相關設定可以觀看[L3 Agent](http://docs.openstack.org/havana/config-reference/content/section_adv_cfg_l3_agent.html)。
@@ -346,9 +346,7 @@ verbose = True
 ```
 完成以上後，接下面的部分是一個選擇性設定，可依照個人需求設定。
 
-類似於GRE的隧道協議包含有額外的數據包頭，這些數據包頭增加了開銷，減少了有效內容或是用戶數據的可用空間。在不了解虛擬網絡架構的情況下，實例嘗試用默認的以太網maximum transmission unit (MTU)1500字節來發送數據包。 Internet protocol (IP) 網絡利用path MTU discovery (PMTUD) 機制來探測和調整數據包的大小。但是有些操作系統或者是網絡阻塞、缺乏對PMTUD的支持等原因會造成性能下降或是連接錯誤。**(未修改)**
 
-理想情況下，你可以通過在包含有租戶虛擬網絡的物理網絡上開啟jumbo frames來避免這些問題。巨型幀(Jumbo frames)支持最大接近9000字節的MTU，它抵消了虛擬網絡上GRE開銷的影響。但是，很多網絡設備缺乏對於巨型幀的支持，Openstack的管理員也經常缺乏對網絡架構的控制。考慮到後續的複雜性，也可以選擇降低帶來GRE開銷的實例的MTU大小來避免MTU的問題。確定恰當的MTU值通常需要實驗，但是大多數環境下1454字節都可以工作。你可以配置給實例分配IP地址的DHCP服務器來同時調整MTU。**(未修改)**
 
 編輯```/etc/neutron/dhcp_agent.ini```在```[DEFAULT]```部分啟用```dnsmasq```設定檔案：
 ```sh

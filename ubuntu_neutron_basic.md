@@ -282,3 +282,11 @@ sudo rabbitmqctl set_permissions openstack ".*" ".*" ".*"
 Setting permissions for user "openstack" in vhost "/" ...
 ...done.
 ```
+
+# 提醒
+接下來會依序針對OpenStack的基礎套件安裝與設定，若發現有以下格式設定，裡面的```....```代表預設設定參數，若沒提示```要註解掉```，請不要更改：
+```
+[DEFAULT]
+...
+admin_token = 74e00617afa2008fcf25
+```

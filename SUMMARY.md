@@ -4,7 +4,7 @@
 * [Ubuntu 單節點 15.04安裝](ubuntu_1504.md)
 * [Ubuntu Nova Network 多節點安裝](ubuntu_nova_network.md)
 * [Ubuntu Neutron 多節點安裝](ubuntu_neutron.md)
-* [Ubuntu Neutron 基本環境](openstack/ubuntu_neutron_basic.md)
+    * [Ubuntu Neutron 基本環境](openstack/ubuntu_neutron_basic.md)
     * [Keystone 安裝與設定](keystone_neutron.md)
     * [Glance 安裝與設定](glance_neutron.md)
     * [Nova 安裝與設定](nova_neutron.md)

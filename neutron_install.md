@@ -312,8 +312,8 @@ bridge_mappings = external:br-ex
 ...
 tunnel_types = gre
 ```
-### 設定 Layer-3 (L3) 代理
-Layer-3 (L3) 代理為虛擬網路提供路由服務。編輯```/etc/neutron/l3_agent.ini```在```[DEFAULT]```部分設定介面驅動、外部網路橋接和啟用刪除廢棄路由器命名空間的功能:
+### 設定 Layer-3 (L3) proxy
+Layer-3 (L3) proxy為虛擬網路提供路由服務。編輯```/etc/neutron/l3_agent.ini```在```[DEFAULT]```部分設定介面驅動、外部網路橋接和啟用刪除廢棄路由器命名空間的功能:
 ```sh
 [DEFAULT]
 ...
@@ -330,7 +330,7 @@ router_delete_namespaces = True
 verbose = True
 ```
 ### 設定DHCP代理
-DHCP代理為Instance提供DHCP服務。編輯```/etc/neutron/dhcp_agent.ini```在```[DEFAULT]```設定介面與DHCP驅動，啟用刪除廢棄路由器命名空間的功能：
+DHCP proxy為Instance提供DHCP服務。編輯```/etc/neutron/dhcp_agent.ini```在```[DEFAULT]```設定介面與DHCP驅動，啟用刪除廢棄路由器命名空間的功能：
 ```sh
 [DEFAULT]
 ...
@@ -346,7 +346,9 @@ verbose = True
 ```
 完成以上後，接下面的部分是一個選擇性設定，可依照個人需求設定。
 
+由於類似GRE的協定包含了額外的Header封包，這些封包增加了網路開銷，而減少了有效的封包可用空間。在不了解虛擬網路架構的情況下，Instance會用預設的eth maximum transmission unit(MTU) 1500 bytes來傳送封包。IP網路利用path MTU discovery (PMTUD)機制來偵測與調整封包大小。但是有些作業系統或、網路阻塞、缺乏對PMTUD支援等因素，會造成效能的下效或是連接錯誤。
 
+理想情況下，可以透過包含有租戶虛擬網路的物理網路上開啟jumbo frames來避免這些問題。Jumbo frames 支援最大接近9000bytes的MTU，它可以抵消虛擬網路上GRE開銷影響。但是，很多網絡設備缺乏對於Jumbo frames的支援，Openstack管理員也經常缺乏對網路架構的控制。考慮到後續的複雜性，也可以選擇降低GRE開銷的Instance MTU大小，來避免MTU的問題。要設定恰當的MTU需要經過實驗，在大多數環境下會採用```1454```bytes來運作。
 
 編輯```/etc/neutron/dhcp_agent.ini```在```[DEFAULT]```部分啟用```dnsmasq```設定檔案：
 ```sh
@@ -472,7 +474,7 @@ sudo sysctl -p
 ```
 
 ### 安裝與設定網路套件
-首先透過``apt-get```安裝套件：
+首先透過```apt-get```安裝套件：
 ```sh
 sudo apt-get install neutron-plugin-ml2 neutron-plugin-openvswitch-agent
 ```
@@ -620,4 +622,4 @@ neutron agent-list
 | faafcb0b-717c-47e4-a238-2b0699cdbc9e | Metadata agent     | network  | :-)   | True           | neutron-metadata-agent    |
 +--------------------------------------+--------------------+----------+-------+----------------+---------------------------+
 ```
-> 這邊應該要輸出顯示```四個```agent運作在```網路節點```上，```一個```agent運作在```運算節點```上。
+> 若正確的話，會輸出顯示```四個```agent運作在```網路節點```上，```一個```agent運作在```運算節點```上。

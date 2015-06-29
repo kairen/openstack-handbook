@@ -59,8 +59,8 @@ Ironic裸機部署功能，在Kilo版中釋出，IT人員可以在實體伺服�
 
 ### Zaqar
 
-# 各套件官方網址
-| 名稱 | 官方網址 |
+# 各套件Launchpad網址
+| 名稱 | 網址 |
 | -- | -- |
 | Keystone | https://launchpad.net/keystone |
 | Nova | https://launchpad.net/nova |

@@ -39,7 +39,7 @@ iface eth0 inet static
         network 10.0.0.0
         broadcast 10.0.0.255
         gateway 10.0.0.1
-        dns-nameservers 163.17.131.2
+        dns-nameservers 8.8.8.8
 ```
 
 ### Controller node 設定

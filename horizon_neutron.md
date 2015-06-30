@@ -1,5 +1,5 @@
 # Horizon 安裝與設定
-本章節會說明與操作如何安裝```Dashboard```服務到OpenStack Controller節點上，並設置相關參數與設定。若對於Neutron不瞭解的人，可以參考[Horizon 儀表板套件章節](horizon.html)
+本章節會說明與操作如何安裝```Dashboard```服務到OpenStack Controller節點上，並設置相關參數與設定。若對於Horizon不瞭解的人，可以參考[Horizon 儀表板套件章節](horizon.html)
 
 #### 安裝套件
 假設我們的基本OpenStack環境都確認完成後，回到```Controller```節點上透過```apt-get```安裝```dashboard```套件：

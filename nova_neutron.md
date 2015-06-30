@@ -1,7 +1,7 @@
 # Nova 安裝與設定
 本章節會說明與操作如何安裝```Compute```服務到OpenStack Controller節點上，並設置相關參數與設定。若對於Nova不瞭解的人，可以參考[Nova 運算套件章節](nova.html)
 
-# 安裝與設置Controller節點
+# Controller節點安裝與設置
 ### 安裝前準備
 我們需要在Database底下建立儲存Nova資訊的資料庫，利用```mysql```指令進入：
 ```sh
@@ -107,7 +107,7 @@ sudo service nova-novncproxy restart
 sudo rm -f /var/lib/nova/nova.sqlite
 ```
 
-# 安裝與設置Compute節點
+# Compute節點安裝與設置
 設定好 controller 上的 ````compute service```` 之後，接著要來設定實際執行 VM instance 的 compute node。
 
 ### 安裝和設定 Compute hypervisor 套件

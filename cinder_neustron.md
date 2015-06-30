@@ -3,7 +3,7 @@
 
 #### 架設前準備
 當加入```Storage節點```時，我們要針對[Ubuntu Neutron 多節點安裝章節](ubuntu_neutron.html)的架構來做類似實現，但這邊比較不同的是我們使用了10.0.1.x的tunnel網路，而不是10.0.2.x：
-*  **Block Storage Node** 規格：雙核處理器, 4 GB 記憶體, 250 GB+ 儲存空間(sda),500 GB+ 儲存空間(sdb), 兩張eth介面網卡
+*  **Block Storage Node** 規格：雙核處理器, 4 GB 記憶體, 500 GB+ 儲存空間(sda),250 GB+ 儲存空間(sdb), 兩張eth介面網卡
 * **eth0 Management interface**:
     * IP address: 10.0.0.41
     * Network mask: 255.255.255.0 (or /24)

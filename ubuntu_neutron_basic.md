@@ -1,7 +1,7 @@
 ## 硬體規格分配
-* **Controller Node**: 4 處理器, 8 GB 記憶體, 20 GB 儲存空間
-* **Network Node**: 4 處理器, 4 GB 記憶體, 20 GB 儲存空間
-* **Compute Node**: 4 處理器, 8 GB 記憶體, 32 GB 儲存空間
+* **Controller Node**: 四核處理器, 8 GB 記憶體, 20 GB 儲存空間
+* **Network Node**: 雙核處理器, 4 GB 記憶體, 20 GB 儲存空間
+* **Compute Node**: 四核處理器, 8 GB 記憶體, 32 GB 儲存空間
 
 > 注意以上節點的 Linux OS 請採用```64位元```的版本，因為若是在 Compute 節點安裝```32位元```，在執行映像檔時，會出錯。
 

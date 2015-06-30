@@ -1,4 +1,4 @@
-# Nova 運算套件
+# Nova 運算套件（尚未完整）
 OpenStack的Nova套件提供了```Compute Service``` ，在整個 ```IaaS``` 的架構中是屬於最主要的部份，同時會向 ```Identity Service``` 進行認證授權、向 ````Image Service```` 要求 image、將資料提供給 ````Dashboard```` …. 等等。
 
 OpenStack 運算互動於OpenStack登入驗證、OpenStack Image service的磁碟與伺服器映像檔、OpenStack儀表板的使用者與管理介面。映像檔的存取是受限制於```projects```以及```users```; ```quotas```受限於每個```project(好比Instance的數量)```。OpenStack 運算能夠水平擴展於基底硬體以及下載映像檔來執行instances。

@@ -1,4 +1,4 @@
-# Glance 映像檔套件
+# Glance 映像檔套件（尚未完整）
 Glance作為OpenStack的```Image service```，提供使用者可以去尋找、註冊、取得虛擬機的Image。並提供了一個REST API，使你能夠查詢虛擬機Image的metadata與取得實際的Image。你可以透過```Image service```儲存在不同的地點所提供虛擬機Image，從簡單的檔案系統到像是物件儲存系統的OpenStack ```Object Storage（Swift）```。除了可以讓使用者新增 image 之外，也可以從正在運作的 server 上取得 snapshop 來作為 image 的備份或者是其他虛擬磁碟的 image。
 
 

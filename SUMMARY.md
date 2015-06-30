@@ -16,4 +16,4 @@
 * [Glance 映像檔套件](glance.md)
 * [Nova 運算套件](nova.md)
 * [Neutron 網路套件](neutron.md)
-* [Cinder 區塊儲存套件](openstack/cinder.md)
+* [Cinder 區塊儲存套件](cinder.md)

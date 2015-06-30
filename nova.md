@@ -53,15 +53,5 @@ OpenStack運算服務由下列套件所組成：
 
  理論上，OpenStack運算服務可以支援任何與SQL-Alchemy所支援的後端資料庫，通常使用SQLite3來做測試可開發工作，MySQL和PostgreSQL 作為生產環境。
 
-#指令
-| 指令 | 說明 |
-| -- | -- |
-| nova flavor-list | 取得所有樣板資訊 |
-| nova images-list | 取得所有映像檔資訊 |
-| nova net-list | 取得所有網路實例資訊 |
-| nova list | 取得所有實例資訊 |
-| nova show < id > | 取得對應的nova instance id 資訊 |
 
-# 參考
-* http://docs.openstack.org/developer/nova/
 

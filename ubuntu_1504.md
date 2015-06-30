@@ -5,7 +5,7 @@
 * **eth1** : 10.21.22.0/24
 * **eth2** : public network
 
-首先我們先將user設置為不需要密碼的suoder (以openstack名稱為例)：
+首先我們先將user設置為不需要密碼的sudoer (以openstack使用者為例)：
 ```sh
 echo "openstack ALL = (root) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/openstack && sudo chmod 440 /etc/sudoers.d/openstack
 ```
@@ -126,7 +126,7 @@ export OS_PASSWORD=ADMIN
 export OS_TENANT_NAME=admin
 export OS_AUTH_URL=http://172.16.240.135:35357/v2.0
 ```
-完成後，透過```source```來建置環境變數：
+完成後，透過```source```來建置驗證環境變數：
 ```sh
 source creds
 ```
@@ -474,6 +474,11 @@ neutron agent-list
 ```sh
 sudo apt-get install -y openstack-dashboard
 ```
+> Ubuntu 安裝openstack-dashboard時，會有```ubuntu-theme```套件，若發生問題或者不需要，可以直接刪除該套件。
+```sh
+sudo apt-get remove --purge openstack-dashboard-ubuntu-theme
+```
+
 完成後，可以到Browser登入[Horizon Dashboard](http://172.16.240.135/horizon)。
 
 > * **Username**: admin
@@ -482,5 +487,5 @@ sudo apt-get install -y openstack-dashboard
 # 參考
 * [OpenStack 單節點安裝](https://fosskb.wordpress.com/2015/04/18/installing-openstack-kilo-on-ubuntu-15-04-single-machine-setup/)
 * [OpenStack 官方安裝文件](http://docs.openstack.org/kilo/install-guide/install/apt/content/ch_overview.html)
-* [OpenStack 大陸文件](http://www.aboutyun.com/thread-13063-1-1.html)
+* [OpenStack 簡中文件](http://www.aboutyun.com/thread-13063-1-1.html)
 * [OpenStack Youtube install](https://www.youtube.com/watch?v=8xx_qwaCWFg)

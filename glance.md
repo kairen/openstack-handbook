@@ -25,7 +25,3 @@ Glance架構圖中是由幾個元件組成：
 * **Glance Store** - organizes interactions between Glance and various data stores.
 * **Registry Layer** - optional layer organizing secure communication between the domain and the DAL by using a separate service.
 
-#指令
-
-# 參考
-* http://docs.openstack.org/developer/glance/

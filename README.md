@@ -90,6 +90,17 @@ Ironic裸機部署功能，在Kilo版中釋出，IT人員可以在實體伺服�
 | Trove | https://launchpad.net/trove |
 | Ironic | https://launchpad.net/ironic |
 
+# 指令
+| 名稱 | 官方網址 |
+| -- | -- |
+| Linux CLI Cheat sheet | http://www.computerworld.com/article/2598082/linux/linux-linux-command-line-cheat-sheet.html |
+| OpenStack CLI Reference | http://docs.openstack.org/cli-reference/content/ |
+| Rabbit CLI Reference | https://www.rabbitmq.com/management-cli.html |
+| Open vSwitch CLI Reference | http://openvswitch.org/support/dist-docs/ovs-vsctl.8.txt |
+| MySQL CLI Reference | http://dev.mysql.com/doc/refman/5.6/en/mysql.html |
+| LVM CLI Reference | https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/4/html/Cluster_Logical_Volume_Manager/LVM_CLI.html|
+| Libvirt CLI Reference | http://libvirt.org/virshcmdref.html |
+
 # 其他資訊
 | 名稱 | 官方網址 |
 | -- | -- |

@@ -100,7 +100,6 @@ Ironic裸機部署功能，在Kilo版中釋出，IT人員可以在實體伺服�
 | Facebook OpenStack Taiwan User Group | https://www.facebook.com/groups/openstack.tw/ |
 | MeetUp OpenStack Taiwan User Group | http://www.meetup.com/OpenStack-Taiwan-User-Group/ |
 
-
 # OpenStack 相關資源
 * [OpenStack Kilo Install Guide](http://docs.openstack.org/kilo/install-guide/install/apt/content/)
 * [DevStack](http://docs.openstack.org/developer/devstack/)

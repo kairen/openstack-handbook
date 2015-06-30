@@ -11,8 +11,3 @@ Neutron提供了```Network Service  ```負責虛擬網路架構與外部實體�
 有了以上的機制，讓 Firewall-as-a-Service & Load-Balancing-as-a-Service 變的很容易實現。
 
 ![架構圖](images/1aa-network-domains-diagram.png)
-
-#指令
-
-# 參考
-* http://docs.openstack.org/developer/neutron/

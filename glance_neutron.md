@@ -14,19 +14,19 @@ GRANT ALL PRIVILEGES ON glance.* TO 'glance'@'%' IDENTIFIED BY 'GLANCE_DBPASS';
 ```
 > 這邊若```GLANCE_DBPASS```要更改的話，可以更改。
 
-完成後，透過```quit```指令離開資料庫。之後我們要導入Keystone的```admin```帳號，來建立服務驗證：
+完成後，透過```quit```指令離開資料庫。之後我們要導入Keystone的```admin```帳號，來建立服務：
 ```sh
 source admin-openrc.sh
 ```
 透過以下指令建立服務驗證：
 ```sh
-# 建立Glance User
+# 建立 Glance User
 openstack user create --password GLANCE_PASS --email glance@example.com glance
-# 建立Glance Role
+# 建立 Glance Role
 openstack role add --project service --user glance admin
-# 建立Glance service
+# 建立 Glance service
 openstack service create --name glance  --description "OpenStack Image service" image
-# 建立Glance Endpoints
+# 建立 Glance Endpoints
 openstack endpoint create  --publicurl http://controller:9292  --internalurl http://controller:9292  --adminurl http://controller:9292  --region RegionOne image
 ```
 

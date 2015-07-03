@@ -61,6 +61,7 @@ Ironic裸機部署功能，在Kilo版中釋出，IT人員可以在實體伺服�
 # 各套件Document網址
 | 名稱 | 網址 |
 | -- | -- |
+| OpenStack Docs | http://docs.openstack.org/ |
 | Keystone | http://docs.openstack.org/developer/keystone/ |
 | Nova | http://docs.openstack.org/developer/nova/ |
 | Glance | http://docs.openstack.org/developer/glance/ |
@@ -93,18 +94,19 @@ Ironic裸機部署功能，在Kilo版中釋出，IT人員可以在實體伺服�
 # 指令
 | 名稱 | 官方網址 |
 | -- | -- |
-| Linux CLI Cheat sheet | http://www.computerworld.com/article/2598082/linux/linux-linux-command-line-cheat-sheet.html |
-| OpenStack CLI Reference | http://docs.openstack.org/cli-reference/content/ |
-| Rabbit CLI Reference | https://www.rabbitmq.com/management-cli.html |
-| Open vSwitch CLI Reference | http://openvswitch.org/support/dist-docs/ovs-vsctl.8.txt |
-| MySQL CLI Reference | http://dev.mysql.com/doc/refman/5.6/en/mysql.html |
-| LVM CLI Reference | https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/4/html/Cluster_Logical_Volume_Manager/LVM_CLI.html|
-| Libvirt CLI Reference | http://libvirt.org/virshcmdref.html |
+| Linux CLI  | http://www.computerworld.com/article/2598082/linux/linux-linux-command-line-cheat-sheet.html |
+| OpenStack CLI  | http://docs.openstack.org/cli-reference/content/ |
+| Rabbit CLI  | https://www.rabbitmq.com/management-cli.html |
+| Open vSwitch CLI  | http://openvswitch.org/support/dist-docs/ovs-vsctl.8.txt |
+| MySQL CLI  | http://dev.mysql.com/doc/refman/5.6/en/mysql.html |
+| LVM CLI  | https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/4/html/Cluster_Logical_Volume_Manager/LVM_CLI.html|
+| Libvirt CLI  | http://libvirt.org/virshcmdref.html |
 
 # 其他資訊
 | 名稱 | 官方網址 |
 | -- | -- |
 | OpenStack 基金會 | http://www.openstack.org/ |
+| Training OpenStack | http://www.openstack.org/marketplace/training |
 | 版本藍圖 | https://wiki.openstack.org/wiki/Releases |
 | Kilo版本 | https://wiki.openstack.org/wiki/ReleaseNotes/Kilo |
 | Stackalytics | http://stackalytics.com/ |
@@ -123,5 +125,5 @@ Ironic裸機部署功能，在Kilo版中釋出，IT人員可以在實體伺服�
 * [PackStack](https://wiki.openstack.org/wiki/Packstack)
 * [puppetlabs-openstack](https://github.com/puppetlabs/puppetlabs-openstack)
 * [Ubuntu OpenStack](https://wiki.ubuntu.com/ServerTeam/OpenStackHA)
-
+* [RDO HA](https://github.com/beekhof/osp-ha-deploy/blob/master/ha-openstack.md)
 

@@ -15,19 +15,19 @@ GRANT ALL PRIVILEGES ON nova.* TO 'nova'@'%'  IDENTIFIED BY 'NOVA_DBPASS';
 ```
 > 這邊若```NOVA_DBPASS```要更改的話，可以更改。
 
-完成後，透過```quit```指令離開資料庫。之後我們要導入Keystone的```admin```帳號，來建立服務驗證
+完成後，透過```quit```指令離開資料庫。之後我們要導入Keystone的```admin```帳號，來建立服務：
 ```sh
 source admin-openrc.sh
 ```
 透過以下指令建立服務驗證：
 ```sh
-# 建立Nova User
+# 建立 Nova User
 openstack user create --password NOVA_PASS --email nova@example.com nova
-# 建立Nova Role
+# 建立 Nova Role
 openstack role add --project service --user nova admin
-# 建立Nova service
+# 建立 Nova service
 openstack service create --name nova --description "OpenStack Compute" compute
-# 建立Nova Endpoints
+# 建立 Nova Endpoints
 openstack endpoint create  --publicurl http://controller:8774/v2/%\(tenant_id\)s  --internalurl http://controller:8774/v2/%\(tenant_id\)s --adminurl http://controller:8774/v2/%\(tenant_id\)s  --region RegionOne compute
 ```
 ### 安裝與設置Nova套件

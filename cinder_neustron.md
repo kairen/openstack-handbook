@@ -3,7 +3,8 @@
 
 #### 架設前準備
 當加入```Storage節點```時，我們要針對[Ubuntu Neutron 多節點安裝章節](ubuntu_neutron.html)的架構來做類似實現，但這邊比較不同的是我們使用了10.0.1.x的tunnel網路，而不是10.0.2.x：
-*  **Block Storage Node** 規格：雙核處理器, 4 GB 記憶體, 500 GB+ 儲存空間(sda),250 GB+ 儲存空間(sdb), 兩張eth介面網卡
+#### Block Storage Node
+*  **主機規格**：雙核處理器, 4 GB 記憶體, 500 GB+ 儲存空間(sda),250 GB+ 儲存空間(sdb), 兩張eth介面網卡
 * **eth0 Management interface**:
     * IP address: 10.0.0.41
     * Network mask: 255.255.255.0 (or /24)
@@ -13,15 +14,19 @@
     * Network mask: 255.255.255.0 (or /24)
 * 設定Hostname為```block1```
 * 安裝```NTP```，並與Controller節點同步
-* 在每個節點的```/etc/hosts```加入以下：
 
+設定```sudo```不需要密碼：
+```sh
+echo "openstack ALL = (root) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/openstack && sudo chmod 440 /etc/sudoers.d/openstack
+```
+在每個節點的```/etc/hosts```加入以下：
 ```sh
 10.0.0.11 controller
 10.0.0.21 network
 10.0.0.31 compute1
 10.0.0.41 block1
 ```
-* 若是```Ubuntu 14.04```需更新OpenStack Repository，：
+並更新套件，若是```Ubuntu 14.04```需更新OpenStack Repository，：
 
 ```sh
 sudo apt-get install ubuntu-cloud-keyring
@@ -32,8 +37,8 @@ sudo apt-get update && sudo apt-get -y  dist-upgrade
 
 # Controller節點安裝與設置
 ### 安裝前準備
-設置OpenStack 網路(neutron) 服務之前，必須建立資料庫、服務憑證和API 端點。
-我們需要在Database底下建立儲存Nova資訊的資料庫，利用```mysql```指令進入：
+設置OpenStack Cinder服務之前，必須建立資料庫、服務憑證和API 端點。
+我們需要在Database底下建立儲存Cinder資訊的資料庫，利用```mysql```指令進入：
 ```sh
 mysql -u root -p
 ```
@@ -45,7 +50,7 @@ GRANT ALL PRIVILEGES ON cinder.* TO 'cinder'@'%'  IDENTIFIED BY 'CINDER_DBPASS';
 ```
 > 這邊若```CINDER_DBPASS```要更改的話，可以更改。
 
-完成後，透過```quit```指令離開資料庫。之後我們要導入Keystone的```admin```帳號，來建立服務驗證：
+完成後，透過```quit```指令離開資料庫。之後我們要導入Keystone的```admin```帳號，來建立服務：
 ```sh
 source admin-openrc.sh
 ```

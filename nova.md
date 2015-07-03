@@ -54,4 +54,3 @@ OpenStack運算服務由下列套件所組成：
  理論上，OpenStack運算服務可以支援任何與SQL-Alchemy所支援的後端資料庫，通常使用SQLite3來做測試可開發工作，MySQL和PostgreSQL 作為生產環境。
 
 
-

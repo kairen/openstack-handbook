@@ -9,7 +9,7 @@
 # Controller節點安裝與設置
 ### 安裝前準備
 設置OpenStack 網路(neutron) 服務之前，必須建立資料庫、服務憑證和API 端點。
-我們需要在Database底下建立儲存Nova資訊的資料庫，利用```mysql```指令進入：
+我們需要在Database底下建立儲存Neutron資訊的資料庫，利用```mysql```指令進入：
 ```sh
 mysql -u root -p
 ```
@@ -21,7 +21,7 @@ GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'%'  IDENTIFIED BY 'NEUTRON_DBPAS
 ```
 > 這邊若```NEUTRON_DBPASS```要更改的話，可以更改。
 
-完成後，透過```quit```指令離開資料庫。之後我們要導入Keystone的```admin```帳號，來建立服務驗證
+完成後，透過```quit```指令離開資料庫。之後我們要導入Keystone的```admin```帳號，來建立服務：
 ```sh
 source admin-openrc.sh
 ```

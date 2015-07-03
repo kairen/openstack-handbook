@@ -13,7 +13,7 @@
     * [Horizon安裝與設定](horizon_neutron.md)
     * [Cinder 安裝與設定](cinder_neustron.md)
     * [Swift 安裝與設定](swift_install.md)
- * [Rabbit Message Queue](rabbit_message_queue.md)
+* [Rabbit Message Queue](rabbit_message_queue.md)
 * [Keystone 身份驗證套件](keystone.md)
 * [Glance 映像檔套件](glance.md)
 * [Nova 運算套件](nova.md)

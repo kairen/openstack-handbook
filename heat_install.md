@@ -1,5 +1,5 @@
-# Orchestration  安裝與設定
-本章節會說明與操作如何安裝```Orchestration```服務到OpenStack Controller節點上，並設置相關參數與設定。若對於Heat不瞭解的人，可以參考[Heat 協調整合套件章節](orchestration.html)
+# Heat 安裝與設定
+本章節會說明與操作如何安裝```Orchestration```服務到OpenStack Controller節點上，並設置相關參數與設定。若對於Heat不瞭解的人，可以參考[Heat 協調整合套件章節](heat.html)
 
 # Controller節點安裝與設置
 ### 安裝前準備

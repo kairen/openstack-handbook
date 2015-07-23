@@ -53,4 +53,14 @@ OpenStack運算服務由下列套件所組成：
 
  理論上，OpenStack運算服務可以支援任何與SQL-Alchemy所支援的後端資料庫，通常使用SQLite3來做測試可開發工作，MySQL和PostgreSQL 作為生產環境。
 
-
+#### Nova Compute 支援的格式
+OpenStack有支援多家大廠的映像檔(Image)包括Amazon、Windows Hyper-V、VMware等等，下面列出支援格式
+* AKI - Amazon Kernel Image
+* AMI - Amazon Machine Iamge
+* ARI - Amazon Ramdisk Iamge
+* ISO - Optical Disk Image
+* QCOW2 - QEMU Emulator
+* Raw
+* VDI
+* VHD - Windows Hyper-V
+* VMDK - VMWare

@@ -2,7 +2,7 @@
 本章節會說明與操作如何安裝```Keystone```服務到OpenStack Controller節點上，並設置相關參數與設定。若對於Keystone不瞭解的人，可以參考[Keystone 身份驗證套件章節](keystone.html)。
 
 ### 安裝前準備
-我們需要在Database底下建立儲存 Keystone  資訊的資料庫，利用```mysql```指令進入：
+我們需要在Database底下建立儲存Keystone資訊的資料庫，利用```mysql```指令進入：
 ```sh
 mysql -u root -p
 ```
@@ -19,34 +19,34 @@ GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'%' IDENTIFIED BY 'KEYSTONE_DBP
 openssl rand -hex 10
 
 # 會產生如下密碼
-e0cae61b16320e8569fd
+3193558db65508595553
 ```
 ### 安裝與設置Keystone套件
-首先我們設定安裝完成後，不要自動開啟服務：
-```sh
-echo "manual" | sudo tee /etc/init/keystone.override
-```
 > 在```Kilo```的Keystone遺棄了```Eventlet```，改用```WSGI```server來代替。所以本教學關閉使用keystone服務。
 
-再來透過```apt-get```安裝keystone套件：
+首先透過```yum```安裝keystone套件：
 ```sh
-sudo apt-get install keystone python-openstackclient apache2 libapache2-mod-wsgi memcached python-memcache
+yum install openstack-keystone httpd mod_wsgi python-openstackclient memcached python-memcached
 ```
-安裝完後，編輯```/etc/keystone/keystone.conf```，將ADMIN_TOKEN替換為上一步中，產生的隨機字串：
+開啟```memcached```服務，並設定Boot開啟：
+```sh
+systemctl enable memcached.service
+systemctl start memcached.service
+```
+編輯```/etc/keystone/keystone.conf```，將ADMIN_TOKEN替換為上一步中，產生的隨機字串：
 ```
 [DEFAULT]
 ...
-admin_token = e0cae61b16320e8569fd
+admin_token = 3193558db65508595553
 ```
 在```[database]```部分修改如下：
 ```
 [database]
 ...
-# connection = sqlite:////var/lib/keystone/keystone.db
 connection = mysql://keystone:KEYSTONE_DBPASS@controller/keystone
 ```
-在```[memcache]```部分修改如下：
-```
+在```[memcache]```部分，加入Memcache service：
+```sh
 [memcache]
 ...
 servers = localhost:11211
@@ -70,78 +70,68 @@ driver = keystone.contrib.revoke.backends.sql.Revoke
 ...
 verbose = True
 ```
-完成後同步資料庫：
+完成後，同步資料庫：
 ```sh
-sudo keystone-manage db_sync
+su -s /bin/sh -c "keystone-manage db_sync" keystone
 ```
-### 設置Apache HTTP伺服器
-編輯```/etc/apache2/apache2.conf```的ServerName設為```controller```：
+### Apache HTTP server
+編輯```/etc/httpd/conf/httpd.conf```檔案，修改以下：
 ```
 ServerName controller
 ```
-再來建立```/etc/apache2/sites-available/wsgi-keystone.conf```，修改為以下：
-```
+建立並編輯```/etc/httpd/conf.d/wsgi-keystone.conf```，加入以下：
+```sh
 Listen 5000
 Listen 35357
 
 <VirtualHost *:5000>
-    WSGIDaemonProcess keystone-public processes=5 threads=1 user=keystone display-name=%{GROUP}
+    WSGIDaemonProcess keystone-public processes=5 threads=1 user=keystone group=keystone display-name=%{GROUP}
     WSGIProcessGroup keystone-public
     WSGIScriptAlias / /var/www/cgi-bin/keystone/main
     WSGIApplicationGroup %{GLOBAL}
     WSGIPassAuthorization On
-    <IfVersion >= 2.4>
-      ErrorLogFormat "%{cu}t %M"
-    </IfVersion>
     LogLevel info
-    ErrorLog /var/log/apache2/keystone-error.log
-    CustomLog /var/log/apache2/keystone-access.log combined
+    ErrorLogFormat "%{cu}t %M"
+    ErrorLog /var/log/httpd/keystone-error.log
+    CustomLog /var/log/httpd/keystone-access.log combined
 </VirtualHost>
 
 <VirtualHost *:35357>
-    WSGIDaemonProcess keystone-admin processes=5 threads=1 user=keystone display-name=%{GROUP}
+    WSGIDaemonProcess keystone-admin processes=5 threads=1 user=keystone group=keystone display-name=%{GROUP}
     WSGIProcessGroup keystone-admin
     WSGIScriptAlias / /var/www/cgi-bin/keystone/admin
     WSGIApplicationGroup %{GLOBAL}
     WSGIPassAuthorization On
-    <IfVersion >= 2.4>
-      ErrorLogFormat "%{cu}t %M"
-    </IfVersion>
     LogLevel info
-    ErrorLog /var/log/apache2/keystone-error.log
-    CustomLog /var/log/apache2/keystone-access.log combined
+    ErrorLogFormat "%{cu}t %M"
+    ErrorLog /var/log/httpd/keystone-error.log
+    CustomLog /var/log/httpd/keystone-access.log combined
 </VirtualHost>
 ```
-完成後，開啟身份驗證服務虛擬主機：
+建立一個資料夾，放WSGI元件使用：
 ```sh
-sudo ln -s /etc/apache2/sites-available/wsgi-keystone.conf /etc/apache2/sites-enabled
+ mkdir -p /var/www/cgi-bin/keystone
 ```
-建立```WSGI```元件目錄結構：
-```sh
-sudo mkdir -p /var/www/cgi-bin/keystone
+下載網路上的 WSGI 元件到剛建立的資料夾：
 ```
-從網路上下載```WSGI```元件到該目錄底下：
-```sh
-sudo curl http://git.openstack.org/cgit/openstack/keystone/plain/httpd/keystone.py?h=stable/kilo | sudo tee /var/www/cgi-bin/keystone/main /var/www/cgi-bin/keystone/admin
+curl http://git.openstack.org/cgit/openstack/keystone/plain/httpd/keystone.py?h=stable/kilo \
+  | tee /var/www/cgi-bin/keystone/main /var/www/cgi-bin/keystone/admin
 ```
-透過```chown```與```chmod```調整目錄權限：
+改變擁有權與權限於WGSI資料夾：
 ```sh
-sudo chown -R keystone:keystone /var/www/cgi-bin/keystone
-sudo chmod 755 /var/www/cgi-bin/keystone/*
+chown -R keystone:keystone /var/www/cgi-bin/keystone
+chmod 755 /var/www/cgi-bin/keystone/*
 ```
-重新開啟Http服務：
+重新開啟HTTP服務：
 ```sh
-sudo service apache2 restart
-```
-刪除預設產生的SQLite資料庫：
-```sh
-sudo  rm -f /var/lib/keystone/keystone.db
+systemctl enable httpd.service
+systemctl start httpd.service
 ```
 
 # 建立服務實體和API端點
 首先透過```export```設定OS_TOKEN環境變數，輸入openssh建立的字串與API URL：
 ```sh
-export OS_TOKEN=e0cae61b16320e8569fd
+export OS_TOKEN=3193558db65508595553
 export OS_URL=http://controller:35357/v2.0
 ```
 建立服務實體和身份驗證服務：
@@ -210,7 +200,7 @@ openstack role add --project demo --user demo user
 > 你可以重複此過程來建立其他的Projects和Users。
 
 # 驗證操作
-在安裝其他服務之前，我們要確認Keystone的是否沒問題。因為安全問題，可以選擇是否關閉臨時驗證token機制，編輯```/etc/keystone/keystone-paste.ini```，移除以下三個區域的```admin_token_auth```參數：
+在安裝其他服務之前，我們要確認Keystone的是否沒問題。因為安全問題，可以選擇是否關閉臨時驗證token機制，編輯```/usr/share/keystone/keystone-dist-paste.ini```，移除以下三個區域的```admin_token_auth```參數：
 ```
 [pipeline:public_api]
 pipeline = sizelimit url_normalize request_id build_auth_context token_auth [admin_token_auth] json_body ec2_extension user_crud_extension public_service
@@ -366,3 +356,4 @@ openstack token issue
 | user_id    | a2cdc03624c04bb0bd7437f6e9f7913e |
 +------------+----------------------------------+
 ```
+

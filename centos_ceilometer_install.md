@@ -5,22 +5,21 @@
 這部分將說明如何在Controller上安裝與設定Telemetry服務（即ceilometer），模組採用分離的代理來從Openstack服務中收集測量值。
 
 ### 安裝前準備
-由於Ceilometer資訊的資料庫，利用```MongoDB```收集資料，我們要透```apt-get```指令安裝相關套件：
+由於Ceilometer資訊的資料庫，利用```MongoDB```收集資料，我們要透```yum```指令安裝相關套件：
 ```sh
-sudo apt-get install mongodb-server mongodb-clients python-pymongo
+yum install mongodb-server mongodb
 ```
-安裝完成後，編輯```/etc/mongodb.conf```，設定ip位置：
+安裝完成後，編輯``` /etc/mongod.conf```，設定ip位置：
 ```sh
 bind_ip = 10.0.0.11
 smallfiles = true
 ```
 > 預設情況下，MongoDB 會在/var/lib/mongodb/journal 目錄下建立一些1GB 的journal 檔案。如果想要縮小每個journal 檔案為```128MB```，並限制總數的journal空間設為```512M```，讓設定```smallfiles```為```true```。
 
-如果修改了 journaling 的設定，請停止服務，並刪除 journal 初始化檔案，再重新開啟服務：
+重新開啟服務，並設定boot開啟：：
 ```sh
-sudo service mongodb stop
-sudo rm /var/lib/mongodb/journal/prealloc.*
-sudo service mongodb start
+systemctl enable mongod.service
+systemctl start mongod.service
 ```
 > 你也可以關閉journaling，詳細資訊可以看[MongoDB manual](http://docs.mongodb.org/manual/).
 
@@ -28,23 +27,15 @@ sudo service mongodb start
 ```sh
 mongo --host controller --eval '
   db = db.getSiblingDB("ceilometer");
-  db.addUser({user: "ceilometer",
+  db.createUser({user: "ceilometer",
   pwd: "CEILOMETER_DBPASS",
   roles: [ "readWrite", "dbAdmin" ]})'
 ```
 建立成功會看到類似以下訊息：
 ```sh
-MongoDB shell version: 2.4.9
+MongoDB shell version: 2.6.x
 connecting to: controller:27017/test
-{
-	"user" : "ceilometer",
-	"pwd" : "447c1db3b92df9035684b39ad9fa2185",
-	"roles" : [
-		"readWrite",
-		"dbAdmin"
-	],
-	"_id" : ObjectId("55964bbc2d42ee01755e590a")
-}
+Successfully added user: { "user" : "ceilometer", "roles" : [ "readWrite", "dbAdmin" ] }
 ```
 > 可自行選擇更改```CEILOMETER_DBPASS```密碼
 
@@ -52,19 +43,24 @@ connecting to: controller:27017/test
 ```sh
 # 建立 Ceilometer user
 openstack user create --password CEILOMETER_PASS --email ceilometer@example.com ceilometer
+
 # 建立 Ceilometer Role
 openstack role add --project service --user ceilometer admin
+
 # 建立 Ceilometer Service
 openstack service create --name ceilometer  --description "Telemetry" metering
+
 # 建立 Ceilometer Endpoints API
 openstack endpoint create --publicurl http://controller:8777 --internalurl http://controller:8777 --adminurl http://controller:8777 --region RegionOne metering
 ```
 > 可自行選擇更改```CEILOMETER_PASS```密碼
 
 ### 安裝與設置Ceilometer套件
-首先我們要透過```apt-get```安裝相關套件：
+首先我們要透過```yum```安裝相關套件：
 ```sh
-sudo apt-get install ceilometer-api ceilometer-collector ceilometer-agent-central ceilometer-agent-notification ceilometer-alarm-evaluator ceilometer-alarm-notifier python-ceilometerclient
+yum install openstack-ceilometer-api openstack-ceilometer-collector \
+  openstack-ceilometer-notification openstack-ceilometer-central openstack-ceilometer-alarm \
+  python-ceilometerclient
 ```
 然後透過```openssl```產生一個亂數：
 ```sh
@@ -80,7 +76,6 @@ connection = mongodb://ceilometer:CEILOMETER_DBPASS@controller:27017/ceilometer
 
 在```[DEFAULT]```加入RabbitMQ與Keystone存取：
 ```
-[DEFAULT]
 rpc_backend = rabbit
 auth_strategy = keystone
 ```
@@ -127,23 +122,25 @@ telemetry_secret = TELEMETRY_SECRET
 ...
 verbose = True
 ```
-完成後，重啟服務：
+完成後重啟服務，並設定boot開啟：
 ```sh
-sudo service ceilometer-agent-central restart
-sudo service ceilometer-agent-notification restart
-sudo service ceilometer-api restart
-sudo service ceilometer-collector restart
-sudo service ceilometer-alarm-evaluator restart
-sudo service ceilometer-alarm-notifier restart
+systemctl enable openstack-ceilometer-api.service openstack-ceilometer-notification.service \
+openstack-ceilometer-central.service openstack-ceilometer-collector.service \
+openstack-ceilometer-alarm-evaluator.service openstack-ceilometer-alarm-notifier.service
+
+systemctl start openstack-ceilometer-api.service openstack-ceilometer-notification.service \
+openstack-ceilometer-central.service openstack-ceilometer-collector.service \
+openstack-ceilometer-alarm-evaluator.service openstack-ceilometer-alarm-notifier.service
+
 ```
 
 # 設定 Compute 監控服務
 Telemetry 透過結合使用通知與proxy來收集Computer測量值。若要監控每個Compute節點，需在每個節點進行以下步驟：
 
 ### 安裝套件
-透過```apt-get```安裝相關套件：
+透過```yum```安裝相關套件：
 ```sh
-sudo apt-get install ceilometer-agent-compute
+yum install openstack-ceilometer-compute python-ceilometerclient python-pecan
 ```
 安裝完成後，編輯```/etc/ceilometer/ceilometer.conf```，在```[publisher] ```修改一下：
 ```
@@ -168,7 +165,6 @@ rabbit_password = RABBIT_PASS
 
 在```[keystone_authtoken]```部分，設定Keystone資訊，以及註解所有auth_host、auth_port 和auth_protocol，因為Keystone預設已包含：
 ```
-[keystone_authtoken]
 auth_uri = http://controller:5000/v2.0
 identity_uri = http://controller:35357
 admin_tenant_name = service
@@ -203,10 +199,12 @@ instance_usage_audit_period = hour
 notify_on_state_change = vm_and_task_state
 notification_driver = messagingv2
 ```
-完成後，重新開啟服務：
+完成後重啟服務，並設定boot開啟：
 ```sh
-sudo service ceilometer-agent-compute restart
-sudo service nova-compute restart
+systemctl enable openstack-ceilometer-compute.service
+systemctl start openstack-ceilometer-compute.service
+
+systemctl restart openstack-nova-compute.service
 ```
 
 # 設定 Image 監控服務
@@ -224,8 +222,7 @@ rabbit_password = RABBIT_PASS
 
 重啟服務：
 ```sh
-sudo service glance-registry restart
-sudo service glance-api restart
+systemctl restart openstack-glance-api.service openstack-glance-registry.service
 ```
 
 # 設定  Block Storage 監控服務
@@ -237,14 +234,13 @@ sudo service glance-api restart
 control_exchange = cinder
 notification_driver = messagingv2
 ```
-若是```Controller```，重新啟動以下：
+若是```Controller``` 節點，重新啟動以下：
 ```sh
-sudo service cinder-api restart
-sudo service cinder-scheduler restart
+systemctl restart openstack-cinder-api.service openstack-cinder-scheduler.service
 ```
-若是```Block storage```，重新啟動以下：
+若是```Storage``` 節點，重新啟動以下：
 ```sh
-sudo service cinder-volume restart
+systemctl restart openstack-cinder-volume.service
 ```
 
 # 設定 Object Storage 監控服務
@@ -288,11 +284,15 @@ log_level = WARN
 
 增加Swift的系統使用者到Ceilometer的系統群組中，來允許透過物件儲存服務存取 Telemetry 的設定檔：
 ```sh
-sudo usermod -a -G ceilometer swift
+usermod -a -G ceilometer swift
+```
+安裝```ceilometermiddleware```套件：
+```sh
+pip install ceilometermiddleware
 ```
 重啟服務：
 ```sh
-sudo service swift-proxy restart
+systemctl restart openstack-swift-proxy.service
 ```
 
 # 驗證操作

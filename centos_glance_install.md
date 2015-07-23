@@ -2,7 +2,7 @@
 本章節會說明與操作如何安裝```Image```服務到OpenStack Controller節點上，並設置相關參數與設定。若對於Glance不瞭解的人，可以參考[Glance 映像檔套件章節](glance.html)。
 
 ### 安裝前準備
-我們需要在Database底下建立儲存 Glance 資訊的資料庫，利用```mysql```指令進入：
+我們需要在Database底下建立儲存Glance資訊的資料庫，利用```mysql```指令進入：
 ```sh
 mysql -u root -p
 ```
@@ -31,15 +31,14 @@ openstack endpoint create  --publicurl http://controller:9292  --internalurl htt
 ```
 
 # 安裝與設置Glance套件
-首先要透過```apt-get```來安裝套件：
+首先要透過```yum```來安裝套件：
 ```sh
-sudo apt-get install -y glance python-glanceclient
+yum install -y openstack-glance python-glance python-glanceclient
 ```
 安裝完成後，編輯```/etc/glance/glance-api.conf```，在```[database]```，註解掉sqlite，並加入以下：
 ```sh
 [database]
 ...
-# sqlite_db = /var/lib/glance/glance.sqlite
 connection = mysql://glance:GLANCE_DBPASS@controller/glance
 ```
 > 這邊若```GLANCE_DBPASS```有更改的話，請記得更改。
@@ -48,12 +47,6 @@ connection = mysql://glance:GLANCE_DBPASS@controller/glance
 ```sh
 [keystone_authtoken]
 ...
-# identity_uri = http://127.0.0.1:35357
-# admin_tenant_name = %SERVICE_TENANT_NAME%
-# admin_user = %SERVICE_USER%
-# admin_password = %SERVICE_PASSWORD%
-# revocation_cache_time = 10
-
 auth_uri = http://controller:5000
 auth_url = http://controller:35357
 auth_plugin = password
@@ -88,18 +81,13 @@ verbose = True
 ```
 完成後，還要編輯```/etc/glance/glance-registry.conf```並完成以下設定，在```[database]```部分如上面一樣：
 ```sh
-# sqlite_db = /var/lib/glance/glance.sqlite
+[database]
 connection = mysql://glance:GLANCE_DBPASS@controller/glance
 ```
 接下來，在```[keystone_authtoken]```和```[paste_deploy]```部分，```Keystone```的admin：
 ```sh
 [keystone_authtoken]
 ...
-# identity_uri = http://127.0.0.1:35357
-# admin_tenant_name = %SERVICE_TENANT_NAME%
-# admin_user = %SERVICE_USER%
-# admin_password = %SERVICE_PASSWORD%
-
 auth_uri = http://controller:5000
 auth_url = http://controller:35357
 auth_plugin = password
@@ -127,13 +115,12 @@ verbose = True
 ```
 完成以上兩個檔案```/etc/glance/glance-api.conf```與```/etc/glance/glance-registry.conf```後，即可同步資料庫：
 ```sh
-sudo glance-manage db_sync
+su -s /bin/sh -c "glance-manage db_sync" glance
 ```
-完成後，重啟服務，並刪除SQLite檔案：
+完成後重啟服務：
 ```sh
-sudo service glance-registry restart
-sudo service glance-api restart
-sudo rm -f /var/lib/glance/glance.sqlite
+systemctl enable openstack-glance-api.service openstack-glance-registry.service
+systemctl start openstack-glance-api.service openstack-glance-registry.service
 ```
 # 驗證操作
 首先我們要在```admin-openrc.sh```與```demo-openrc.sh```加入Glance API環境變數：
@@ -182,8 +169,4 @@ glance image-create --name "cirros-0.3.4-x86_64" --file /tmp/images/cirros-0.3.4
 我們可以透過```glance image-list```來看所有的映像檔：
 ```sh
 glance image-list
-```
-最後刪除剛剛的映像檔：
-```sh
-rm -r /tmp/images
 ```

@@ -1,7 +1,7 @@
 # OpenStack 技術
 OpenStack是```美國國家航空暨太空總署```和```Rackspace```共同打造的雲端開源軟體，以```Apache```許可證授權，並且是一個自由軟體和開放原始碼項目，來打造```基礎設施即服務(Infrastructure as a Service)```。OpenStack擁有三大模組```運算模組```、```網通模組```和```儲存模組```，加上一套集中式管理的```儀表板模組```，來組合成一套OpenStack共享服務，並且以提供虛擬機方式，對外帶來運算資源，以便利彈性擴充或調度。
 
-從2010年10月到現今已歷經12個版本，來到了```Kilo```與下一個版本```Liberty```，套件數也從A版的兩個發展到現今```12```個套件，許多大廠也紛紛加入該行列，打造一套自己的雲端平台。
+從2010年10月到現今已歷經12個版本，來到了```Kilo```與下一個版本```Liberty```，套件數也從A版的```2```個發展到現今```19```個套件，許多大廠也紛紛加入該行列，打造一套自己的雲端平台。
 
 ![OpenStack](images/openstack_kilo_conceptual_arch.png)
 
@@ -53,10 +53,26 @@ Sahara 目的是提供給搭建```Haddoop 分散式叢集```的工程師能用�
 ### Trove 資料庫服務套件 (Database as a Service)
 Trove主要負責```銜接```與```簡化```實際資料庫的使用，提供OpenStack各個服務一個具延展性且可靠的```雲端資料庫服務（Cloud Database-as-a-Service）```，Database服務包含了銜接傳統關聯式資料庫與新興非關聯式資料庫。
 
-### Ironic 裸機部署套件 (Bare Metal Service)
+### Ironic 裸機部署套件 (Bare Metal )
 Ironic裸機部署功能，在Kilo版中釋出，IT人員可以在實體伺服器自動化部署OpenStack，等於能用管理虛擬機器的方式，來管理實體伺服器，有助於一次部署大量OpenStack主機來滿足大型IaaS環境的需要。
 
-### Zaqar
+### Zaqar (Message service)
+
+### Barbican (Key management)
+
+### Designate (DNS)
+
+### Manila (Shared Filesystems)
+
+### Magnum (Containers service)
+
+### Murano (Application catalog)
+
+### Congress (Governance service)
+
+### Mistral (Workflow service)
+
+### MagnetoDB (Key-value store as a Service)
 
 # 各套件Document網址
 | 名稱 | 網址 |
@@ -105,6 +121,7 @@ Ironic裸機部署功能，在Kilo版中釋出，IT人員可以在實體伺服�
 # 其他資訊
 | 名稱 | 官方網址 |
 | -- | -- |
+| OpenStack Wiki  | https://wiki.openstack.org |
 | OpenStack 基金會 | http://www.openstack.org/ |
 | Training OpenStack | http://www.openstack.org/marketplace/training |
 | 版本藍圖 | https://wiki.openstack.org/wiki/Releases |
@@ -114,7 +131,7 @@ Ironic裸機部署功能，在Kilo版中釋出，IT人員可以在實體伺服�
 | MeetUp OpenStack Taiwan User Group | http://www.meetup.com/OpenStack-Taiwan-User-Group/ |
 
 
-# OpenStack 相關資源
+# OpenStack 安裝相關資源
 * [OpenStack Kilo Install Guide](http://docs.openstack.org/kilo/install-guide/install/apt/content/)
 * [DevStack](http://docs.openstack.org/developer/devstack/)
 * [Red Hat OpenStack](https://www.rdoproject.org/Main_Page)

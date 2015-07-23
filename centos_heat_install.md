@@ -3,7 +3,7 @@
 
 # Controller節點安裝與設置
 ### 安裝前準備
-我們需要在Database底下建立儲存 Heat 資訊的資料庫，利用```mysql```指令進入：
+我們需要在Database底下建立儲存Heat資訊的資料庫，利用```mysql```指令進入：
 ```sh
 mysql -u root -p
 ```
@@ -23,29 +23,54 @@ source admin-openrc.sh
 ```sh
 # 建立 Heat User
 openstack user create --password HEAT_PASS --email heat@example.com heat
+
 # 建立 Heat Role
 openstack role add --project service --user heat admin
+
 # 建立 Heat stack owner
 openstack role create heat_stack_owner
+
 # 建立 Owner Role
 openstack role add --project demo --user demo heat_stack_owner
+
 # 建立 Heat stack user
 openstack role create heat_stack_user
+
 # 建立 Heat service
-openstack service create --name heat --description "Orchestration" orchestration
+openstack service create --name heat \
+  --description "Orchestration" orchestration
+
 # 建立 Heat-cfn 服務
-openstack service create --name heat-cfn  --description "Orchestration" cloudformation
+openstack service create --name heat-cfn \
+  --description "Orchestration"  cloudformation
+
 # 建立 Heat orchestration endpoints
-openstack endpoint create  --publicurl http://controller:8004/v1/%\(tenant_id\)s  --internalurl http://controller:8004/v1/%\(tenant_id\)s --adminurl http://controller:8004/v1/%\(tenant_id\)s  --region RegionOne  orchestration
+openstack endpoint create \
+  --publicurl http://controller:8004/v1/%\(tenant_id\)s \
+  --internalurl http://controller:8004/v1/%\(tenant_id\)s \
+  --adminurl http://controller:8004/v1/%\(tenant_id\)s \
+  --region RegionOne \
+  orchestration
+
 # 建立 Heat cloudformation endpoinst
-openstack endpoint create  --publicurl http://controller:8000/v1  --internalurl http://controller:8000/v1 --adminurl http://controller:8000/v1  --region RegionOne cloudformation
+openstack endpoint create \
+  --publicurl http://controller:8000/v1 \
+  --internalurl http://controller:8000/v1 \
+  --adminurl http://controller:8000/v1 \
+  --region RegionOne \
+  cloudformation
 ```
 > 這邊若```HEAT_PASS```要更改的話，可以更改。
 
 ### 安裝與設置Heat套件
-首先透過```apt-get```安裝相關套件：
+首先透過```yum```安裝相關套件：
 ```sh
-sudo apt-get install heat-api heat-api-cfn heat-engine python-heatclient
+yum install openstack-heat-api openstack-heat-api-cfn openstack-heat-engine python-heatclient
+```
+複製```/usr/share/heat/heat-dist.conf```，並存為該檔名```/etc/heat/heat.conf```：
+```sh
+cp /usr/share/heat/heat-dist.conf /etc/heat/heat.conf
+chown -R heat:heat /etc/heat/heat.conf
 ```
 編輯```/etc/heat/heat.conf```，在```[database]```部分加入：
 ```
@@ -90,6 +115,7 @@ admin_user = heat
 admin_password = HEAT_PASS
 
 [ec2authtoken]
+...
 auth_uri = http://controller:5000/v2.0
 ```
 > 這邊若```HEAT_PASS```有更改的話，請記得更改。
@@ -102,7 +128,10 @@ verbose = True
 ```
 完成後建立Heat Domain：
 ```sh
-heat-keystone-setup-domain  --stack-user-domain-name heat_user_domain --stack-domain-admin heat_domain_admin --stack-domain-admin-password HEAT_DOMAIN_PASS
+heat-keystone-setup-domain \
+  --stack-user-domain-name heat_user_domain \
+  --stack-domain-admin heat_domain_admin \
+  --stack-domain-admin-password HEAT_DOMAIN_PASS
 ```
 會取得以下資訊，並更新```/etc/heat/heat.conf```的```[DEFAULT]```以下資訊：
 ```
@@ -112,15 +141,12 @@ stack_domain_admin_password=HEAT_DOMAIN_PASS
 ```
 以上都完成後，同步資料庫：
 ```sh
-sudo heat-manage db_sync
+su -s /bin/sh -c "heat-manage db_sync" heat
 ```
-重啟服務，並刪除預設的SQLite資料庫：
+重啟服務，並設定boot開啟：
 ```sh
-sudo service heat-api restart
-sudo service heat-api-cfn restart
-sudo service heat-engine restart
-
-sudo rm -f /var/lib/heat/heat.sqlite
+systemctl enable openstack-heat-api.service openstack-heat-api-cfn.service openstack-heat-engine.service
+systemctl start openstack-heat-api.service openstack-heat-api-cfn.service openstack-heat-engine.service
 ```
 # 驗證操作
 這部分我們將驗證 Orchestrationg 是否正確運作。首先導入```admin```環境變數檔案：
@@ -157,7 +183,9 @@ outputs:
 使用```heat stack-create```指令建立板模：
 ```sh
 NET_ID=$(nova net-list | awk '/ demo-net / { print $2 }')
-heat stack-create -f test-stack.yml -P "ImageID=cirros-0.3.4-x86_64;NetID=$NET_ID" testStack
+
+heat stack-create -f test-stack.yml \
+  -P "ImageID=cirros-0.3.4-x86_64;NetID=$NET_ID" testStack
 ```
 成功會看到類似以下資訊：
 ```

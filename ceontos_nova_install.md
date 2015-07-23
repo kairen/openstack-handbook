@@ -1,9 +1,9 @@
 # Nova 安裝與設定
-本章節會說明與操作如何安裝```Compute```服務到OpenStack Controller節點上與Compute節點上，並設置相關參數與設定。若對於Nova不瞭解的人，可以參考[Nova 運算套件章節](nova.html)
+本章節會說明與操作如何安裝```Compute```服務到OpenStack Controller節點上，並設置相關參數與設定。若對於Nova不瞭解的人，可以參考[Nova 運算套件章節](nova.html)
 
 # Controller節點安裝與設置
 ### 安裝前準備
-我們需要在Database底下建立儲存 Nova 資訊的資料庫，利用```mysql```指令進入：
+我們需要在Database底下建立儲存Nova資訊的資料庫，利用```mysql```指令進入：
 ```sh
 mysql -u root -p
 ```
@@ -31,9 +31,9 @@ openstack service create --name nova --description "OpenStack Compute" compute
 openstack endpoint create  --publicurl http://controller:8774/v2/%\(tenant_id\)s  --internalurl http://controller:8774/v2/%\(tenant_id\)s --adminurl http://controller:8774/v2/%\(tenant_id\)s  --region RegionOne compute
 ```
 ### 安裝與設置Nova套件
-首先我們要透過```apt-get```安裝```nova```相關套件：
+首先我們要透過```yum```安裝```nova```相關套件：
 ```sh
-sudo apt-get install nova-api nova-cert nova-conductor nova-consoleauth  nova-novncproxy nova-scheduler python-novaclient
+yum install -y openstack-nova-api openstack-nova-cert openstack-nova-conductor openstack-nova-console openstack-nova-novncproxy openstack-nova-scheduler python-novaclient
 ```
 安裝完成後，編輯```/etc/nova/nova.conf```，加入```[database]```與其設定：
 ```sh
@@ -91,29 +91,26 @@ verbose = True
 ```
 完成後，同步資料庫：
 ```sh
-sudo nova-manage db sync
+su -s /bin/sh -c "nova-manage db sync" nova
 ```
 並重新啟動服務：
 ```sh
-sudo service nova-api restart
-sudo service nova-cert restart
-sudo service nova-consoleauth restart
-sudo service nova-scheduler restart
-sudo service nova-conductor restart
-sudo service nova-novncproxy restart
-```
-最後刪除預設的SQLite資料庫：
-```sh
-sudo rm -f /var/lib/nova/nova.sqlite
+systemctl enable openstack-nova-api.service openstack-nova-cert.service \
+  openstack-nova-consoleauth.service openstack-nova-scheduler.service \
+  openstack-nova-conductor.service openstack-nova-novncproxy.service
+
+systemctl start openstack-nova-api.service openstack-nova-cert.service \
+  openstack-nova-consoleauth.service openstack-nova-scheduler.service \
+  openstack-nova-conductor.service openstack-nova-novncproxy.service
 ```
 
 # Compute節點安裝與設置
 設定好 controller 上的 ````compute service```` 之後，接著要來設定實際執行 VM instance 的 compute node。
 
 ### 安裝和設定 Compute hypervisor 套件
-首先在Compute節點透過```apt-get```安裝套件：
+首先在Compute節點透過```yum```安裝套件：
 ```sh
-sudo apt-get install -y nova-compute sysfsutils
+yum install -y openstack-nova-compute sysfsutils
 ```
 編輯```/etc/nova/nova.conf```並完成以下操作，在```[DEFAULT]```部分加入以下設定，加入RabbitMQ存取、Keystone存取、VNC代理：
 ```sh
@@ -169,20 +166,17 @@ verbose = True
 ```sh
 egrep -c '(vmx|svm)' /proc/cpuinfo
 ```
-如果得到的值大於```1```，說明您的運算節點支援硬體加速，一般不需要進行額外的配置。如果為```0```，說明節點不支援硬體加速，故需要設定```libvirt```使用```QEMU```，而不是```KVM```。編輯```/etc/nova/nova-compute.conf```的```[libvirt]```部分：
+如果得到的值大於```1```，說明您的運算節點支援硬體加速，一般不需要進行額外的配置。如果為```0```，說明節點不支援硬體加速，故需要設定```libvirt```使用```QEMU```，而不是```KVM```。編輯```/etc/nova/nova.conf```的```[libvirt]```部分：
 ```sh
 [libvirt]
-...
 virt_type = qemu
 ```
 完成後，重開服務：
 ```sh
-sudo service nova-compute restart
+systemctl enable libvirtd.service openstack-nova-compute.service
+systemctl start libvirtd.service openstack-nova-compute.service
 ```
-最後刪除預設的SQLite資料庫檔案：
-```sh
-sudo rm -f /var/lib/nova/nova.sqlite
-```
+
 
 # 驗證操作
 回到```Controller節點```導入Keystone的```admin```帳號，來驗證服務：

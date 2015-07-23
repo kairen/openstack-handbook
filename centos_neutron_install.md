@@ -9,7 +9,7 @@
 # Controller節點安裝與設置
 ### 安裝前準備
 設置OpenStack 網路(neutron) 服務之前，必須建立資料庫、服務憑證和API 端點。
-我們需要在Database底下建立儲存 Neutron 資訊的資料庫，利用```mysql```指令進入：
+我們需要在Database底下建立儲存Neutron資訊的資料庫，利用```mysql```指令進入：
 ```sh
 mysql -u root -p
 ```
@@ -37,9 +37,9 @@ openstack service create --name neutron --description "OpenStack Networking" net
 openstack endpoint create  --publicurl http://controller:9696  --adminurl http://controller:9696  --internalurl http://controller:9696  --region RegionOne  network
 ```
 ### 安裝與設置Neutron套件
-透過```apt-get```來安裝套件：
+透過```yum```來安裝套件：
 ```sh
-sudo apt-get install neutron-server neutron-plugin-ml2 python-neutronclient
+yum install -y openstack-neutron openstack-neutron-ml2 python-neutronclient which
 ```
 Networking 伺服器套件的設置包含資料庫、驗證機制、訊息佇列、拓撲變化通知和插件。編輯``` /etc/neutron/neutron.conf```並完成以下操作，修改```[database]```註解掉```SQLite```，加入以下：
 ```sh
@@ -73,10 +73,6 @@ rabbit_password = RABBIT_PASS
 加入```[keystone_authtoken]```設定Keystone驗證：
 ```sh
 [keystone_authtoken]
-# identity_uri = http://127.0.0.1:5000
-# admin_tenant_name = %SERVICE_TENANT_NAME%
-# admin_user = %SERVICE_USER%
-# admin_password = %SERVICE_PASSWORD%
 auth_uri = http://controller:5000
 auth_url = http://controller:35357
 auth_plugin = password
@@ -90,7 +86,6 @@ password = NEUTRON_PASS
 
 在```[nova]```設置以下：
 ```sh
-[nova]
 auth_url = http://controller:35357
 auth_plugin = password
 project_domain_id = default
@@ -149,6 +144,7 @@ firewall_driver = nova.virt.firewall.NoopFirewallDriver
 在```[neutron]```部分，設置存取的參數：
 ```sh
 [neutron]
+...
 url = http://controller:9696
 auth_strategy = keystone
 admin_auth_url = http://controller:35357/v2.0
@@ -159,17 +155,22 @@ admin_password = NEUTRON_PASS
 > 這邊若```NEUTRON_PASS```有更改的話，請記得更改。
 
 ### 完成安裝
+將```/etc/neutron/plugin.ini```指向 ML2 Plugin 的設定檔```/etc/neutron/plugins/ml2/ml2_conf.ini```，如果連結不存在，可以利用以下指令：
+```sh
+ln -s /etc/neutron/plugins/ml2/ml2_conf.ini /etc/neutron/plugin.ini
+```
 完成後，同步資料庫：
 ```sh
-sudo neutron-db-manage --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade kilo
+su -s /bin/sh -c "neutron-db-manage --config-file /etc/neutron/neutron.conf  --config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade head" neutron
 ```
 重啟 Compute 服務：
 ```sh
-sudo service nova-api restart
+systemctl restart openstack-nova-api.service openstack-nova-scheduler.service openstack-nova-conductor.service
 ```
 重啟 Networking 服務：
 ```sh
-sudo service neutron-server restart
+systemctl enable neutron-server.service
+systemctl start neutron-server.service
 ```
 ### 驗證操作
 透過```neutron ext-list```以驗證是否成功啟動了一個neutron-server 背景程式：
@@ -213,12 +214,12 @@ net.ipv4.conf.default.rp_filter=0
 ```
 修改後，透過```sysctl -p```來載入：
 ```sh
-sudo sysctl -p
+sysctl -p
 ```
 ### 安裝與設定網路套件
-首先透過```apt-get```安裝相關套件：
+首先透過```yum```安裝相關套件：
 ```sh
-sudo apt-get install neutron-plugin-ml2 neutron-plugin-openvswitch-agent neutron-l3-agent neutron-dhcp-agent neutron-metadata-agent
+yum install -y openstack-neutron openstack-neutron-ml2 openstack-neutron-openvswitch
 ```
 Networking套件的設定會包含驗證機制、訊息佇列和插件，編輯```/etc/neutron/neutron.conf```在```[database]```註解所有```connection```參數：
 ```sh
@@ -228,17 +229,16 @@ Networking套件的設定會包含驗證機制、訊息佇列和插件，編輯`
 在```[DEFAULT]```加入RabbitMQ存取、Keystone存取、啟用Modular Layer 2插件、router服務、overlapping IP：
 ```sh
 [DEFAULT]
-...
-rpc_backend = rabbit
 auth_strategy = keystone
+rpc_backend = rabbit
 core_plugin = ml2
 service_plugins = router
 allow_overlapping_ips = True
+verbose = True
 ```
 在```[oslo_messaging_rabbit]```加入RabbitMQ存取：
 ```sh
 [oslo_messaging_rabbit]
-...
 rabbit_host = controller
 rabbit_userid = openstack
 rabbit_password = RABBIT_PASS
@@ -248,7 +248,6 @@ rabbit_password = RABBIT_PASS
 在```[keystone_authtoken]```加入Keystone存取，註解其他：
 ```sh
 [keystone_authtoken]
-...
 auth_uri = http://controller:5000
 auth_url = http://controller:35357
 auth_plugin = password
@@ -271,7 +270,6 @@ verbose = True
 ML2 插件使用Open vSwitch (OVS) 機制(代理) 來為Instance建立虛擬網路框架。編輯```/etc/neutron/plugins/ml2/ml2_conf.ini```在```[ml2]```啟用flat, VLAN, generic routing encapsulation (GRE), and virtual extensible LAN (VXLAN) 的網路類型驅動，GRE租戶網絡和OVS機制驅動：
 ```sh
 [ml2]
-...
 type_drivers = flat,vlan,gre,vxlan
 tenant_network_types = gre
 mechanism_drivers = openvswitch
@@ -279,7 +277,6 @@ mechanism_drivers = openvswitch
 在```[ml2_type_flat]```部分設定外部網路：
 ```sh
 [ml2_type_flat]
-...
 flat_networks = external
 ```
 在```[ml2_type_gre]```部分設定通道ID：
@@ -291,7 +288,6 @@ tunnel_id_ranges = 1:1000
 在```[securitygroup]```部分設定啟用安全群組、ipset並設置OVS iptables 防火牆驅動：
 ```sh
 [securitygroup]
-...
 enable_security_group = True
 enable_ipset = True
 firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
@@ -307,7 +303,6 @@ bridge_mappings = external:br-ex
 在```[agent]```部分啟用GRE通道：
 ```sh
 [agent]
-...
 tunnel_types = gre
 ```
 ### 設定 Layer-3 (L3) proxy
@@ -400,7 +395,7 @@ metadata_proxy_shared_secret = METADATA_SECRET
 
 在```Controller```上重新啟動```Compute API```服務：
 ```sh
-sudo service nova-api restart
+systemctl restart openstack-nova-api.service
 ```
 
 ### 設定Open vSwitch (OVS) 服務
@@ -408,15 +403,16 @@ OVS 服務為實例提供了底層的虛擬網絡框架。整合的橋接br-int 
 
 回到```Network```節點，重啟Open Vswitch服務：
 ```sh
-sudo service openvswitch-switch restart
+systemctl enable openvswitch.service
+systemctl start openvswitch.service
 ```
 增加外部網路橋接：
 ```sh
-sudo ovs-vsctl add-br br-ex
+ovs-vsctl add-br br-ex
 ```
 增加連接到實體外部網路介面的外部橋接埠口：
 ```sh
-sudo ovs-vsctl add-port br-ex INTERFACE_NAME
+ovs-vsctl add-port br-ex INTERFACE_NAME
 ```
 > ```INTERFACE_NAME``` 為外部網路的介面名稱，這邊為eth2。
 
@@ -427,12 +423,19 @@ ethtool -K INTERFACE_NAME gro off
 > ```INTERFACE_NAME``` 為外部網路的介面名稱，這邊為eth2。
 
 ### 完成安装
+將```/etc/neutron/plugin.ini```指向 ML2 Plugin設定文件```/etc/neutron/plugins/ml2/ml2_conf.ini```，如果連接不存在，可以使用以下指令：
+```sh
+ln -s /etc/neutron/plugins/ml2/ml2_conf.ini /etc/neutron/plugin.ini
+```
+由於Package問題，Open vSwitch Agent 會尋找插件的設定檔，而不是指向```/etc/neutron/plugin.ini```，用以下指令可以解決：
+```sh
+cp /usr/lib/systemd/system/neutron-openvswitch-agent.service  /usr/lib/systemd/system/neutron-openvswitch-agent.service.orig
+sed -i 's,plugins/openvswitch/ovs_neutron_plugin.ini,plugin.ini,g'  /usr/lib/systemd/system/neutron-openvswitch-agent.service
+```
 重新啟動Networking服務：
 ```sh
-sudo service neutron-plugin-openvswitch-agent restart
-sudo service neutron-l3-agent restart
-sudo service neutron-dhcp-agent restart
-sudo service neutron-metadata-agent restart
+systemctl enable neutron-openvswitch-agent.service neutron-l3-agent.service neutron-dhcp-agent.service neutron-metadata-agent.service neutron-ovs-cleanup.service
+systemctl start neutron-openvswitch-agent.service neutron-l3-agent.service neutron-dhcp-agent.service neutron-metadata-agent.service
 ```
 ### 驗證操作
 回到```Controller```節點，導入Keystone的```admin```帳號來驗證服務：
@@ -468,24 +471,22 @@ net.bridge.bridge-nf-call-ip6tables=1
 ```
 修改後，透過```sysctl -p```來載入：
 ```sh
-sudo sysctl -p
+sysctl -p
 ```
 
 ### 安裝與設定網路套件
-首先透過```apt-get```安裝套件：
+首先透過```yum```安裝套件：
 ```sh
-sudo apt-get install neutron-plugin-ml2 neutron-plugin-openvswitch-agent
+yum install -y openstack-neutron openstack-neutron-ml2 openstack-neutron-openvswitch
 ```
 Networking套件的設定會包含驗證機制、訊息佇列和插件，編輯```/etc/neutron/neutron.conf```在```[database]```部分註解到所有```connection```選項：
 ```sh
 [database]
-...
 # connection = sqlite:////var/lib/neutron/neutron.sqlite
 ```
 在```[DEFAULT]```設定RabbitMQ存取、Keystone存取、啟用Modular Layer 2插件、router服務、overlapping IP：
 ```sh
 [DEFAULT]
-...
 rpc_backend = rabbit
 auth_strategy = keystone
 core_plugin = ml2
@@ -495,7 +496,6 @@ allow_overlapping_ips = True
 在```[oslo_messaging_rabbit]```部分設定RabbitMQ：
 ```sh
 [oslo_messaging_rabbit]
-...
 rabbit_host = controller
 rabbit_userid = openstack
 rabbit_password = RABBIT_PASS
@@ -505,7 +505,6 @@ rabbit_password = RABBIT_PASS
 在```[keystone_authtoken]```部分設定Keystone服務，並註解到不要部分：
 ```sh
 [keystone_authtoken]
-...
 auth_uri = http://controller:5000
 auth_url = http://controller:35357
 auth_plugin = password
@@ -520,7 +519,6 @@ password = NEUTRON_PASS
 最後可以選擇是否要在```[DEFAULT]```中，開啟詳細Logs，為後期的故障排除提供幫助：
 ```
 [DEFAULT]
-...
 verbose = True
 ```
 ### 設定Modular Layer 2 (ML2) 插件
@@ -558,7 +556,8 @@ tunnel_types = gre
 ### 設定Open vSwitch (OVS) 服務
 重新開啟服務：
 ```sh
-sudo service openvswitch-switch restart
+systemctl enable openvswitch.service
+systemctl start openvswitch.service
 ```
 ### 設定Compute使用 Networking
 預設情況下，Compute 會使用傳統網絡(nova-network)。您必需重新設定Compute 來透過Networking來管理網路。編輯```/etc/nova/nova.conf```在```[DEFAULT]```部分設定APIs和drivers：
@@ -585,13 +584,23 @@ admin_password = NEUTRON_PASS
 > 這邊若```NEUTRON_PASS```有更改的話，請記得更改。
 
 ### 完成安装
+將```/etc/neutron/plugin.ini```指向 ML2 Plugin 設定檔```/etc/neutron/plugins/ml2/ml2_conf.ini```，如果連結不存在，請使用以下指令：
+```sh
+ln -s /etc/neutron/plugins/ml2/ml2_conf.ini /etc/neutron/plugin.ini
+```
+由於Package問題，Open vSwitch Agent 會尋找插件的設定檔，而不是指向```/etc/neutron/plugin.ini```，用以下指令可以解決：
+```sh
+cp /usr/lib/systemd/system/neutron-openvswitch-agent.service  /usr/lib/systemd/system/neutron-openvswitch-agent.service.orig
+sed -i 's,plugins/openvswitch/ovs_neutron_plugin.ini,plugin.ini,g'  /usr/lib/systemd/system/neutron-openvswitch-agent.service
+```
 重啟 Compute service：
 ```sh
-sudo service nova-compute restart
+systemctl restart openstack-nova-compute.service
 ```
 重啟Open vSwitch (OVS) agent：
 ```sh
-sudo service neutron-plugin-openvswitch-agent restart
+systemctl enable neutron-openvswitch-agent.service
+systemctl start neutron-openvswitch-agent.service
 ```
 ### 驗證操作
 回到```Controller```節點，導入Keystone的```admin```帳號來驗證：

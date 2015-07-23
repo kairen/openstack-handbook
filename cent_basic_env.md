@@ -26,23 +26,23 @@
  > 提供一個外部網路，讓Network節點可以透過GRE使Compute節點上的Instance存取網際網路，```注意！這邊會根據環境的不同而改變```。
 
 
- 以下指令可以幫助你設定```sudo```與```eth```：
+ 以下指令可以幫助查看網卡資訊與修改網卡介面：
 ```sh
-# 設定不需要密碼
-echo "openstack ALL = (root) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/openstack && sudo chmod 440 /etc/sudoers.d/openstack
+# 列出eth
+ip addr
 
-# 列出eth device
-dmesg | grep -i network
-
-# 修改/etc/network/interfaces
-auto eth0
-iface eth0 inet static
-        address 10.0.0.11
-        netmask 255.255.255.0
-        network 10.0.0.0
-        broadcast 10.0.0.255
-        gateway 10.0.0.1
-        dns-nameservers 8.8.8.8
+# 修改/etc/sysconfig/network-scripts/ifcfg-<NIC NAME>
+ONBOOT="yes"
+IPADDR="10.0.0.11"
+PREFIX="24"
+GATEWAY="10.0.0.1"
+DNS1="8.8.8.8"
+DNS2="8.8.8.4"
+```
+在```CentOS 7```中，若沒關閉防火牆對應port，會導致服務無法連接，為了驗證我們預設關閉防火牆：
+```sh
+systemctl disable firewalld.service
+systemctl stop firewalld.service
 ```
 
 ### Controller node 設定
@@ -74,14 +74,16 @@ iface eth0 inet static
 * IP address: 10.0.1.21
 * Network mask: 255.255.255.0 (or /24)
 
-再來設定```外部網路介面```，外部網路比較特殊，但我們可以將名稱命名為```eth2```或```ens256```等名稱，可以修改檔案```/etc/network/interfaces```：
+再來將第三張設定為```外部網路介面```，外部網路比較特殊，但我們可以將名稱命名為```eth2```或```ens256```等名稱，可以修改```/etc/sysconfig/network-scripts/ifcfg-<NAME>```：
 ```sh
 # The external network interface
-auto <INTERFACE_NAME>
-iface <IINTERFACE_NAME> inet manual
-        up ip link set dev $IFACE up
-        down ip link set dev $IFACE down
+DEVICE=INTERFACE_NAME
+TYPE=Ethernet
+ONBOOT="yes"
+BOOTPROTO="none"
 ```
+> 注意！請不要改變網卡裝置的 ```UUID keys```。
+
 完成後，重新開機來改變設定。
 
 再來修改```/etc/hostname```來改變主機名稱為```network```，並設定主機的```/etc/hosts```：
@@ -174,10 +176,10 @@ iface <IINTERFACE_NAME> inet manual
 然後將第二張設定為```外部網路介面```，編輯```/etc/network/interfaces```更改為以下：
 ```
 # The external network interface
-auto INTERFACE_NAME
-iface INTERFACE_NAME inet manual
-        up ip link set dev $IFACE up
-        down ip link set dev $IFACE down
+DEVICE=INTERFACE_NAME
+TYPE=Ethernet
+ONBOOT="yes"
+BOOTPROTO="none"
 ```
 
 > 若有多個Compute node，則以10.0.1.32類推。
@@ -200,48 +202,42 @@ iface INTERFACE_NAME inet manual
 # Network Time Protocol (NTP)
 由於要讓各節點的時間能夠同步，我們需要安裝```ntp```套件來提供服務，這邊推薦將ntp Server安裝於Controller上，再讓其他節點進行關聯即可。
 ### Controller node 設定
-在Controller節點上，我們可以透過```apt-get```來安裝相關套件：
+在Controller節點上，我們可以透過```yum```來安裝相關套件：
 ```sh
-sudo apt-get install -y ntp
+yum install -y ntp
 ```
 完成安裝後，預設NTP會透過公有的伺服器來同步時間，但也可以修改```/etc/ntp.conf```來選擇伺服器：
 ```sh
-server NTP_SERVER iburst
-restrict -4 default kod notrap nomodify
-restrict -6 default kod notrap nomodify
-```
-將 ```NTP_SERVER``` 替換為主機名稱或更準確的(lower stratum) NTP 伺服器IP地址。這個設定支援多個 server 關鍵字。
-> * 對於restrict 參數，基本上需要刪除nopeer 和noquery 選項。
-* 如果系統有```/var/lib/ntp/ntp.conf.dhcp```存在，請將它刪除。
-
-台灣NTP網址：
-```
 restrict 10.0.0.0 mask 255.255.255.0 nomodify notrap
 
 server 1.tw.pool.ntp.org iburst
 server 3.asia.pool.ntp.org iburst
 server 2.asia.pool.ntp.org iburst
 ```
+將```NTP_SERVER```替換為主機名稱或更準確的(lower stratum) NTP 伺服器IP地址。這個設定支援多個 server 關鍵字。
+> * 對於restrict 參數，基本上需要刪除nopeer 和noquery 選項。
+* 如果系統有```/var/lib/ntp/ntp.conf.dhcp```存在，請將它刪除。
 
 完成後，重啟服務：
 ```sh
-sudo service ntp restart
+systemctl enable ntpd.service
+systemctl start ntpd.service
 ```
 
 ### Other node 設定
-透過```apt-get```安裝ntp:
+透過```yum```安裝ntp:
 ```sh
-sudo apt-get install -y ntp
+yum install -y ntp
 ```
 完成安裝後，修改```/etc/ntp.conf```檔案，註解掉所有```server```以外的參數，並將其設定為controller host：
 ```sh
 server controller iburst
 ```
-> 如果系統有```/var/lib/ntp/ntp.conf.dhcp```存在，請將它刪除。
 
 完成後，重啟服務：
 ```sh
-sudo service ntp restart
+systemctl enable ntpd.service
+systemctl start ntpd.service
 ```
 
 ### 驗證設定
@@ -283,33 +279,36 @@ ind assid status  conf reach auth condition  last_event cnt
 ```
 
 # 安裝OpenStack套件
-接下來我們需在每個節點安裝Openstack相關套件，但由於Ubuntu的版本差異，會影響OpenStack支援的版本，在安裝時要特別注意是否支援，才會有對應的repository可以使用，支援狀況如下圖：
-![Ubuntu](images/openstack_support.png)
-
-若是Ubuntu ```15.04 以下```的版本，需加入Repository來獲取套件：
+接下來我們需在每個節點安裝Openstack相關套件，加入對應的repository：
 ```sh
-sudo apt-get install ubuntu-cloud-keyring
-echo "deb http://ubuntu-cloud.archive.canonical.com/ubuntu trusty-updates/kilo main" |  sudo tee /etc/apt/sources.list.d/cloudarchive-kilo.list
+yum install -y http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
+yum install -y http://rdo.fedorapeople.org/openstack-kilo/rdo-release-kilo.rpm
 ```
-更新Repository與更新套件：
+更新套件：
 ```sh
-sudo apt-get update && sudo apt-get -y  dist-upgrade
+yum upgrade -y
 ```
 > 如果Upgrade包含了新的核心套件的話，請重新開機。
+
+RHEL 與 CentOS 預設會開啟```SELinux```，所以安裝```openstack-selinux```來為OpenStack服務自動管理安全策略：
+```sh
+yum install -y openstack-selinux
+```
 
 # SQL database 安裝
 大部份的OpenStack套件服務都是只用SQL 資料庫來儲存訊息，該資料庫運作於Controller上。以下我們使用了MariaDB或MySQL來分佈。OpenStack也支援了其他資料庫，諸如：PostgreSQL。
 
-透過```apt-get```來安裝套件：
+透過```yum```來安裝套件：
 ```sh
-sudo apt-get install -y mariadb-server python-mysqldb
+yum install mariadb mariadb-server MySQL-python
 ```
 > 記住Python MySQL 和 MariaDB 是相容的。
 
-安裝完成後，需要設定```root```密碼，這邊設定為```r00tme```，再來需要建立與修改```/etc/mysql/my.cnf```，若是Ubuntu 15.04版本則編輯```/etc/mysql/conf.d/mysqld_openstack.cnf```來設定資料庫：
+安裝完成後，建立並編輯```/etc/my.cnf.d/mariadb_openstack.cnf```來設定資料庫：
 * 在```[mysqld]```將```bind-address```改為Controller host
 ```sh
 [mysqld]
+...
 bind-address = 10.0.0.11
 ```
 
@@ -326,22 +325,28 @@ character-set-server = utf8
 
 完成後，重啟mysql服務：
 ```sh
-sudo service mysql restart
+systemctl enable mariadb.service
+systemctl start mariadb.service
 ```
 並對資料庫進行安全設定：
 ```sh
-sudo mysql_secure_installation
+mysql_secure_installation
 ```
-對於每個項目```yes```，並設置對應資訊。
+一開始直接Enter進入，設定密碼為```r00tme```，對每個項目輸入```yes```。
 
 # Message queue 安裝
 OpenStack使用Message Queue來對整個叢集提供協調與狀態訊息服務。Openstack支援的Message Queue包含以下[RabbitMQ](http://www.rabbitmq.com/)、[Qpid](http://qpid.apache.org/)、[ZeroMQ](http://zeromq.org/)。但是大多數的發行版本支援特殊的Message Queue服務，這邊我們使用了```RabbitMQ```來實現，首先透過```apt-get```安裝套件：
 ```sh
-sudo apt-get install -y rabbitmq-server
+yum install -y rabbitmq-server
 ```
-安裝完成後，新增一個user:
+開啟服務，並設定Boot啟動：
 ```sh
-sudo rabbitmqctl add_user openstack RABBIT_PASS
+systemctl enable rabbitmq-server.service
+systemctl start rabbitmq-server.service
+```
+完成後，新增一個user:
+```sh
+rabbitmqctl add_user openstack RABBIT_PASS
 # 成功會看到以下資訊
 Creating user "openstack" ...
 ...done.
@@ -350,7 +355,7 @@ Creating user "openstack" ...
 
 為剛建立的user開啟權限：
 ```sh
-sudo rabbitmqctl set_permissions openstack ".*" ".*" ".*"
+rabbitmqctl set_permissions openstack ".*" ".*" ".*"
 # 成功會看到以下資訊
 Setting permissions for user "openstack" in vhost "/" ...
 ...done.

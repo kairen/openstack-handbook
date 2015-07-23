@@ -1,5 +1,5 @@
 # Cinder 安裝與設定
-本章節會說明與操作如何安裝```Block Storage```服務到OpenStack Controller節點上與Block Storage節點上，並設置相關參數與設定。若對於Cinder不瞭解的人，可以參考[Cinder 區塊儲存套件章節](cinder.html)
+本章節會說明與操作如何安裝```Block Storage```服務到OpenStack Controller節點上，並設置相關參數與設定。若對於Cinder不瞭解的人，可以參考[Cinder 區塊儲存套件章節](cinder.html)
 
 #### 架設前準備
 當加入```Storage節點```時，我們要針對[Ubuntu Neutron 多節點安裝章節](ubuntu_neutron.html)的架構來做類似實現，但這邊比較不同的是我們使用了10.0.1.x的tunnel網路，而不是10.0.2.x：
@@ -15,10 +15,7 @@
 * 設定Hostname為```block1```
 * 安裝```NTP```，並與Controller節點同步
 
-設定```sudo```不需要密碼：
-```sh
-echo "openstack ALL = (root) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/openstack && sudo chmod 440 /etc/sudoers.d/openstack
-```
+
 在每個節點的```/etc/hosts```加入以下：
 ```sh
 10.0.0.11 controller
@@ -26,19 +23,18 @@ echo "openstack ALL = (root) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/openstack &
 10.0.0.31 compute1
 10.0.0.41 block1
 ```
-並更新套件，若是```Ubuntu 14.04```需更新OpenStack Repository：
-
+更新套件需更新OpenStack Repository：
 ```sh
-sudo apt-get install ubuntu-cloud-keyring
-echo "deb http://ubuntu-cloud.archive.canonical.com/ubuntu trusty-updates/kilo main" |  sudo tee /etc/apt/sources.list.d/cloudarchive-kilo.list
+yum install -y http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
+yum install -y http://rdo.fedorapeople.org/openstack-kilo/rdo-release-kilo.rpm
 
-sudo apt-get update && sudo apt-get -y  dist-upgrade
+yum upgrade -y && yum install -y openstack-selinux
 ```
 
 # Controller節點安裝與設置
 ### 安裝前準備
 設置OpenStack Cinder服務之前，必須建立資料庫、服務憑證和API 端點。
-我們需要在Database底下建立儲存 Cinder 資訊的資料庫，利用```mysql```指令進入：
+我們需要在Database底下建立儲存Cinder資訊的資料庫，利用```mysql```指令進入：
 ```sh
 mysql -u root -p
 ```
@@ -71,9 +67,15 @@ openstack endpoint create --publicurl http://controller:8776/v2/%\(tenant_id\)s 
 ```
 
 ### 安裝與設置Cinder套件
-我們透過```apt-get```來安裝相關套件：
+我們透過```yum```來安裝相關套件：
 ```sh
-sudo apt-get install cinder-api cinder-scheduler python-cinderclient
+yum install -y openstack-cinder python-cinderclient python-oslo-db
+```
+
+複製 ```/usr/share/cinder/cinder-dist.conf``` 檔案為 ```/etc/cinder/cinder.conf```：
+```sh
+cp /usr/share/cinder/cinder-dist.conf /etc/cinder/cinder.conf
+chown -R cinder:cinder /etc/cinder/cinder.conf
 ```
 接下來編輯```/etc/cinder/cinder.conf```，並在```[database]```部分設定以下：
 ```sh
@@ -83,7 +85,6 @@ connection = mysql://cinder:CINDER_DBPASS@controller/cinder
 在```[DEFAULT]```部分，設定RabbitMQ存取、my ip提供管理與Keystone存取：
 ```sh
 [DEFAULT]
-...
 rpc_backend = rabbit
 auth_strategy = keystone
 my_ip = 10.0.0.11
@@ -124,33 +125,36 @@ verbose = True
 ```
 完成後，同步資料庫：
 ```sh
-sudo cinder-manage db sync
+su -s /bin/sh -c "cinder-manage db sync" cinder
 ```
 ### 完成安裝
-重新開啟服務，並刪除SQLite資料庫：
+重新開啟服務，並設定boot啟動：
 ```sh
-sudo service cinder-scheduler restart
-sudo service cinder-api restart
-sudo rm -f /var/lib/cinder/cinder.sqlite
+systemctl enable openstack-cinder-api.service openstack-cinder-scheduler.service
+systemctl start openstack-cinder-api.service openstack-cinder-scheduler.service
 ```
 
 # Storage節點安裝與設置
 ### 安裝前準備
 首先需要配置完成本章節開頭的環境部分，當完成配置後，安裝```qemu```套件與```lvm```套件：
 ```sh
-sudo apt-get install -y qemu lvm2
+ yum install -y  qemu lvm2
 ```
-> 有些Ubuntu的版本預設已安裝```lvm2```
 
+設定與啟動```lvm2```服務：
+```sh
+systemctl enable lvm2-lvmetad.service
+systemctl start lvm2-lvmetad.service
+```
 透過```pvcreate```指令，建立LVM Physical Volume ```/dev/sdb```：
 ```sh
-sudo pvcreate /dev/sdb
+pvcreate /dev/sdb1
 # 成功會看到以下資訊：
 Physical volume "/dev/sdb" successfully created
 ```
-> 若不知道disk資訊，可以透過```fdisk -l```查找。
+> 若不知道disk資訊，可以透過```fdisk -l```查找。且有多個disk要當作storage時，也可以加入。
 ```sh
-sudo fdisk -l
+fdisk -l
 ```
 若要格式化可以採用以下：
 ```sh
@@ -159,7 +163,7 @@ mkfs -t ext4 /dev/sdc1
 
 透過```vgcreate```，建立LVM Volume 群組：
 ```sh
-sudo vgcreate cinder-volumes /dev/sdb
+vgcreate cinder-volumes /dev/sdb1
 # 成功會看到以下資訊：
 Volume group "cinder-volumes" successfully created
 ```
@@ -175,12 +179,12 @@ filter = [ "a/.*/" ]
 
 最後透過 ```pvdisplay```查看Volume group：
 ```sh
-sudo  pvdisplay
+pvdisplay
 ```
 會看到類似以下資訊，因為我使採用兩顆不同硬碟組成的Volume，故會有點不一樣：
 ```
   --- Physical volume ---
-  PV Name               /dev/sdb
+  PV Name               /dev/sdb1
   VG Name               cinder-volumes
   PV Size               232.89 GiB / not usable 3.18 MiB
   Allocatable           yes
@@ -190,21 +194,11 @@ sudo  pvdisplay
   Allocated PE          256
   PV UUID               tsYzd6-a4s8-32iL-aYdA-AMol-qtj2-4RMhvA
 
-  --- Physical volume ---
-  PV Name               /dev/sda6
-  VG Name               cinder-volumes
-  PV Size               368.88 GiB / not usable 4.00 MiB
-  Allocatable           yes
-  PE Size               4.00 MiB
-  Total PE              94433
-  Free PE               94433
-  Allocated PE          0
-  PV UUID               c6ABuL-8hXK-3Dhx-SAMP-fq5W-12z2-lgkMtC
 ```
 ### 安裝與設置Cinder套件
-我們透過```apt-get```安裝相關套件：
+我們透過```yum```安裝相關套件：
 ```sh
-sudo apt-get install cinder-volume python-mysqldb
+yum install -y openstack-cinder targetcli python-oslo-db python-oslo-log MySQL-python
 ```
 接下來編輯```/etc/cinder/cinder.conf```，並在```[database]```部分設定以下：
 ```sh
@@ -265,16 +259,15 @@ lock_path = /var/lock/cinder
 verbose = True
 ```
 ### 完成安裝
-重新開啟服務，並刪除SQLite資料庫：
+重新開啟服務，並設定boot開啟：
 ```sh
-sudo service service tgt restart
-sudo service cinder-volume restart
-sudo rm -f /var/lib/cinder/cinder.sqlite
+systemctl enable openstack-cinder-volume.service target.service
+systemctl start openstack-cinder-volume.service target.service
 ```
 ### 驗證操作
 首先我們要把Cinder v2的API加入到，```admin```與```demo```的環境變數檔案中：
 ```sh
-echo "export OS_VOLUME_API_VERSION=2" | sudo tee -a admin-openrc.sh demo-openrc.sh
+echo "export OS_VOLUME_API_VERSION=2" | tee -a admin-openrc.sh demo-openrc.sh
 ```
 之後導入```admin```參數，來驗證服務：
 ```sh

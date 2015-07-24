@@ -320,15 +320,14 @@ yum install -y openstack-selinux
 
 透過```yum```來安裝套件：
 ```sh
-yum install mariadb mariadb-server MySQL-python
+yum install -y mariadb mariadb-server MySQL-python
 ```
 > 記住Python MySQL 和 MariaDB 是相容的。
 
 安裝完成後，建立並編輯```/etc/my.cnf.d/mariadb_openstack.cnf```來設定資料庫：
-* 在```[mysqld]```將```bind-address```改為Controller host
+* 加入```[mysqld]```將```bind-address```改為Controller host
 ```sh
 [mysqld]
-...
 bind-address = 10.0.0.11
 ```
 

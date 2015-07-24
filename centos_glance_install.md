@@ -43,7 +43,7 @@ connection = mysql://glance:GLANCE_DBPASS@controller/glance
 ```
 > 這邊若```GLANCE_DBPASS```有更改的話，請記得更改。
 
-接下來，在```[keystone_authtoken]```和```[[paste_deploy]```[部分，```Keystone```的admin：
+接下來，在```[keystone_authtoken]```和```[paste_deploy]```部分，設定```Keystone```存取：
 ```sh
 [keystone_authtoken]
 ...
@@ -84,7 +84,7 @@ verbose = True
 [database]
 connection = mysql://glance:GLANCE_DBPASS@controller/glance
 ```
-接下來，在```[keystone_authtoken]```和```[paste_deploy]```部分，```Keystone```的admin：
+接下來，在```[keystone_authtoken]```和```[paste_deploy]```部分，設定```Keystone```存取：
 ```sh
 [keystone_authtoken]
 ...

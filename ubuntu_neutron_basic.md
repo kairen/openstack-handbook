@@ -233,7 +233,7 @@ sudo service ntp restart
 ```sh
 sudo apt-get install -y ntp
 ```
-完成安裝後，修改```/etc/ntp.conf```檔案，註解掉所有```server```以外的參數，並將其設定為controller host：
+完成安裝後，修改```/etc/ntp.conf```檔案，註解掉所有```server```的參數，並將其設定為controller host：
 ```sh
 server controller iburst
 ```
@@ -306,7 +306,7 @@ sudo apt-get install -y mariadb-server python-mysqldb
 ```
 > 記住Python MySQL 和 MariaDB 是相容的。
 
-安裝完成後，需要設定```root```密碼，這邊設定為```r00tme```，再來需要建立與修改```/etc/mysql/my.cnf```，若是Ubuntu 15.04版本則編輯```/etc/mysql/conf.d/mysqld_openstack.cnf```來設定資料庫：
+安裝完成後，需要設定```root```密碼，這邊設定為```r00tme```，再來需要建立與修改```/etc/mysql/conf.d/mysqld_openstack.cnf```來設定資料庫：
 * 在```[mysqld]```將```bind-address```改為Controller host
 ```sh
 [mysqld]

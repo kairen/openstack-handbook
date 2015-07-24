@@ -88,22 +88,19 @@ neutron net-create demo-net
 ```
 成功的話，會看到類似以下資訊：
 ```sh
-+---------------------------+--------------------------------------+
-| Field                     | Value                                |
-+---------------------------+--------------------------------------+
-| admin_state_up            | True                                 |
-| id                        | 174bee75-7a06-44f8-8d68-8722d8d6912d |
-| mtu                       | 0                                    |
-| name                      | demo-net                             |
-| provider:network_type     | gre                                  |
-| provider:physical_network |                                      |
-| provider:segmentation_id  | 1                                    |
-| router:external           | False                                |
-| shared                    | False                                |
-| status                    | ACTIVE                               |
-| subnets                   |                                      |
-| tenant_id                 | cf8f9b8b009b429488049bb2332dc311     |
-+---------------------------+--------------------------------------+
++-----------------+--------------------------------------+
+| Field           | Value                                |
++-----------------+--------------------------------------+
+| admin_state_up  | True                                 |
+| id              | 0a294395-3c4f-4162-85a8-35125dc7b9be |
+| mtu             | 0                                    |
+| name            | demo-net                             |
+| router:external | False                                |
+| shared          | False                                |
+| status          | ACTIVE                               |
+| subnets         |                                      |
+| tenant_id       | 406f1640921e48dda4060ebf9709fdbd     |
++-----------------+--------------------------------------+
 ```
 類似於外部網路，租戶網路也需要附加子網路。可以指定任意有效的子網路，因為架構分離了租戶網路。預設情況下，這個子網路會使用DHCP，因此Instance可以獲取到IP。
 
@@ -153,14 +150,12 @@ neutron router-create demo-router
 | Field                 | Value                                |
 +-----------------------+--------------------------------------+
 | admin_state_up        | True                                 |
-| distributed           | False                                |
 | external_gateway_info |                                      |
-| ha                    | False                                |
-| id                    | a65b2209-1473-4f4f-8a3b-a99ea9f7020b |
+| id                    | d9cf75eb-fbd5-4dd8-9849-f118461bed22 |
 | name                  | demo-router                          |
 | routes                |                                      |
 | status                | ACTIVE                               |
-| tenant_id             | cf8f9b8b009b429488049bb2332dc311     |
+| tenant_id             | 406f1640921e48dda4060ebf9709fdbd     |
 +-----------------------+--------------------------------------+
 ```
 附加路由給```demo```租戶子網路：

@@ -249,7 +249,7 @@ systemctl start ntpd.service
 ```sh
 yum install -y ntp
 ```
-完成安裝後，修改```/etc/ntp.conf```檔案，註解掉所有```server```以外的參數，並將其設定為controller host：
+完成安裝後，修改```/etc/ntp.conf```檔案，註解掉所有```server```的參數，並將其設定為controller host：
 ```sh
 server controller iburst
 ```

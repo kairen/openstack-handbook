@@ -78,7 +78,7 @@ neutron subnet-create ext-net 192.168.20.0/24 --name ext-subnet --allocation-poo
 租戶網路為Instance提供內部網路連接。架構確保這種網路在不同租戶之間分離。透過```demo```租戶擁有這個網路，因為其僅作為對部的Instacne提供網路連接。
 
 #### 建立租戶網路
-首先回到```Controller```上，導入```admin```身份驗證來執行管理權限：
+首先回到```Controller```上，導入```demo```身份驗證來執行管理權限：
 ```sh
 source demo-openrc.sh
 ```

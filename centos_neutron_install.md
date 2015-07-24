@@ -73,6 +73,10 @@ rabbit_password = RABBIT_PASS
 加入```[keystone_authtoken]```設定Keystone驗證：
 ```sh
 [keystone_authtoken]
+# identity_uri = http://127.0.0.1:5000
+# admin_tenant_name = %SERVICE_TENANT_NAME%
+# admin_user = %SERVICE_USER%
+# admin_password = %SERVICE_PASSWORD%
 auth_uri = http://controller:5000
 auth_url = http://controller:35357
 auth_plugin = password

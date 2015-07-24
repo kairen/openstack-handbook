@@ -133,8 +133,8 @@ enable_security_group = True
 enable_ipset = True
 firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
 ```
-### 設定Compute以使用Networking
-預設情況下，Compute 使用傳統網路(nova-network)。您必需重新配置Compute 來透過Networking 來管理網路。編輯```/etc/nova/nova.conf```完成以下操作，在```[DEFAULT]```部分，設置APIs和drivers：
+### 設定Controller Nova 使用 Networking
+預設情況下，Nova 使用傳統網路(nova-network)。您必需重新配置 Nova 來透過Networking 來管理網路。編輯```/etc/nova/nova.conf```完成以下操作，在```[DEFAULT]```部分，設置APIs和drivers：
 ```sh
 [DEFAULT]
 ...
@@ -143,7 +143,7 @@ security_group_api = neutron
 linuxnet_interface_driver = nova.network.linux_net.LinuxOVSInterfaceDriver
 firewall_driver = nova.virt.firewall.NoopFirewallDriver
 ```
-> 預設情況下，Compute 使用內部的防火牆服務。由於Networking 包含了一個防火牆服務，您必須使用nova.virt.firewall.NoopFirewallDriver 防火牆驅動來禁用Compute 的防火牆服務。
+> 預設情況下，Nova 使用內部的防火牆服務。由於Networking 包含了一個防火牆服務，您必須使用nova.virt.firewall.NoopFirewallDriver 防火牆驅動來禁用 Nova 的防火牆服務。
 
 在```[neutron]```部分，設置存取的參數：
 ```sh
@@ -159,7 +159,7 @@ admin_password = NEUTRON_PASS
 > 這邊若```NEUTRON_PASS```有更改的話，請記得更改。
 
 ### 完成安裝
-將```/etc/neutron/plugin.ini```指向 ML2 Plugin 的設定檔```/etc/neutron/plugins/ml2/ml2_conf.ini```，如果連結不存在，可以利用以下指令：
+將```/etc/neutron/plugin.ini```指向 ML2 Plugin 的設定檔```/etc/neutron/plugins/ml2/ml2_conf.ini```，利用以下指令：
 ```sh
 ln -s /etc/neutron/plugins/ml2/ml2_conf.ini /etc/neutron/plugin.ini
 ```

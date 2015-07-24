@@ -14,7 +14,7 @@ sudo apt-get install mongodb-server mongodb-clients python-pymongo
 bind_ip = 10.0.0.11
 smallfiles = true
 ```
-> 預設情況下，MongoDB 會在/var/lib/mongodb/journal 目錄下建立一些1GB 的journal 檔案。如果想要縮小每個journal 檔案為```128MB```，並限制總數的journal空間設為```512M```，讓設定```smallfiles```為```true```。
+> 預設情況下，MongoDB 會在/var/lib/mongodb/journal 目錄下建立一些1GB 的journal 檔案。如果想要縮小每個journal 檔案為```128MB```，並限制總數的journal空間設為```512M```，可設定```smallfiles```為```true```。
 
 如果修改了 journaling 的設定，請停止服務，並刪除 journal 初始化檔案，再重新開啟服務：
 ```sh
@@ -64,7 +64,7 @@ openstack endpoint create --publicurl http://controller:8777 --internalurl http:
 ### 安裝與設置Ceilometer套件
 首先我們要透過```apt-get```安裝相關套件：
 ```sh
-sudo apt-get install ceilometer-api ceilometer-collector ceilometer-agent-central ceilometer-agent-notification ceilometer-alarm-evaluator ceilometer-alarm-notifier python-ceilometerclient
+sudo apt-get install ceilometer-api ceilometer-collector ceilometer-agent-central ceilometer-agent-notification ceilometer-alarm-evaluator ceilometer-alarm-notifier python-ceilometerclient python-ceilometermiddleware
 ```
 然後透過```openssl```產生一個亂數：
 ```sh
@@ -290,6 +290,10 @@ log_level = WARN
 ```sh
 sudo usermod -a -G ceilometer swift
 ```
+安裝```ceilometermiddleware```套件：
+```sh
+pip install ceilometermiddleware
+```
 重啟服務：
 ```sh
 sudo service swift-proxy restart
@@ -303,7 +307,7 @@ sudo service swift-proxy restart
 export OS_PROJECT_NAME=admin
 export OS_TENANT_NAME=admin
 export OS_USERNAME=admin
-export OS_PASSWORD=nutcimac
+export OS_PASSWORD=ADMIN
 export OS_AUTH_URL=http://controller:35357
 export OS_IMAGE_API_VERSION=2
 export OS_VOLUME_API_VERSION=2

@@ -53,7 +53,11 @@ systemctl stop firewalld.service
 
 完成後，重新開機來改變設定。
 
-再來修改```/etc/sysconfig/network```來改變主機名稱為```controller```，並設定主機的```/etc/hosts```：
+再來透過```hostnamectl set-hostname```來改變主機名稱為```controller```：
+```sh
+hostnamectl set-hostname controller
+```
+並設定主機的```/etc/hosts```：
 ```sh
 # controller
 10.0.0.11   controller
@@ -86,7 +90,11 @@ BOOTPROTO="none"
 
 完成後，重新開機來改變設定。
 
-再來修改```/etc/sysconfig/network```來改變主機名稱為```network```，並設定主機的```/etc/hosts```：
+再來透過```hostnamectl set-hostname```來改變主機名稱為```network```：
+```sh
+hostnamectl set-hostname network
+```
+設定主機的```/etc/hosts```：
 ```sh
 # network
 10.0.0.21       network
@@ -113,7 +121,11 @@ BOOTPROTO="none"
 
 完成後，重新開機來改變設定。
 
-再來修改```/etc/sysconfig/network```來改變主機名稱為```compute1```，並設定主機的```/etc/hosts```：
+再來透過```hostnamectl set-hostname```來改變主機名稱為```compute1```：
+```sh
+hostnamectl set-hostname compute1
+```
+並設定主機的```/etc/hosts```：
 ```sh
 # compute1
 10.0.0.31       compute1
@@ -156,7 +168,11 @@ BOOTPROTO="none"
 
 完成後，重新開機來改變設定。
 
-再來修改```/etc/sysconfig/network```來改變主機名稱為```controller```，並設定主機的```/etc/hosts```：
+再來透過```hostnamectl set-hostname```來改變主機名稱為```controller```：
+```sh
+hostnamectl set-hostname controller
+```
+設定主機的```/etc/hosts```：
 ```sh
 # controller
 10.0.0.11   controller
@@ -186,7 +202,11 @@ BOOTPROTO="none"
 
 完成後，重新開機來改變設定。
 
-再來修改```/etc/sysconfig/network```來改變主機名稱為```compute1```，並設定主機的```/etc/hosts```：
+再來透過```hostnamectl set-hostname```來改變主機名稱為```compute1```：
+```sh
+hostnamectl set-hostname compute1
+```
+設定主機的```/etc/hosts```：
 ```sh
 # compute1
 10.0.0.31       compute1

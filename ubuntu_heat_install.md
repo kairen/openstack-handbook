@@ -72,7 +72,6 @@ stack_user_domain_name = heat_user_domain
 在```[oslo_messaging_rabbit]```部分，設定RabbitMQ：
 ```
 [oslo_messaging_rabbit]
-...
 rabbit_host = controller
 rabbit_userid = openstack
 rabbit_password = RABBIT_PASS
@@ -82,7 +81,6 @@ rabbit_password = RABBIT_PASS
 在```[keystone_authtoken]```與```[ec2authtoken]```部分，設定keystone存取以及註解所有auth_host、auth_port 和auth_protocol，因為Keystone預設已包含：
 ```
 [keystone_authtoken]
-...
 auth_uri = http://controller:5000/v2.0
 identity_uri = http://controller:35357
 admin_tenant_name = service

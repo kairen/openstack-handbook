@@ -64,7 +64,7 @@ openstack endpoint create --publicurl http://controller:8777 --internalurl http:
 ### 安裝與設置Ceilometer套件
 首先我們要透過```apt-get```安裝相關套件：
 ```sh
-sudo apt-get install ceilometer-api ceilometer-collector ceilometer-agent-central ceilometer-agent-notification ceilometer-alarm-evaluator ceilometer-alarm-notifier python-ceilometerclient python-ceilometermiddleware
+sudo apt-get install ceilometer-api ceilometer-collector ceilometer-agent-central ceilometer-agent-notification ceilometer-alarm-evaluator ceilometer-alarm-notifier python-ceilometerclient
 ```
 然後透過```openssl```產生一個亂數：
 ```sh
@@ -302,8 +302,8 @@ sudo service swift-proxy restart
 # 驗證操作
 首先我們要建立一個沒有```OS_PROJECT_DOMAIN_ID```與```OS_USER_DOMAIN_ID```的環境參數檔案```admin-ceilometer-openrc.sh```，並加入以下：
 ```sh
-#export OS_PROJECT_DOMAIN_ID=default
-#export OS_USER_DOMAIN_ID=default
+unset OS_PROJECT_DOMAIN_ID
+unset OS_USER_DOMAIN_ID
 export OS_PROJECT_NAME=admin
 export OS_TENANT_NAME=admin
 export OS_USERNAME=admin

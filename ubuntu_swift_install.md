@@ -76,7 +76,7 @@ sudo apt-get install swift swift-proxy python-swiftclient python-keystoneclient 
 ```
 安裝完成後，建立```/etc/swift```，並透過網路來從物件儲存```Repository```中取得代理服務設定檔案：
 ```sh
-curl -o /etc/swift/proxy-server.conf https://git.openstack.org/cgit/openstack/swift/plain/etc/proxy-server.conf-sample?h=stable/kilo
+sudo curl -o /etc/swift/proxy-server.conf https://git.openstack.org/cgit/openstack/swift/plain/etc/proxy-server.conf-sample?h=stable/kilo
 ```
 編輯```/etc/swift/proxy-server.conf```在```[DEFAULT]```部分設定服務port與目錄：
 ```
@@ -435,14 +435,15 @@ Reassigned 1024 (100.00%) partitions. Balance is now 0.00.  Dispersion is now 0.
 ```sh
 scp account.ring.gz container.ring.gz object.ring.gz object1:~/
 scp account.ring.gz container.ring.gz object.ring.gz object2:~/
+ssh object1
+sudo mv ~/account.ring.gz /etc/swift/
+sudo mv ~/container.ring.gz /etc/swift/
+sudo mv ~/object.ring.gz /etc/swift/
 
-ssh object1 sudo mv ~/account.ring.gz /etc/swift/
-ssh object1 sudo mv ~/container.ring.gz /etc/swift/
-ssh object1 sudo mv ~/object.ring.gz /etc/swift/
-
-ssh object2 sudo mv ~/account.ring.gz /etc/swift/
-ssh object2 sudo mv ~/container.ring.gz /etc/swift/
-ssh object2 sudo mv ~/object.ring.gz /etc/swift/
+ssh object2
+sudo mv ~/account.ring.gz /etc/swift/
+sudo mv ~/container.ring.gz /etc/swift/
+sudo mv ~/object.ring.gz /etc/swift/
 ```
 
 # 完成安裝

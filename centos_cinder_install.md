@@ -148,9 +148,13 @@ systemctl start lvm2-lvmetad.service
 ```
 透過```pvcreate```指令，建立LVM Physical Volume ```/dev/sdb```：
 ```sh
-pvcreate /dev/sdb1
+pvcreate /dev/sdb
 # 成功會看到以下資訊：
 Physical volume "/dev/sdb" successfully created
+
+pvcreate /dev/sda3
+# 成功會看到以下資訊：
+Physical volume "/dev/sda3" successfully created
 ```
 > 若不知道disk資訊，可以透過```fdisk -l```查找。且有多個disk要當作storage時，也可以加入。
 ```sh
@@ -163,12 +167,12 @@ mkfs -t ext4 /dev/sdc1
 
 透過```vgcreate```，建立LVM Volume 群組：
 ```sh
-vgcreate cinder-volumes /dev/sdb1
+vgcreate cinder-volumes /dev/sdb /dev/sda3
 # 成功會看到以下資訊：
 Volume group "cinder-volumes" successfully created
 ```
 
-因為只有Instance能夠存取區塊儲存Volume。但是底層的作業系統管理著這些裝置連結到Volume上。預設情況下，LVM Volume的掃描工具會掃到包含Vloume的區塊儲存裝置/dev。如果項目在Volume上使用LVM，掃描工具會檢查這些Volume，並嘗試緩存目錄，這會在底層系統與項目Volume上產生各式各樣問題，所以必須重新配置LVM，針對cinder-volume的Volume Group的設備。透過編輯```/etc/lvm/lvm.conf```完成以下設定，在```device```部分增加一個filter，只接收```/dev/sdb1```：
+因為只有Instance能夠存取區塊儲存Volume。但是底層的作業系統管理著這些裝置連結到Volume上。預設情況下，LVM Volume的掃描工具會掃到包含Vloume的區塊儲存裝置/dev。如果項目在Volume上使用LVM，掃描工具會檢查這些Volume，並嘗試緩存目錄，這會在底層系統與項目Volume上產生各式各樣問題，所以必須重新配置LVM，針對cinder-volume的Volume Group的設備。透過編輯```/etc/lvm/lvm.conf```完成以下設定，在```device```部分增加一個filter，只接收```/dev/sdb```：
 ```sh
 devices {
 ...
@@ -184,7 +188,7 @@ pvdisplay
 會看到類似以下資訊，因為我使採用兩顆不同硬碟組成的Volume，故會有點不一樣：
 ```
   --- Physical volume ---
-  PV Name               /dev/sdb1
+  PV Name               /dev/sdb
   VG Name               cinder-volumes
   PV Size               232.89 GiB / not usable 3.18 MiB
   Allocatable           yes

@@ -147,6 +147,10 @@ sudo apt-get install -y qemu lvm2
 sudo pvcreate /dev/sdb
 # 成功會看到以下資訊：
 Physical volume "/dev/sdb" successfully created
+
+sudo pvcreate /dev/sda6
+# 成功會看到以下資訊：
+Physical volume "/dev/sda6" successfully created
 ```
 > 若不知道disk資訊，可以透過```fdisk -l```查找。
 ```sh
@@ -154,12 +158,12 @@ sudo fdisk -l
 ```
 若要格式化可以採用以下：
 ```sh
-mkfs -t ext4 /dev/sdc1
+sudo mkfs -t ext4 /dev/sdb
 ```
 
 透過```vgcreate```，建立LVM Volume 群組：
 ```sh
-sudo vgcreate cinder-volumes /dev/sdb
+sudo vgcreate cinder-volumes /dev/sdb /dev/sda6
 # 成功會看到以下資訊：
 Volume group "cinder-volumes" successfully created
 ```
@@ -267,7 +271,7 @@ verbose = True
 ### 完成安裝
 重新開啟服務，並刪除SQLite資料庫：
 ```sh
-sudo service service tgt restart
+sudo service tgt restart
 sudo service cinder-volume restart
 sudo rm -f /var/lib/cinder/cinder.sqlite
 ```

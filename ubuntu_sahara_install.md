@@ -7,7 +7,7 @@
 ```sh
 mysql -u root -p
 ```
-建立Nova資料庫與使用者：
+建立 Sahara 資料庫與使用者：
 ```sql
 CREATE DATABASE sahara;
 GRANT ALL PRIVILEGES ON sahara.* TO 'sahara'@'localhost'  IDENTIFIED BY ' SAHARA_DBPASS';
@@ -56,33 +56,41 @@ connection = mysql://sahara:SAHARA_DBPASS@controller/sahara
 在```[DEFAULT]```部分，若使用 Neutron 則將 ```use_neutron```設為```true```，否則為```false```：
 ```
 [DEFAULT]
-verbose=true
-debug=true
-use_neutron=true
-use_namespaces=True
+logging_exception_prefix = %(color)s%(asctime)s.%(msecs)03d TRACE %(name)s %(instance)s
+logging_debug_format_suffix = from (pid=%(process)d) %(funcName)s %(pathname)s:%(lineno)d
+logging_default_format_string = %(asctime)s.%(msecs)03d %(color)s%(levelname)s %(name)s [-%(color)s] %(instance)s%(color)s%(message)s
+logging_context_format_string = %(asctime)s.%(msecs)03d %(color)s%(levelname)s %(name)s [%(request_id)s %(user_name)s %(project_name)s%(color)s] %(instance)s%(color)s%(message)s
+use_syslog = False
+infrastructure_engine = heat
+use_neutron = true
 use_floating_ip=False
-enable_notifications = true
+plugins = vanilla,hdp,cdh,spark,fake
+debug = True
+verbose = True
 notification_driver = messaging
+enable_notifications = true
 rpc_backend = rabbit
 ```
 在```[keystone_authtoken]```部分設定Keystone的相關驗證參數：
 ```
 [keystone_authtoken]
+signing_dir = /var/cache/sahara
+cafile = /opt/stack/data/ca-bundle.pem
 auth_uri = http://controller:5000
-identity_uri = http://controller:35357
-admin_tenant_name = service
-admin_user = sahara
-admin_password = SAHARA_PASS
+project_domain_id = default
+project_name = service
+user_domain_id = default
+password = SAHARA_PASS
+username = sahara
+auth_url = http://controller:35357
+auth_plugin = password
 ```
 在 ```[oslo_messaging_rabbit]``` 設定 RabbitMQ 資訊：
 ```sh
 [oslo_messaging_rabbit]
-rabbit_host=controller
-rabbit_port=5672
-rabbit_hosts=$rabbit_host:$rabbit_port
-rabbit_userid=openstack
-rabbit_password=RABBIT_PASS
-rabbit_virtual_host=/
+rabbit_userid = openstack
+rabbit_password = RABBIT_PASS
+rabbit_hosts = controller
 ```
 在 ```[oslo_policy]```部分設定存取權限：
 ```
@@ -166,33 +174,7 @@ tox -e venv -- sahara-image-create -p cloudera -i ubuntu -v 5.3
 > 建置Cloudera Plugin 可以參考 [cdh-on-openstack-with-sahara](http://blog.cloudera.com/blog/2015/05/how-to-get-started-with-cdh-on-openstack-with-sahara/)。
 
 # 建立叢集
-當 Images 建立好後，我們透過 Glance 指令來上傳 Images：
-```sh
-glance image-create --name "Ubuntu Sahara Cloudera 5.3.0" --file ubuntu_sahara_cloudera_5_3_0.qcow2 --disk-format qcow2 --container-format bare --visibility public --progress
-```
-成功的話會看到以下資訊：
-```
-+------------------+--------------------------------------+
-| Property         | Value                                |
-+------------------+--------------------------------------+
-| checksum         | 09df374538e67613295271de755d9abc     |
-| container_format | bare                                 |
-| created_at       | 2015-07-21T04:42:52Z                 |
-| disk_format      | qcow2                                |
-| id               | 5f173fa9-ebe7-43fa-a18d-5b93500e455d |
-| min_disk         | 0                                    |
-| min_ram          | 0                                    |
-| name             | Ubuntu Sahara Cloudera 5.3.0         |
-| owner            | 37b795b800b847d8865ecad41ad447a9     |
-| protected        | False                                |
-| size             | 2958499840                           |
-| status           | active                               |
-| tags             | []                                   |
-| updated_at       | 2015-07-21T04:43:46Z                 |
-| virtual_size     | None                                 |
-| visibility       | public                               |
-+------------------+--------------------------------------+
-```
+
 
 
 

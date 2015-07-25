@@ -6,7 +6,7 @@
 ```sh
 mysql -u root -p
 ```
-建立Glance資料庫與使用者：
+建立 Glance 資料庫與使用者：
 ```sql
 CREATE DATABASE glance;
 GRANT ALL PRIVILEGES ON glance.* TO 'glance'@'localhost'  IDENTIFIED BY 'GLANCE_DBPASS';
@@ -88,6 +88,7 @@ verbose = True
 ```
 完成後，還要編輯```/etc/glance/glance-registry.conf```並完成以下設定，在```[database]```部分如上面一樣：
 ```sh
+[database]
 # sqlite_db = /var/lib/glance/glance.sqlite
 connection = mysql://glance:GLANCE_DBPASS@controller/glance
 ```

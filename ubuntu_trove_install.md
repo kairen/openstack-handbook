@@ -7,7 +7,7 @@
 ```sh
 mysql -u root -p
 ```
-建立Nova資料庫與使用者：
+建立 Trove 資料庫與使用者：
 ```sql
 CREATE DATABASE trove;
 GRANT ALL PRIVILEGES ON trove.* TO trove@'localhost' IDENTIFIED BY 'TROVE_DBPASS';

@@ -42,7 +42,7 @@ sudo apt-get update && sudo apt-get -y  dist-upgrade
 ```sh
 mysql -u root -p
 ```
-建立Nova資料庫與使用者：
+建立 Cinder 資料庫與使用者：
 ```sql
 CREATE DATABASE cinder;
 GRANT ALL PRIVILEGES ON cinder.* TO 'cinder'@'localhost' IDENTIFIED BY 'CINDER_DBPASS';

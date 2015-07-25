@@ -13,7 +13,7 @@
 ```sh
 mysql -u root -p
 ```
-建立Nova資料庫與使用者：
+建立 Neutron 資料庫與使用者：
 ```sql
 CREATE DATABASE neutron;
 GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'localhost'  IDENTIFIED BY 'NEUTRON_DBPASS';
@@ -271,7 +271,6 @@ verbose = True
 ML2 插件使用Open vSwitch (OVS) 機制(代理) 來為Instance建立虛擬網路框架。編輯```/etc/neutron/plugins/ml2/ml2_conf.ini```在```[ml2]```啟用flat, VLAN, generic routing encapsulation (GRE), and virtual extensible LAN (VXLAN) 的網路類型驅動，GRE租戶網絡和OVS機制驅動：
 ```sh
 [ml2]
-...
 type_drivers = flat,vlan,gre,vxlan
 tenant_network_types = gre
 mechanism_drivers = openvswitch
@@ -279,19 +278,16 @@ mechanism_drivers = openvswitch
 在```[ml2_type_flat]```部分設定外部網路：
 ```sh
 [ml2_type_flat]
-...
 flat_networks = external
 ```
 在```[ml2_type_gre]```部分設定通道ID：
 ```sh
 [ml2_type_gre]
-...
 tunnel_id_ranges = 1:1000
 ```
 在```[securitygroup]```部分設定啟用安全群組、ipset並設置OVS iptables 防火牆驅動：
 ```sh
 [securitygroup]
-...
 enable_security_group = True
 enable_ipset = True
 firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
@@ -307,7 +303,6 @@ bridge_mappings = external:br-ex
 在```[agent]```部分啟用GRE通道：
 ```sh
 [agent]
-...
 tunnel_types = gre
 ```
 ### 設定 Layer-3 (L3) proxy

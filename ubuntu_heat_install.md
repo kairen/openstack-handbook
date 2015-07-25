@@ -7,7 +7,7 @@
 ```sh
 mysql -u root -p
 ```
-建立Nova資料庫與使用者：
+建立 Heat 資料庫與使用者：
 ```sql
 CREATE DATABASE heat;
 GRANT ALL PRIVILEGES ON heat.* TO 'heat'@'localhost' IDENTIFIED BY 'HEAT_DBPASS';

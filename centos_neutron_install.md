@@ -13,7 +13,7 @@
 ```sh
 mysql -u root -p
 ```
-建立Nova資料庫與使用者：
+建立 Neutron 資料庫與使用者：
 ```sql
 CREATE DATABASE neutron;
 GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'localhost'  IDENTIFIED BY 'NEUTRON_DBPASS';

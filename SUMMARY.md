@@ -2,6 +2,8 @@
 * [OpenStack 技術介紹](README.md)
 * [Ubuntu 單節點 15.04安裝](ubuntu_signal.md)
 * [DevStack all-in-one 安裝](devstack_all-in-one.md)
+* [Ubuntu OpenStack Git Install 安裝指南](ubuntu_openstack_git_install.md)
+    * [Horizon 安裝與設定](git_install_horizon.md)
 * [Ubuntu 多節點安裝](ubuntu_multi.md)
     * [安裝基本環境](ubuntu_basic_env.md)
     * [Keystone 安裝與設定](ubuntu_keystone_install.md)

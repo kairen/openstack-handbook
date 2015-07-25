@@ -5,7 +5,7 @@
 這部分將說明如何在Controller上安裝與設定Telemetry服務（即ceilometer），模組採用分離的代理來從Openstack服務中收集測量值。
 
 ### 安裝前準備
-由於Ceilometer資訊的資料庫，利用```MongoDB```收集資料，我們要透```yum```指令安裝相關套件：
+由於 Ceilometer 資訊的資料庫，利用```MongoDB```收集資料，我們要透```yum```指令安裝相關套件：
 ```sh
 yum install mongodb-server mongodb
 ```

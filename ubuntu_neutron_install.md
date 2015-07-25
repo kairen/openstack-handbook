@@ -113,7 +113,6 @@ verbose = True
 ML2 插件使用Open vSwitch (OVS) 機制(代理) 來為Instance建立虛擬網路架構。但是，Controller節點不需要OVS 套件，因為它並不處理Instance網路的傳輸。編輯```/etc/neutron/plugins/ml2/ml2_conf.ini```並完成以下操作，在```[ml2]```部分，啟用flat, VLAN, generic routing encapsulation (GRE), and virtual extensible LAN (VXLAN) 的網路類型驅動，GRE租戶網絡和OVS機制驅動：
 ```sh
 [ml2]
-...
 type_drivers = flat,vlan,gre,vxlan
 tenant_network_types = gre
 mechanism_drivers = openvswitch
@@ -123,19 +122,17 @@ mechanism_drivers = openvswitch
 在```[ml2_type_gre]```設定通道id：
 ```sh
 [ml2_type_gre]
-...
 tunnel_id_ranges = 1:1000
 ```
 在```[securitygroup]```設置啟用安全群組、ipset並設置OVS iptables 防火牆驅動：
 ```sh
 [securitygroup]
-...
 enable_security_group = True
 enable_ipset = True
 firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
 ```
-### 設定Compute以使用Networking
-預設情況下，Compute 使用傳統網路(nova-network)。您必需重新配置Compute 來透過Networking 來管理網路。編輯```/etc/nova/nova.conf```完成以下操作，在```[DEFAULT]```部分，設置APIs和drivers：
+### 設定 Nova 套件使用Networking
+預設情況下，Nova  使用傳統網路(nova-network)。您必需重新配置 Nova 來透過Networking 來管理網路。編輯```/etc/nova/nova.conf```完成以下操作，在```[DEFAULT]```部分，設置APIs和drivers：
 ```sh
 [DEFAULT]
 ...

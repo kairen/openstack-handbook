@@ -158,7 +158,7 @@ sudo pip install --upgrade  tox
 ```
 透過 ```tox``` 建立一個 Image ：
 ```sh
-tox -e venv -- sahara-image-create -p cloudera -i ubuntu -v 5.3
+sudo tox -e venv -- sahara-image-create -p cloudera -i ubuntu -v 5.3
 ```
 > ```-p``` 為插件種類，有以下：
 [vanilla|spark|hdp|cloudera|storm|mapr|plain]

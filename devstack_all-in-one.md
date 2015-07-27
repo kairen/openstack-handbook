@@ -44,11 +44,15 @@ disable_service n-net
 ENABLED_SERVICES+=,q-svc,q-agt,q-dhcp,q-l3,q-meta,neutron
 ENABLED_SERVICES+=,q-lbaas,q-vpn,q-fwaas
 
+# Swift
+enable_service s-proxy s-object s-container s-accounts
+SWIFT_HASH=66a3d6b56c1f479c8b4e70ab5c2000f5
+
 # Ceilometer
 enable_service ceilometer-acompute ceilometer-acentral ceilometer-anotification ceilometer-collector ceilometer-api
 enable_service ceilometer-alarm-notifier ceilometer-alarm-evaluator
 
-# Enable Heat
+# Heat
 enable_service heat h-api h-api-cfn h-api-cw h-eng
 
 # Trove

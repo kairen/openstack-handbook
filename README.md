@@ -56,6 +56,8 @@ Trove主要負責```銜接```與```簡化```實際資料庫的使用，提供Ope
 ### Ironic 裸機部署套件 (Bare Metal )
 Ironic裸機部署功能，在Kilo版中釋出，IT人員可以在實體伺服器自動化部署OpenStack，等於能用管理虛擬機器的方式，來管理實體伺服器，有助於一次部署大量OpenStack主機來滿足大型IaaS環境的需要。
 
+# OpenStack 育成專案套件
+
 ### Zaqar (Message service)
 
 ### Barbican (Key management)
@@ -74,40 +76,22 @@ Ironic裸機部署功能，在Kilo版中釋出，IT人員可以在實體伺服�
 
 ### MagnetoDB (Key-value store as a Service)
 
-# 各套件Document網址
+# OpenStack 相關網址
 | 名稱 | 網址 |
 | -- | -- |
+| OpenStack 基金會 | http://www.openstack.org/ |
 | OpenStack Docs | http://docs.openstack.org/ |
-| Keystone | http://docs.openstack.org/developer/keystone/ |
-| Nova | http://docs.openstack.org/developer/nova/ |
-| Glance | http://docs.openstack.org/developer/glance/ |
-| Neutron | http://docs.openstack.org/developer/neutron/ |
-| Horizon | http://docs.openstack.org/developer/horizon/ |
-| Cinder | http://docs.openstack.org/developer/cinder/ |
-| Swift | http://docs.openstack.org/developer/swift/ |
-| Ceilometer | http://docs.openstack.org/developer/ceilometer/ |
-| Heat | http://docs.openstack.org/developer/heat/ |
-| Sahara | http://docs.openstack.org/developer/sahara/ |
-| Trove | http://docs.openstack.org/developer/trove/ |
-| Ironic | http://docs.openstack.org/developer/ironic/ |
+| OpenStack Launchpad | https://launchpad.net/openstack |
+| OpenStack Wiki  | https://wiki.openstack.org |
+| OpenStack Training  | http://www.openstack.org/marketplace/training |
+| 版本藍圖 | https://wiki.openstack.org/wiki/Releases |
+| Kilo版本 | https://wiki.openstack.org/wiki/ReleaseNotes/Kilo |
+| Stackalytics | http://stackalytics.com/ |
+| Facebook OpenStack Taiwan User Group | https://www.facebook.com/groups/openstack.tw/ |
+| MeetUp OpenStack Taiwan User Group | http://www.meetup.com/OpenStack-Taiwan-User-Group/ |
 
-# 各套件Launchpad網址
-| 名稱 | 網址 |
-| -- | -- |
-| Keystone | https://launchpad.net/keystone |
-| Nova | https://launchpad.net/nova |
-| Glance | https://launchpad.net/glance |
-| Neutron | https://launchpad.net/neutron |
-| Horizon | https://launchpad.net/horizon |
-| Cinder | https://launchpad.net/cinder |
-| Swift | https://launchpad.net/swift |
-| Ceilometer | https://launchpad.net/ceilometer |
-| Heat | https://launchpad.net/heat |
-| Sahara | https://launchpad.net/sahara |
-| Trove | https://launchpad.net/trove |
-| Ironic | https://launchpad.net/ironic |
 
-# 指令
+# 相關套件指令
 | 名稱 | 官方網址 |
 | -- | -- |
 | Linux CLI  | http://www.computerworld.com/article/2598082/linux/linux-linux-command-line-cheat-sheet.html |
@@ -117,18 +101,6 @@ Ironic裸機部署功能，在Kilo版中釋出，IT人員可以在實體伺服�
 | MySQL CLI  | http://dev.mysql.com/doc/refman/5.6/en/mysql.html |
 | LVM CLI  | https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/4/html/Cluster_Logical_Volume_Manager/LVM_CLI.html|
 | Libvirt CLI  | http://libvirt.org/virshcmdref.html |
-
-# 其他資訊
-| 名稱 | 官方網址 |
-| -- | -- |
-| OpenStack Wiki  | https://wiki.openstack.org |
-| OpenStack 基金會 | http://www.openstack.org/ |
-| Training OpenStack | http://www.openstack.org/marketplace/training |
-| 版本藍圖 | https://wiki.openstack.org/wiki/Releases |
-| Kilo版本 | https://wiki.openstack.org/wiki/ReleaseNotes/Kilo |
-| Stackalytics | http://stackalytics.com/ |
-| Facebook OpenStack Taiwan User Group | https://www.facebook.com/groups/openstack.tw/ |
-| MeetUp OpenStack Taiwan User Group | http://www.meetup.com/OpenStack-Taiwan-User-Group/ |
 
 
 # OpenStack 安裝相關資源

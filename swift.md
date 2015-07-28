@@ -13,6 +13,12 @@ OpenStack Swift存是一個多租戶的物件儲存系統，它支援了大規�
 * 極高的資料永久性
 * 完全對稱的系統架構
 
+![架構圖](images/SwiftStack Current Architecture.jpg)
+架構圖，執行了以下操作：
+1. Proxy Server 是直接接受來自 client 請求的部分。
+2. Proxy Server 收到 client 請求後，會透過 Ring 快速地進行 object 的存取 or 將資料同步到不同的 Object Server(storage node) 上。
+3. 不同的 Object Server 可能會根據不同的規劃(地理區域、服務對象、功能性….等)，區分成不同的 Zone(or Region) 作為管理之用。
+
 由於所有儲存在 Swift 的物件、檔案都有一個 URL，並可透過 HTTP RESTful API 存取。下圖為Swift的儲存架構：
 ![架構圖_location](images/swift_architecture.jpg)
 由圖中會看到Client會透過Proxy Server利用一個名為```Ring```的元件執行與分配給底下三個角色：
@@ -95,15 +101,6 @@ Ring 在 Swift 中扮演著相當重要的角色，它是一個映射檔案以�
 Ring 存在於 Swift Storage 叢集的每個節點上，透過 Ring 可以確保每個 object 在叢集中的每個Storage節點有多個複本存在，也可以確保後續可以進行快速存取。
 
 並透過維持一致性的 Ring，叢集不僅避免了```SPOF```問題發生，也提升存取效能，更增加了水平擴展能力。
-
-
-### 完整架構圖
-![架構圖](images/SwiftStack Current Architecture.jpg)
-架構圖，執行了以下操作：
-1. Proxy Server 是直接接受來自 client 請求的部分。
-2. Proxy Server 收到 client 請求後，會透過 Ring 快速地進行 object 的存取 or 將資料同步到不同的 Object Server(storage node) 上。
-3. 不同的 Object Server 可能會根據不同的規劃(地理區域、服務對象、功能性….等)，區分成不同的 Zone(or Region) 作為管理之用。
-
 
 # 參考
 * https://swiftstack.com/openstack-swift/

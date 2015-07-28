@@ -127,9 +127,7 @@ trove-manage datastore_version_update [datastore_name] [version_name]  [datastor
 一個建立 MySQL 5.5的範例：
 ```sh
 trove-manage datastore_update mysql ''
-
 trove-manage datastore_version_update mysql 5.5 mysql glance_image_ID mysql-server-5.5 1
-
 trove-manage datastore_update mysql 5.5
 ```
 上傳設定的驗證規則，可以使用以下指令：
@@ -140,7 +138,7 @@ trove-manage db_load_datastore_config_parameters [datastore_name] [version_name]
 ```sh
 sudo cp /usr/lib/python2.7/dist-packages/trove/templates/mysql/validation-rules.json ~/validation-rules.json
 
-trove-manage db_load_datastore_config_parameters mysql 5.5 validation-rules.json
+sudo trove-manage db_load_datastore_config_parameters mysql 5.5 validation-rules.json
 ```
 完成上述後，重新啟動服務：
 ```sh

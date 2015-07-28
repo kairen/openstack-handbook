@@ -28,7 +28,7 @@
 # CentOS Nova Network 安裝
 我們已經完成了單一節點的安裝，但是要將功能拆分成多台該如何實現呢？這次我們安裝包含了```nova-network``` 的兩個節點架構以及選擇性的```區塊儲存```和```物件儲存```服務節點：
 * **Controller Node** : 會運作```KeyStone```、```Glance```、管理運算的部分，並運作```Horizon儀表板```。還包括一些支援的服務，例如```SQL資料庫```、```訊息佇列(message queue)```和```網路時間協定(NTP)```。
-戶虛擬機實例的```外部網路(Internet)```連接。
+租戶虛擬機實例的```外部網路(Internet)```連接。
 * **Compute node** : 運作Compute的```hypervisor```部分，這個部分將操作tenant virtual machines或實例。預設情況下，Compute使用```KVM```作為hypervisor。Compute也提供連接租戶網路到虛擬機上，並提供防火牆( security groups )服務。
 
  > 可以運作不止一台運算節點。

@@ -122,7 +122,7 @@ Murano 專案引入一個 Application catalog 於 OpenStack上，使應用程式
 | Libvirt CLI  | http://libvirt.org/virshcmdref.html |
 
 
-# OpenStack 安裝相關資源
+# OpenStack 安裝與部署相關資源
 * [OpenStack Kilo Install Guide](http://docs.openstack.org/kilo/install-guide/install/apt/content/)
 * [DevStack](http://docs.openstack.org/developer/devstack/)
 * [Red Hat OpenStack](https://www.rdoproject.org/Main_Page)

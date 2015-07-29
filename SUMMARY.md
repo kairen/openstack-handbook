@@ -25,7 +25,7 @@
 * [OpenStack 部署與安裝](openstack_deploy.md)
    * [DevStack all-in-one 安裝](devstack/devstack_all-in-one.md)
    * [Ubuntu 單節點 15.04安裝](ubuntu_deploy/ubuntu_signal.md)
-   * [Ubuntu OpenStack Git Install 安裝指南](openstack_git_install/README.md)
+   * [OpenStack Git Install 安裝指南](openstack_git_install/README.md)
        * [Horizon 安裝與設定](openstack_git_install/git_install_horizon.md)
    * [Ubuntu 多節點安裝](ubuntu_deploy/README.md)
        * [安裝基本環境](ubuntu_deploy/ubuntu_basic_env.md)

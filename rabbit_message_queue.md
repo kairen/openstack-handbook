@@ -30,3 +30,4 @@ sudo rabbitmqctl list_queues
 ```
 
 http://blogger.gtwang.org/2014/01/ubuntu-linux-install-rabbitmq.html
+

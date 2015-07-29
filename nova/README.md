@@ -64,3 +64,4 @@ OpenStack有支援多家大廠的映像檔(Image)包括Amazon、Windows Hyper-V�
 * VDI
 * VHD - Windows Hyper-V
 * VMDK - VMWare
+

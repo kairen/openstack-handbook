@@ -106,3 +106,5 @@ Ring 存在於 Swift Storage 叢集的每個節點上，透過 Ring 可以確保
 * https://swiftstack.com/openstack-swift/
 * http://fanli7.net/a/bianchengyuyan/PHP/20120622/174582.html
 * http://fanli7.net/a/bianchengyuyan/Python/20120628/177804.html
+
+

@@ -66,3 +66,5 @@ CentOS 重新開啟 HTTP 服務：
 ```sh
 systemctl restart httpd.service memcached.service
 ```
+
+

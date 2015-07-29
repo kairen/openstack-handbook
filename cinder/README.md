@@ -15,3 +15,4 @@ Cinder提供了```Block Storage Service```，替虛擬機增加了永久性儲�
 * **cinder-scheduler daemon**：類似 nova-schedular 的角色，接收到來自 Message Queue 的命令後，會從多個(如果有)提供 block storage 服務的 node 挑選出一個最合適來建立 volume。
 * **cinder-backup daemon**：cinder-backup 服務提供了備份任何類型的volume到備份儲存供應商。類似cinder-volume服務，他透過一個驅動架構與各種儲存供應商相互作用。
 * **Message Queue**：負責將訊息派送給各個 Block Storage service。
+*

@@ -44,3 +44,4 @@ OpenStack 身份驗證服務API提供了一套指令介面。例如，使用者�
 
 下面示意圖展示了OpenStack身份驗證的流程：
 ![Keystone](images/SCH_5002_V00_NUAC-Keystone.png)
+

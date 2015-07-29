@@ -17,6 +17,8 @@ git config user.email user@email.com
 git commit -am "Fix issue #1: change helo to hello"
 git push
 ```
+> 若新增採用一般文字訊息，如```Add neutron vlan tag intro```。
+
 3. 在 GitHub 上提交一個 Pull Request。
 4. 持續的針對 Project Repository 進行更新內容：
 

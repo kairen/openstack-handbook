@@ -13,7 +13,7 @@ Neutron 為 OpenStack 提供了 ```Network Service```，負責虛擬網路架構
 
 比較值得一提的是 Networking Service 支援了 Security group 的概念，也提供了OSI模型七層部分的網路虛擬化，其功能如下：
 * **網路的聯通性，第二層網路與第三層網路實現。**
-*** Tenant 的隔離性。**
+* ** Tenant 的隔離性。**
 * **網路的擴展性。**
 * **管理者可以針對每個 security group 進行防火牆規則的設定。**
 * **REST API 實現**
@@ -23,16 +23,3 @@ Neutron 為 OpenStack 提供了 ```Network Service```，負責虛擬網路架構
 有了以上的機制，讓 Firewall-as-a-Service 以及 Load-Balancing-as-a-Service 等變很容易去實現。
 
 ![架構圖](images/installguide-neutron-initialnetworks.png)
-
-# Linux 中的虛擬化網路
-在討論 Neutron 細節的虛擬化功能前，我們需要先了解 Neutron 應用到的 Linux 上的網路虛擬化技術。
-
-### TAP / TUN
-### VTH
-### Bridge
-### Open vSwitch
-
-
-# Neutron 中的虛擬化網路
-
-

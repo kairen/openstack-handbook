@@ -53,4 +53,5 @@
        * [Swift 安裝與設定](centos_deploy/centos_swift_install.md)
        * [Heat 安裝與設定](centos_deploy/centos_heat_install.md)
        * [Ceilometer 安裝與設定](centos_deploy/centos_ceilometer_install.md)
+   * [OpenStack  Testing](openstack_testing/README.md)
 

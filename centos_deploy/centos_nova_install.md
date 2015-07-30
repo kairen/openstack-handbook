@@ -1,5 +1,5 @@
 # Nova 安裝與設定
-本章節會說明與操作如何安裝```Compute```服務到OpenStack Controller節點上，並設置相關參數與設定。若對於Nova不瞭解的人，可以參考[Nova 運算套件章節](nova.html)
+本章節會說明與操作如何安裝```Compute```服務到OpenStack Controller節點上與Compute節點上，並設置相關參數與設定。若對於Nova不瞭解的人，可以參考[Nova 運算套件章節](http://kairen.gitbooks.io/openstack/content/nova/index.html)
 
 # Controller節點安裝與設置
 ### 安裝前準備

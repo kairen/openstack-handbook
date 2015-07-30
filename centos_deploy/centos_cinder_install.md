@@ -1,5 +1,5 @@
 # Cinder 安裝與設定
-本章節會說明與操作如何安裝```Block Storage```服務到OpenStack Controller節點上，並設置相關參數與設定。若對於Cinder不瞭解的人，可以參考[Cinder 區塊儲存套件章節](cinder.html)
+本章節會說明與操作如何安裝```Block Storage```服務到OpenStack Controller節點上與Block Storage節點上，並設置相關參數與設定。若對於Cinder不瞭解的人，可以參考[Cinder 區塊儲存套件章節](http://kairen.gitbooks.io/openstack/content/cinder/index.html)
 
 #### 架設前準備
 當加入```Storage節點```時，我們要針對[Ubuntu Neutron 多節點安裝章節](ubuntu_neutron.html)的架構來做類似實現，但這邊比較不同的是我們使用了10.0.1.x的tunnel網路，而不是10.0.2.x：

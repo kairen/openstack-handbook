@@ -1,5 +1,5 @@
 # Keystone 安裝與設定
-本章節會說明與操作如何安裝```Keystone```服務到OpenStack Controller節點上，並設置相關參數與設定。若對於Keystone不瞭解的人，可以參考[Keystone 身份驗證套件章節](keystone.html)。
+本章節會說明與操作如何安裝```Keystone```服務到OpenStack Controller節點上，並設置相關參數與設定。若對於Keystone不瞭解的人，可以參考[Keystone 身份驗證套件章節](http://kairen.gitbooks.io/openstack/content/keystone/index.html)。
 
 ### 安裝前準備
 我們需要在Database底下建立儲存Keystone資訊的資料庫，利用```mysql```指令進入：

@@ -1,7 +1,7 @@
 # Linux 中的虛擬化網路
 在討論 Neutron 細節的虛擬化功能前，我們需要先了解 Neutron 應用到的 Linux 上的網路虛擬化技術。Neutron 最核心的工作是對第二層實體網路 Network 的抽象與管理。在一個傳統的實體網路下，可能有多組實體 Server，上面分別執行各種應用，諸如：Web、Database等服務，為了能夠彼此溝通
 ，每台主機都會擁有一張實體網卡（NIC），每張網卡會連接到一台實體交換器（Switch）上，如下圖所示：
-<center>![Network Layer 2](images/Network_Layer2.png)</center>
+<center> ![Network Layer 2](images/Network_Layer2.png) </center>
 
 然而虛擬化技術被導入後，傳統的多作業系統與應用可以透過虛擬機方式分享同一實體 Server，虛擬機的管理、啟動、建立等操作 Hypervisor（或者 VMM，Virtual Machine Manager）來完成，然而形成了以下的網路結構：
 

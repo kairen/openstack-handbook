@@ -22,4 +22,4 @@ Neutron 為 OpenStack 提供了 ```Network Service```，負責虛擬網路架構
 
 有了以上的機制，讓 Firewall-as-a-Service 以及 Load-Balancing-as-a-Service 等變很容易去實現。
 
-![架構圖](images/installguide-neutron-initialnetworks.png)
+

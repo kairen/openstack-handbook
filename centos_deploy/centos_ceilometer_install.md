@@ -114,7 +114,7 @@ os_region_name = RegionOne
 [publisher]
 telemetry_secret = TELEMETRY_SECRET
 ```
-> 將```TELEMETRY_SECRET```更改為剛剛產生的亂數字串 ```d246a04c645a2fa04d9```
+> 將```TELEMETRY_SECRET```更改為剛剛產生的亂數字串 ```4d246a04c645a2fa04d9```
 
 最後可以選擇是否要在```[DEFAULT]```中，開啟詳細Logs，為後期的故障排除提供幫助：
 ```
@@ -145,9 +145,9 @@ yum install openstack-ceilometer-compute python-ceilometerclient python-pecan
 安裝完成後，編輯```/etc/ceilometer/ceilometer.conf```，在```[publisher] ```修改一下：
 ```
 [publisher]
-telemetry_secret = d246a04c645a2fa04d9
+telemetry_secret = TELEMETRY_SECRET
 ```
-> 將```TELEMETRY_SECRET```更改為剛剛產生的亂數字串 ```d246a04c645a2fa04d9```
+> 將```TELEMETRY_SECRET```更改為剛剛產生的亂數字串 ```4d246a04c645a2fa04d9```
 
 在```[DEFAULT]```部分，設定RabbitMQ與Keystone存取：
 ```

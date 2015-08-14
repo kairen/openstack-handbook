@@ -49,7 +49,7 @@ Cinder套件並提供```快照管理功能```，可保護虛擬機器上的資�
 > 類似 Amazon AWS 的 EBS。
 
 
-### Ceilometer 資料監控套件(Telemetry)
+### Ceilometer 資料監控計量套件(Telemetry)
 Ceilometer提供OpenStack雲端服務可藉由```監控```與```量測```OpenStack的使用，來收集CPU與網路的使用資料，以提供```收費計價（Billing）```、```評測（Benchmarking）```等使用，或是使用這些資料當作評估系統延展性以及進行系統相關統計之用。
 
 ### Heat 編排模板套件 (Orchestration)

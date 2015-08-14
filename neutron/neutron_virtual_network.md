@@ -5,7 +5,7 @@ Neutron 為 Tenant 提供了虛擬化的網路、子網路、埠口、交換器�
 網路（Network）是一個隔離的第二層網段，類似實體網路中的虛擬區域網路（VLAN），它被用來建立 Tenant 的廣播區域，或是為共享網段。埠口與子網路將在之間被分配給某個特定網路。
 
 根據建立網路的使用者權限，Neutron network 可以分為以下：
-* **Provider network（or Public network）**：管理者建立的一個直接與實體網路連接的網路。
+* **Provider network  **：管理者建立的一個直接與實體網路連接的網路。
 * **Tenant network**：Tenant 一般使用者建立的網路，由 Neutron 根據管理者的在系統中設定決定網路的分配。
 
 根據網路的類型，Neutron network 可以分為：

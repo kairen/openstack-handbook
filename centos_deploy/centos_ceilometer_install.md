@@ -298,8 +298,8 @@ systemctl restart openstack-swift-proxy.service
 # 驗證操作
 首先我們要建立一個沒有```OS_PROJECT_DOMAIN_ID```與```OS_USER_DOMAIN_ID```的環境參數檔案```admin-ceilometer-openrc.sh```，並加入以下：
 ```sh
-#export OS_PROJECT_DOMAIN_ID=default
-#export OS_USER_DOMAIN_ID=default
+unset OS_PROJECT_DOMAIN_ID
+unset OS_USER_DOMAIN_ID
 export OS_PROJECT_NAME=admin
 export OS_TENANT_NAME=admin
 export OS_USERNAME=admin

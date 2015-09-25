@@ -398,7 +398,7 @@ sudo service nova-api restart
 ### 設定Open vSwitch (OVS) 服務
 OVS 服務為實例提供了底層的虛擬網絡框架。整合的橋接br-int 處理內部實例網絡在OVS 中的傳輸。外部橋接br-ex 處理外部實例網絡在OVS 中的傳輸。外部橋接需要一個在物理外部網絡接口上的端口來為實例提供外部網絡的訪問。本質上，這個端口連接了您環境中虛擬的和物理的外部網絡。**(未修改)**
 
-回到```Network```節點，重啟Open Vswitch服務：
+回到```Network```節點，重啟Open vSwitch服務：
 ```sh
 sudo service openvswitch-switch restart
 ```

@@ -130,9 +130,32 @@ metadata_proxy_shared_secret = METADATA_SECRET
 ```
 > 若```METADATA_SECRET```有修改，請跟著修改。
 
-重新開啟服務：
+### 設定Open vSwitch (OVS) 服務
+OVS 服務為實例提供了底層的虛擬網絡框架。整合的橋接br-int 處理內部實例網絡在OVS 中的傳輸。外部橋接br-ex 處理外部實例網絡在OVS 中的傳輸。外部橋接需要一個在物理外部網絡接口上的端口來為實例提供外部網絡的訪問。本質上，這個端口連接了您環境中虛擬的和物理的外部網絡。**(未修改)**
+
+重啟Open vSwitch服務：
 ```sh
 sudo service openvswitch-switch restart
+```
+增加外部網路橋接：
+```sh
+sudo ovs-vsctl add-br br-ex
+```
+增加連接到實體外部網路介面的外部橋接埠口：
+```sh
+sudo ovs-vsctl add-port br-ex INTERFACE_NAME
+```
+> ```INTERFACE_NAME``` 為外部網路的介面名稱，這邊為eth2。
+
+根據網路介面的驅動，可能需要禁用generic receive offload (GRO)來實現Instance和外部網路之間的合適的吞吐量。測試環境時，在外部網路介面上暫時關閉GRO：
+```sh
+ethtool -K INTERFACE_NAME gro off
+```
+> ```INTERFACE_NAME``` 為外部網路的介面名稱，這邊為eth2。
+
+### 完成安裝
+重新開啟服務：
+```sh
 sudo service nova-compute restart
 sudo service neutron-plugin-openvswitch-agent restart
 sudo service neutron-metadata-agent restart

@@ -104,7 +104,7 @@ arp_responder = True
 ...
 verbose = True
 interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver
-external_network_bridge =
+external_network_bridge = br-ex
 router_delete_namespaces = True
 agent_mode = dvr
 ```

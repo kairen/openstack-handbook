@@ -45,6 +45,10 @@ arp_responder = True
 ```sh
 agent_mode = dvr_snat
 ```
+在```Controller```上重新啟動```Compute API```服務：
+```sh
+sudo service nova-api restart
+```
 
 # Neutron Compute 節點配置
 在 Compute 節點編輯 ML2 Plugins 配置檔 ```/etc/neutron/plugins/ml2/ml2_conf.ini```，並在```[ml2]```加入以下：

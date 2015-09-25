@@ -108,12 +108,25 @@ external_network_bridge =
 router_delete_namespaces = True
 agent_mode = dvr
 ```
-編輯 Metadata agent 配置檔```/etc/neutron/metadata_agent.ini```，並加入以下：
+metadata agent 提供一些設定訊息，如Instance的的相關資訊。編輯```/etc/neutron/metadata_agent.ini```在```[DEFAULT]```部分設定服務存取與metadata主機，註解掉不必要設定：
 ```sh
 [DEFAULT]
-verbose = True
+...
+auth_uri = http://controller:5000
+auth_url = http://controller:35357
+auth_region = RegionOne
+auth_plugin = password
+project_domain_id = default
+user_domain_id = default
+project_name = service
+username = neutron
+password = NEUTRON_PASS
 nova_metadata_ip = controller
 metadata_proxy_shared_secret = METADATA_SECRET
+```
+> 這邊若```NEUTRON_PASS```有更改的話，請記得更改。
+
+> 將其中的METADATA_SECRET 替換為一個合適的metadata 代理的secret。
 ```
 > 若```METADATA_SECRET```有修改，請跟著修改。
 

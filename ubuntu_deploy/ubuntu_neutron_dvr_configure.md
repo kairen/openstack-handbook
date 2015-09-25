@@ -74,6 +74,10 @@ net.bridge.bridge-nf-call-ip6tables=1
 ```sh
 sudo sysctl -p
 ```
+透過```apt-get```安裝 L3 agent、Metadata agent：
+```sh
+sudo apt-get install -y neutron-l3-agent  neutron-metadata-agent
+```
 
 在 Compute 節點編輯 ML2 Plugins 配置檔 ```/etc/neutron/plugins/ml2/ml2_conf.ini```，並在```[ml2]```加入以下：
 ```sh

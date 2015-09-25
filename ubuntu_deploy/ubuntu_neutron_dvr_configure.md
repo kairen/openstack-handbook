@@ -49,6 +49,10 @@ agent_mode = dvr_snat
 ```sh
 sudo service nova-api restart
 ```
+回到```Network```節點，重啟Open Vswitch服務：
+```sh
+sudo service openvswitch-switch restart
+```
 
 # Neutron Compute 節點配置
 在 Compute 節點編輯 ML2 Plugins 配置檔 ```/etc/neutron/plugins/ml2/ml2_conf.ini```，並在```[ml2]```加入以下：

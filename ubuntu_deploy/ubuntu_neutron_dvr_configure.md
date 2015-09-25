@@ -17,6 +17,14 @@ router_distributed = True
 ...
 mechanism_drivers = openvswitch,l2population
 ```
+重啟 Compute 服務：
+```sh
+sudo service nova-api restart
+```
+重啟 Networking 服務：
+```sh
+sudo service neutron-server restart
+```
 
 # Neutron Network 節點配置
 在 Network 節點編輯 ML2 Plugins 配置檔 ```/etc/neutron/plugins/ml2/ml2_conf.ini```，並在```[ml2]```加入以下：

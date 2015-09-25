@@ -308,7 +308,7 @@ Layer-3 (L3) proxy為虛擬網路提供路由服務。編輯```/etc/neutron/l3_a
 [DEFAULT]
 ...
 interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver
-external_network_bridge = br-ex
+external_network_bridge = 
 router_delete_namespaces = True
 ```
 > external_network_bridge 選項預留一個值，用來在單個代理上啟用多個外部網路。相關設定可以觀看[L3 Agent](http://docs.openstack.org/havana/config-reference/content/section_adv_cfg_l3_agent.html)。

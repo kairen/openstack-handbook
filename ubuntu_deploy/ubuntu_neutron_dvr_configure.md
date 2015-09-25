@@ -130,6 +130,13 @@ metadata_proxy_shared_secret = METADATA_SECRET
 ```
 > 若```METADATA_SECRET```有修改，請跟著修改。
 
+重新開啟服務：
+```sh
+sudo service openvswitch-switch restart
+```
+
+
+
 http://docs.openstack.org/networking-guide/scenario_dvr_ovs.html
 
 

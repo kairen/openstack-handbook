@@ -133,9 +133,11 @@ metadata_proxy_shared_secret = METADATA_SECRET
 重新開啟服務：
 ```sh
 sudo service openvswitch-switch restart
+sudo service nova-compute restart
+sudo service neutron-plugin-openvswitch-agent restart
+sudo service neutron-metadata-agent restart
+sudo service neutron-l3-agent restart
 ```
-
-
 
 http://docs.openstack.org/networking-guide/scenario_dvr_ovs.html
 

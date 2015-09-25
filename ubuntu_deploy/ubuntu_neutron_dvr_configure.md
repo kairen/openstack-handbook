@@ -53,8 +53,17 @@ sudo service nova-api restart
 ```sh
 sudo service openvswitch-switch restart
 ```
+重新啟動 Networking 服務：
+```sh
+sudo service neutron-plugin-openvswitch-agent restart
+sudo service neutron-l3-agent restart
+sudo service neutron-dhcp-agent restart
+sudo service neutron-metadata-agent restart
+```
 
 # Neutron Compute 節點配置
+
+
 在 Compute 節點編輯 ML2 Plugins 配置檔 ```/etc/neutron/plugins/ml2/ml2_conf.ini```，並在```[ml2]```加入以下：
 ```sh
 [ml2]

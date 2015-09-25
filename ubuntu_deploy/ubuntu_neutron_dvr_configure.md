@@ -94,17 +94,24 @@ tunnel_types = gre
 enable_distributed_routing = True
 arp_responder = True
 ```
-完成後，編輯 L3 Plugins 配置檔```/etc/neutron/l3_agent.ini```，並加入以下：
+編輯 L3 Plugins 配置檔```/etc/neutron/l3_agent.ini```，並加入以下：
 ```sh
 [DEFAULT]
+...
 verbose = True
 interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver
 external_network_bridge =
 router_delete_namespaces = True
 agent_mode = dvr
 ```
-
-
+編輯 Metadata agent 配置檔```/etc/neutron/metadata_agent.ini```，並加入以下：
+```sh
+[DEFAULT]
+verbose = True
+nova_metadata_ip = controller
+metadata_proxy_shared_secret = METADATA_SECRET
+```
+> 若```METADATA_SECRET```有修改，請跟著修改。
 
 http://docs.openstack.org/networking-guide/scenario_dvr_ovs.html
 

@@ -34,6 +34,7 @@
        * [Keystone 安裝與設定](ubuntu_deploy/ubuntu_keystone_install.md)
        * [Glance 安裝與設定](ubuntu_deploy/ubuntu_glance_install.md)
        * [Nova 安裝與設定](ubuntu_deploy/ubuntu_nova_install.md)
+           * Nova Docker Install
        * [Neutron 安裝與設定](ubuntu_deploy/ubuntu_neutron_install.md)
            * [建立Neutron Netwrok](ubuntu_deploy/ubuntu_create_netwrok.md)
            * [Neutron DVR 配置](ubuntu_deploy/ubuntu_neutron_dvr_configure.md)

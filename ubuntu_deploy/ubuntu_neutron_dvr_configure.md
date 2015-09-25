@@ -62,27 +62,48 @@ sudo service neutron-metadata-agent restart
 ```
 
 # Neutron Compute 節點配置
-
+在安裝和設定 DVR 網路之前，必須設定某些核心網路參數，編輯```/etc/sysctl.conf```修改以下：
+```sh
+net.ipv4.ip_forward=1
+net.ipv4.conf.default.rp_filter=0
+net.ipv4.conf.all.rp_filter=0
+net.bridge.bridge-nf-call-iptables=1
+net.bridge.bridge-nf-call-ip6tables=1
+```
+修改後，透過```sysctl -p```來載入：
+```sh
+sudo sysctl -p
+```
 
 在 Compute 節點編輯 ML2 Plugins 配置檔 ```/etc/neutron/plugins/ml2/ml2_conf.ini```，並在```[ml2]```加入以下：
 ```sh
 [ml2]
 mechanism_drivers = openvswitch,l2population
 ```
+在```[ovs]```加入以下：
+```sh
+[ovs]
+local_ip = TUNNEL_INTERFACE_IP_ADDRESS
+bridge_mappings = external:br-ex
+```
 在```[agent]```加入以下：
 ```sh
 [agent]
-...
 l2_population = True
+tunnel_types = gre
 enable_distributed_routing = True
 arp_responder = True
 ```
 完成後，編輯 L3 Plugins 配置檔```/etc/neutron/l3_agent.ini```，並加入以下：
 ```sh
 [DEFAULT]
+verbose = True
+interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver
+external_network_bridge =
+router_delete_namespaces = True
 agent_mode = dvr
 ```
-配置metadata
+
 
 
 http://docs.openstack.org/networking-guide/scenario_dvr_ovs.html

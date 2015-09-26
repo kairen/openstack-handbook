@@ -9,5 +9,5 @@ virt-install --connect qemu:///system \
   --disk path=windows7.qcow2,format=qcow2,device=disk,bus=virtio \
   --cdrom /home/k8s/build_images/windows7.iso \
   --disk path=/home/k8s/build_images/virtio-win-0.1.105.iso,device=cdrom \
-  --vnc --os-type windows --os-variant win7
+   --os-type windows --os-variant win7 --graphics spice,listen=0.0.0.0
 ```

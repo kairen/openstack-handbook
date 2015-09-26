@@ -162,6 +162,10 @@ sudo service neutron-metadata-agent restart
 sudo service neutron-l3-agent restart
 ```
 
-http://docs.openstack.org/networking-guide/scenario_dvr_ovs.html
+
+# 參考文獻
+* http://docs.openstack.org/networking-guide/scenario_dvr_ovs.html
+* http://www.slideshare.net/janghoonsim/open-stack-networking-juno-l3-ha-dvr
+* http://www.slideshare.net/emaganap/neutron-dvr
 
 

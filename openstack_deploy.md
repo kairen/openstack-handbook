@@ -3,11 +3,12 @@
 
 
 ```sh
-virt-install --connect qemu:///system \
-  --name windows7 --ram 2048 --vcpus 2 \
-  --network network=default,model=virtio \
-  --disk path=windows7.qcow2,format=qcow2,device=disk,bus=virtio \
-  --cdrom /home/k8s/build_images/windows7.iso \
-  --disk path=/home/k8s/build_images/virtio-win-0.1.105.iso,device=cdrom \
-   --os-type windows --os-variant win7 --graphics spice,listen=0.0.0.0
+virt-install --virt-type kvm --name centos-6.7 --ram 1024 \
+--disk centos-6.7.qcow2,format=qcow2 \
+--network network=default \
+--graphics spice,listen=0.0.0.0 \
+--os-type=linux --os-variant=rhel6 \
+--extra-args="console=tty0 console=ttyS0,115200n8 serial" \
+--location=CentOS-6.7-x86_64-netinstall.iso
 ```
+

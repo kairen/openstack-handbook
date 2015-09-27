@@ -2,7 +2,7 @@
 建置 DVR（Distributed Virtual Router）時，我們需要針對 Controller、Network、Compute 節點進行 Neutron 設定檔配置，我們將針對以下的網路架構來達到 DVR：
 
 ![DVR](images/dvr.png)
-> 從以上架構圖可以看到，在 Network、Compute 節點需要安裝三張網卡，分別提供 Management Network、Tunnel Network、Exernal Network。
+> 從以上架構圖可以看到，在 Network、Compute 節點需要安裝三張網卡，分別提供 Management Network、Tunnel Network、External Network。
 
 # Neutron Controller 配置
 在 Controller 節點編輯 ```/etc/neutron/neutron.conf```，並在```[DEFAULT]```加入以下：

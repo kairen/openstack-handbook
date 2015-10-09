@@ -16,12 +16,24 @@ GRANT ALL PRIVILEGES ON murano.* TO 'murano'@'%'  IDENTIFIED BY 'MURANO_DBPASS';
 ```
 > 這邊若```MURANO_DBPASS```要更改的話，可以更改。
 
-完成建立後，安裝相關套件：
+完成建立後，安裝 Python 相關套件：
 ```sh
 sudo apt-get install python-pip python-dev \
 libmysqlclient-dev libpq-dev \
 libxml2-dev libxslt1-dev \
 libffi-dev
-
+```
+並安裝虛擬環境管理套件```tox```：
+```sh
 sudo pip install tox
+```
+
+### Install the API service and Engine
+透過 git 下載最新版本的 murano 程式：
+```sh
+ git clone git://git.openstack.org/openstack/murano
+```
+設置 murano 的設定檔案，可以透過```tox```產生：
+```sh
+tox -e genconfig
 ```

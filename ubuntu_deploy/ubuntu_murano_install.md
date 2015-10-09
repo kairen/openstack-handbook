@@ -3,7 +3,7 @@
 
 # Controller節點安裝與設置
 ### 安裝前準備
-我們需要在Database底下建立儲存 Murano 資訊的資料庫，利用```mysql```指令進入：
+我們需要在 Database 底下建立儲存 Murano 資訊的資料庫，利用```mysql```指令進入：
 ```sh
 mysql -u root -p
 ```

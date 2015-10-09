@@ -7,11 +7,11 @@
 ```sh
 mysql -u root -p
 ```
-建立 Sahara 資料庫與使用者：
+建立 Murano 資料庫與使用者：
 ```sql
-CREATE DATABASE sahara;
-GRANT ALL PRIVILEGES ON sahara.* TO 'sahara'@'localhost'  IDENTIFIED BY ' SAHARA_DBPASS';
-GRANT ALL PRIVILEGES ON sahara.* TO 'sahara'@'%'  IDENTIFIED BY 'SAHARA_DBPASS';
+CREATE DATABASE murano;
+GRANT ALL PRIVILEGES ON murano.* TO 'murano'@'localhost'  IDENTIFIED BY ' MURANO_DBPASS';
+GRANT ALL PRIVILEGES ON murano.* TO 'murano'@'%'  IDENTIFIED BY 'MURANO_DBPASS';
 
 ```
-> 這邊若```SAHARA_DBPASS```要更改的話，可以更改。
+> 這邊若```MURANO_DBPASS```要更改的話，可以更改。

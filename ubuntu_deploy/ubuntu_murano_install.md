@@ -15,3 +15,13 @@ GRANT ALL PRIVILEGES ON murano.* TO 'murano'@'%'  IDENTIFIED BY 'MURANO_DBPASS';
 
 ```
 > 這邊若```MURANO_DBPASS```要更改的話，可以更改。
+
+完成建立後，安裝相關套件：
+```sh
+sudo apt-get install python-pip python-dev \
+libmysqlclient-dev libpq-dev \
+libxml2-dev libxslt1-dev \
+libffi-dev
+
+sudo pip install tox
+```

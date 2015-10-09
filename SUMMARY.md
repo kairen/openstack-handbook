@@ -45,6 +45,7 @@
        * [Ceilometer 安裝與設定](ubuntu_deploy/ubuntu_ceilometer_install.md)
        * [Trove 安裝與設定](ubuntu_deploy/ubuntu_trove_install.md)
        * [Sahara 安裝與設定](ubuntu_deploy/ubuntu_sahara_install.md)
+       * Ubuntu Murano Install
    * [CentOS 多節點安裝](centos_deploy/README.md)
        * [安裝基本環境](centos_deploy/centos_basic_env.md)
        * [Keystone 安裝與設定](centos_deploy/centos_keystone_install.md)

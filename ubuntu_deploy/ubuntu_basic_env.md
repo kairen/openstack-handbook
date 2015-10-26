@@ -291,16 +291,17 @@ ind assid status  conf reach auth condition  last_event cnt
 sudo apt-get install ubuntu-cloud-keyring
 echo "deb http://ubuntu-cloud.archive.canonical.com/ubuntu trusty-updates/kilo main" |  sudo tee /etc/apt/sources.list.d/cloudarchive-kilo.list
 ```
+> ```sh
+# Liberty
+sudo apt-get install software-properties-common
+sudo add-apt-repository cloud-archive:liberty
+```
+
 更新Repository與更新套件：
 ```sh
 sudo apt-get update && sudo apt-get -y  dist-upgrade
 ```
 > 如果Upgrade包含了新的核心套件的話，請重新開機。
-```sh
-# Liberty
-sudo apt-get install software-properties-common
-sudo add-apt-repository cloud-archive:liberty
-```
 
 # SQL database 安裝
 大部份的OpenStack套件服務都是只用SQL 資料庫來儲存訊息，該資料庫運作於Controller上。以下我們使用了MariaDB或MySQL來分佈。OpenStack也支援了其他資料庫，諸如：PostgreSQL。

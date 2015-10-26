@@ -296,6 +296,11 @@ echo "deb http://ubuntu-cloud.archive.canonical.com/ubuntu trusty-updates/kilo m
 sudo apt-get update && sudo apt-get -y  dist-upgrade
 ```
 > 如果Upgrade包含了新的核心套件的話，請重新開機。
+```sh
+# Liberty
+sudo apt-get install software-properties-common
+sudo add-apt-repository cloud-archive:liberty
+```
 
 # SQL database 安裝
 大部份的OpenStack套件服務都是只用SQL 資料庫來儲存訊息，該資料庫運作於Controller上。以下我們使用了MariaDB或MySQL來分佈。OpenStack也支援了其他資料庫，諸如：PostgreSQL。

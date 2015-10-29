@@ -127,7 +127,6 @@ metadata_proxy_shared_secret = METADATA_SECRET
 > 這邊若```NEUTRON_PASS```有更改的話，請記得更改。
 
 > 將其中的METADATA_SECRET 替換為一個合適的metadata 代理的secret。
-```
 > 若```METADATA_SECRET```有修改，請跟著修改。
 
 ### 設定Open vSwitch (OVS) 服務

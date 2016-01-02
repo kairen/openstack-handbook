@@ -308,7 +308,7 @@ Layer-3 (L3) proxy為虛擬網路提供路由服務。編輯```/etc/neutron/l3_a
 [DEFAULT]
 ...
 interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver
-external_network_bridge = br-ex
+external_network_bridge = 
 router_delete_namespaces = True
 ```
 > external_network_bridge 選項預留一個值，用來在單個代理上啟用多個外部網路。相關設定可以觀看[L3 Agent](http://docs.openstack.org/havana/config-reference/content/section_adv_cfg_l3_agent.html)。
@@ -398,7 +398,7 @@ sudo service nova-api restart
 ### 設定Open vSwitch (OVS) 服務
 OVS 服務為實例提供了底層的虛擬網絡框架。整合的橋接br-int 處理內部實例網絡在OVS 中的傳輸。外部橋接br-ex 處理外部實例網絡在OVS 中的傳輸。外部橋接需要一個在物理外部網絡接口上的端口來為實例提供外部網絡的訪問。本質上，這個端口連接了您環境中虛擬的和物理的外部網絡。**(未修改)**
 
-回到```Network```節點，重啟Open Vswitch服務：
+回到```Network```節點，重啟Open vSwitch服務：
 ```sh
 sudo service openvswitch-switch restart
 ```

@@ -291,6 +291,12 @@ ind assid status  conf reach auth condition  last_event cnt
 sudo apt-get install ubuntu-cloud-keyring
 echo "deb http://ubuntu-cloud.archive.canonical.com/ubuntu trusty-updates/kilo main" |  sudo tee /etc/apt/sources.list.d/cloudarchive-kilo.list
 ```
+> ```sh
+# Liberty
+sudo apt-get install software-properties-common
+sudo add-apt-repository cloud-archive:liberty
+```
+
 更新Repository與更新套件：
 ```sh
 sudo apt-get update && sudo apt-get -y  dist-upgrade

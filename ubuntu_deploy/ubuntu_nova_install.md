@@ -44,7 +44,7 @@ connection = mysql://nova:NOVA_DBPASS@controller/nova
 
 在```[DEFAULT]```部分加入以下設定，RabbitMQ存取、Keystone存取、VNC代理：
 ```sh
-[DEFAULT]
+[DEFAULT]vo
 ...
 rpc_backend = rabbit
 auth_strategy = keystone

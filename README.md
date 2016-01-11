@@ -6,7 +6,7 @@
 1. 在 ```Github``` 上 ```fork``` 到自己的 Repository，例如：```<User>/openstack-book.git```，然後 ```clone```到 local 端，並設定 Git 使用者資訊。
 
  ```sh
-git clone https://github.com/kairen/openstack-book.git
+git clone https://github.com/imac-cloud/openstack-book.git
 cd openstack-book
 git config user.name "User"
 git config user.email user@email.com
@@ -23,7 +23,7 @@ git push
 4. 持續的針對 Project Repository 進行更新內容：
 
  ```sh
- git remote add upstream  https://github.com/kairen/openstack-book.git
+ git remote add upstream  https://github.com/imac-cloud/openstack-book.git
  git fetch upstream
  git checkout master
  git rebase upstream/master

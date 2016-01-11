@@ -2,7 +2,7 @@
 本章節會說明與操作如何安裝```Keystone```服務到OpenStack Controller節點上，並設置相關參數與設定。若對於Keystone不瞭解的人，可以參考[Keystone 身份驗證套件章節](http://kairen.gitbooks.io/openstack/content/keystone/index.html)。
 
 ### 安裝前準備
-我們需要在Database底下建立儲存 Keystone  資訊的資料庫，利用```mysql```指令進入：
+我們需要在 Database 底下建立儲存 Keystone  資訊的資料庫，利用```mysql```指令進入：
 ```sh
 mysql -u root -p
 ```
@@ -26,7 +26,7 @@ e0cae61b16320e8569fd
 ```sh
 echo "manual" | sudo tee /etc/init/keystone.override
 ```
-> 在```Kilo```的Keystone遺棄了```Eventlet```，改用```WSGI```server來代替。所以本教學關閉使用keystone服務。
+> 在```Kilo``` 的Keystone 遺棄了```Eventlet```，改用```WSGI```server 來代替。所以本教學關閉使用 keystone 服務。
 
 再來透過```apt-get```安裝keystone套件：
 ```sh
@@ -36,40 +36,32 @@ sudo apt-get install keystone python-openstackclient apache2 libapache2-mod-wsgi
 ```
 [DEFAULT]
 ...
+verbose = True
 admin_token = e0cae61b16320e8569fd
 ```
 在```[database]```部分修改如下：
 ```
 [database]
-...
 # connection = sqlite:////var/lib/keystone/keystone.db
 connection = mysql://keystone:KEYSTONE_DBPASS@controller/keystone
 ```
 在```[memcache]```部分修改如下：
 ```
 [memcache]
-...
 servers = localhost:11211
 ```
 在```[token]```部分修改如下：
 ```
 [token]
-...
 provider = keystone.token.providers.uuid.Provider
 driver = keystone.token.persistence.backends.memcache.Token
 ```
 在```[revoke]```部分修改如下：
 ```
 [revoke]
-...
 driver = keystone.contrib.revoke.backends.sql.Revoke
 ```
-最後可以選擇是否要在```[DEFAULT]```中，開啟詳細Logs，為後期的故障排除提供幫助：
-```
-[DEFAULT]
-...
-verbose = True
-```
+
 完成後同步資料庫：
 ```sh
 sudo keystone-manage db_sync
@@ -138,8 +130,8 @@ sudo service apache2 restart
 sudo  rm -f /var/lib/keystone/keystone.db
 ```
 
-# 建立服務實體和API端點
-首先透過```export```設定OS_TOKEN環境變數，輸入openssh建立的字串與API URL：
+# 建立服務實體和 API 端點
+首先透過```export```設定 OS_TOKEN 環境變數，輸入 openssh 建立的字串與 API URL：
 ```sh
 export OS_TOKEN=e0cae61b16320e8569fd
 export OS_URL=http://controller:35357/v2.0
@@ -190,7 +182,7 @@ openstack endpoint create --publicurl http://controller:5000/v2.0 --internalurl 
 # 建立 admin Project(tenant)
 openstack project create --description "Admin Project" admin
 # 建立 admin User
-openstack user create --password ADMIN --email admin@example.com admin
+openstack user create --password passwd --email admin@example.com admin
 # 建立 admin Role
 openstack role create admin
 # 將 admin role 加到 project與user
@@ -210,7 +202,7 @@ openstack role add --project demo --user demo user
 > 你可以重複此過程來建立其他的Projects和Users。
 
 # 驗證操作
-在安裝其他服務之前，我們要確認Keystone的是否沒問題。因為安全問題，可以選擇是否關閉臨時驗證token機制，編輯```/etc/keystone/keystone-paste.ini```，移除以下三個區域的```admin_token_auth```參數：
+在安裝其他服務之前，我們要確認Keystone的是否沒問題。因為安全問題，可以選擇是否關閉臨時驗證token機制，編輯```/etc/keystone/keystone-paste.ini```，移除以下三個區域的```admin_token_auth```參數。(option)
 ```
 [pipeline:public_api]
 pipeline = sizelimit url_normalize request_id build_auth_context token_auth [admin_token_auth] json_body ec2_extension user_crud_extension public_service
@@ -225,7 +217,7 @@ pipeline = sizelimit url_normalize request_id build_auth_context token_auth [adm
 ```sh
 unset OS_TOKEN OS_URL
 ```
-透過```admin```來驗證Identity v2.0，請求一個```token```，記得輸入設定的密碼，這邊範例為```ADMIN```：
+透過```admin```來驗證Identity v2.0，請求一個```token```，記得輸入設定的密碼，這邊範例為```passwd```：
 ```sh
 openstack --os-auth-url http://controller:35357 --os-project-name admin --os-username admin --os-auth-type password  token issue
 ```
@@ -240,7 +232,7 @@ openstack --os-auth-url http://controller:35357 --os-project-name admin --os-use
 | user_id    | a2cdc03624c04bb0bd7437f6e9f7913e |
 +------------+----------------------------------+
 ```
-接下來驗證Identity v3.0，因為v3.0增加了對包含Project與User的Domain的支援。Project與User可以在不同的Domain使用相同名稱，因此要使用v3.0 API，請求至少必須顯示包含```default domain``或者```User ID```。為了簡化驗證，這邊用```default domain``，這樣範例可以用使用者帳號名稱，而不是透過ID，指令如下：
+接下來驗證Identity v3.0，因為v3.0增加了對包含Project與User的Domain的支援。Project與User可以在不同的Domain使用相同名稱，因此要使用v3.0 API，請求至少必須顯示包含```default domain```或者```User ID```。為了簡化驗證，這邊用```default domain```，這樣範例可以用使用者帳號名稱，而不是透過ID，指令如下：
 ```sh
 openstack --os-auth-url http://controller:35357  --os-project-domain-id default --os-user-domain-id default  --os-project-name admin --os-username admin --os-auth-type password  token issue
 ```
@@ -320,7 +312,7 @@ openstack --os-auth-url http://controller:5000  --os-project-domain-id default -
 ```
 ERROR: openstack You are not authorized to perform the requested action: admin_required
 ```
-若以上都正確，代表```keystone```就是正常運作。
+若以上都正確，代表```keystone```應該是正常的被執行了。
 
 # 建立一個 Client 端腳本
 我們會分別為```admin```與```demo```建立腳本，來方便我們做操作與驗證，首先建立```admin```檔案為```admin-openrc.sh```，並加入以下參數：
@@ -330,10 +322,10 @@ export OS_USER_DOMAIN_ID=default
 export OS_PROJECT_NAME=admin
 export OS_TENANT_NAME=admin
 export OS_USERNAME=admin
-export OS_PASSWORD=ADMIN
+export OS_PASSWORD=passwd
 export OS_AUTH_URL=http://controller:35357/v3
 ```
-> 注意！```OS_PASSWORD```記得修改為設定密碼，這邊採用```ADMIN```。
+> 注意！```OS_PASSWORD```記得修改為設定密碼，這邊採用```passwd```。
 
 再來建立```demo```為```demo-openrc.sh```，並加入以下參數：
 ```sh

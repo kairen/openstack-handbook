@@ -35,23 +35,26 @@ openstack endpoint create  --publicurl http://controller:8774/v2/%\(tenant_id\)s
 ```sh
 sudo apt-get install nova-api nova-cert nova-conductor nova-consoleauth  nova-novncproxy nova-scheduler python-novaclient
 ```
-安裝完成後，編輯```/etc/nova/nova.conf```，加入```[database]```與其設定：
+安裝完成後，編輯```/etc/nova/nova.conf```，在```[DEFAULT]```部分加入以下設定，RabbitMQ存取、Keystone存取、VNC代理：
 ```sh
-[database]
-connection = mysql://nova:NOVA_DBPASS@controller/nova
-```
-> 這邊若```NOVA_DBPASS```有更改的話，請記得更改。
-
-在```[DEFAULT]```部分加入以下設定，RabbitMQ存取、Keystone存取、VNC代理：
-```sh
-[DEFAULT]vo
+[DEFAULT]
 ...
+verbose = True
 rpc_backend = rabbit
 auth_strategy = keystone
 my_ip = 10.0.0.11
 vncserver_listen = 10.0.0.11
 vncserver_proxyclient_address = 10.0.0.11
 ```
+
+在```[database]```部分，設定以下：
+```sh
+[database]
+connection = mysql://nova:NOVA_DBPASS@controller/nova
+```
+> 這邊若```NOVA_DBPASS```有更改的話，請記得更改。
+
+
 加入```[oslo_messaging_rabbit]```設定RabbitMQ存取：
 ```sh
 [oslo_messaging_rabbit]
@@ -83,12 +86,7 @@ host = controller
 [oslo_concurrency]
 lock_path = /var/lib/nova/tmp
 ```
-最後可以選擇是否要在```[DEFAULT]```中，開啟詳細Logs，為後期的故障排除提供幫助：
-```
-[DEFAULT]
-...
-verbose = True
-```
+
 完成後，同步資料庫：
 ```sh
 sudo nova-manage db sync
@@ -115,18 +113,24 @@ sudo rm -f /var/lib/nova/nova.sqlite
 ```sh
 sudo apt-get install -y nova-compute sysfsutils
 ```
-編輯```/etc/nova/nova.conf```並完成以下操作，在```[DEFAULT]```部分加入以下設定，加入RabbitMQ存取、Keystone存取、VNC代理：
+編輯```/etc/nova/nova.conf```並完成以下操作，在```[DEFAULT]```部分加入以下設定：
 ```sh
 [DEFAULT]
 ...
+verbose = True
 rpc_backend = rabbit
 auth_strategy = keystone
 my_ip = 10.0.0.31
-vnc_enabled = True
+```
+加入```[vnc]```設定 vnc server 資訊：
+```sh
+[vnc]
+enabled = True
 vncserver_listen = 0.0.0.0
 vncserver_proxyclient_address = 10.0.0.31
 novncproxy_base_url = http://controller:6080/vnc_auto.html
 ```
+
 加入```[oslo_messaging_rabbit]```設定RabbitMQ存取：
 ```sh
 [oslo_messaging_rabbit]
@@ -158,23 +162,21 @@ host = controller
 [oslo_concurrency]
 lock_path = /var/lib/nova/tmp
 ```
-最後可以選擇是否要在```[DEFAULT]```中，開啟詳細Logs，為後期的故障排除提供幫助：
-```
-[DEFAULT]
-...
-verbose = True
-```
+
 ### 完成安裝
 最後我們要確認Compute是否支援```虛擬化加速```，可以透過以下指令得知：
 ```sh
 egrep -c '(vmx|svm)' /proc/cpuinfo
 ```
+
 如果得到的值大於```1```，說明您的運算節點支援硬體加速，一般不需要進行額外的配置。如果為```0```，說明節點不支援硬體加速，故需要設定```libvirt```使用```QEMU```，而不是```KVM```。編輯```/etc/nova/nova-compute.conf```的```[libvirt]```部分：
 ```sh
 [libvirt]
 ...
 virt_type = qemu
 ```
+> P.S 也可以用```kvm-ok```指令來檢查。
+
 完成後，重開服務：
 ```sh
 sudo service nova-compute restart

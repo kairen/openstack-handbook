@@ -35,7 +35,15 @@ openstack endpoint create  --publicurl http://controller:9292  --internalurl htt
 ```sh
 sudo apt-get install -y glance python-glanceclient
 ```
-安裝完成後，編輯```/etc/glance/glance-api.conf```，在```[database]```，註解掉sqlite，並加入以下：
+安裝完成後，編輯```/etc/glance/glance-api.conf```，在```[DEFAULT]```部分，設定noop 訊息驅動來禁用訊息與開啟詳細Logs：
+```sh
+[DEFAULT]
+...
+notification_driver = noop
+verbose = True
+```
+
+在```[database]```，註解掉sqlite，並加入以下：
 ```sh
 [database]
 ...
@@ -44,16 +52,9 @@ connection = mysql://glance:GLANCE_DBPASS@controller/glance
 ```
 > 這邊若```GLANCE_DBPASS```有更改的話，請記得更改。
 
-接下來，在```[keystone_authtoken]```和```[[paste_deploy]```[部分，```Keystone```的admin：
+接下來，在```[keystone_authtoken]```和```[paste_deploy]```部分，加入以下：
 ```sh
 [keystone_authtoken]
-...
-# identity_uri = http://127.0.0.1:35357
-# admin_tenant_name = %SERVICE_TENANT_NAME%
-# admin_user = %SERVICE_USER%
-# admin_password = %SERVICE_PASSWORD%
-# revocation_cache_time = 10
-
 auth_uri = http://controller:5000
 auth_url = http://controller:35357
 auth_plugin = password
@@ -64,7 +65,6 @@ username = glance
 password = GLANCE_PASS
 
 [paste_deploy]
-...
 flavor = keystone
 ```
 在```[glance_store]```部分，加入以下：
@@ -74,33 +74,24 @@ flavor = keystone
 default_store = file
 filesystem_store_datadir = /var/lib/glance/images/
 ```
-在```[DEFAULT]```部分，設定noop 訊息驅動來禁用訊息，因為它們只與選擇性套件```Telemetry (Ceilometer)```服務有關：
+
+完成後，還要編輯```/etc/glance/glance-registry.conf```並完成以下設定，在```[DEFAULT]```部分設定noop 訊息驅動來禁用訊息與開啟詳細Logs：
 ```sh
 [DEFAULT]
 ...
 notification_driver = noop
-```
-最後可以選擇是否要在```[DEFAULT]```中，開啟詳細Logs，為後期的故障排除提供幫助：
-```
-[DEFAULT]
-...
 verbose = True
 ```
-完成後，還要編輯```/etc/glance/glance-registry.conf```並完成以下設定，在```[database]```部分如上面一樣：
+
+在```[database]```部分，如上個 conf 檔一樣設定以下：
 ```sh
 [database]
 # sqlite_db = /var/lib/glance/glance.sqlite
 connection = mysql://glance:GLANCE_DBPASS@controller/glance
 ```
-接下來，在```[keystone_authtoken]```和```[paste_deploy]```部分，```Keystone```的admin：
+接下來，在```[keystone_authtoken]```和```[paste_deploy]```部分，加入以下：
 ```sh
 [keystone_authtoken]
-...
-# identity_uri = http://127.0.0.1:35357
-# admin_tenant_name = %SERVICE_TENANT_NAME%
-# admin_user = %SERVICE_USER%
-# admin_password = %SERVICE_PASSWORD%
-
 auth_uri = http://controller:5000
 auth_url = http://controller:35357
 auth_plugin = password
@@ -113,18 +104,6 @@ password = GLANCE_PASS
 [paste_deploy]
 ...
 flavor = keystone
-```
-在```[DEFAULT]```部分，設定noop 訊息驅動來禁用訊息，因為它們只與選擇性套件```Telemetry (Ceilometer)```服務有關：
-```sh
-[DEFAULT]
-...
-notification_driver = noop
-```
-最後可以選擇是否要在```[DEFAULT]```中，開啟詳細Logs，為後期的故障排除提供幫助：
-```
-[DEFAULT]
-...
-verbose = True
 ```
 完成以上兩個檔案```/etc/glance/glance-api.conf```與```/etc/glance/glance-registry.conf```後，即可同步資料庫：
 ```sh

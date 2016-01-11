@@ -5,13 +5,14 @@
 > 從以上架構圖可以看到，在 Network、Compute 節點需要安裝三張網卡，分別提供 Management Network、Tunnel Network、External Network。
 
 # Neutron Controller 配置
-在 Controller 節點編輯 ```/etc/neutron/neutron.conf```，並在```[DEFAULT]```加入以下：
+在 Controller 節點編輯 
+``` /etc/neutron/neutron.conf```，並在```[DEFAULT]```加入以下：
 ```sh
 [DEFAULT]
 ...
 router_distributed = True
 ```
-完成後，編輯 ML2 Plugins 配置檔```/etc/neutron/plugins/ml2/ml2_conf.ini```，並在```[ml2]```加入以下：
+完成後，編輯 ML2 Plugins 配置檔``` /etc/neutron/plugins/ml2/ml2_conf.ini ```，並在```[ml2]```加入以下：
 ```sh
 [ml2]
 ...
@@ -27,7 +28,7 @@ sudo service neutron-server restart
 ```
 
 # Neutron Network 節點配置
-在 Network 節點編輯 ML2 Plugins 配置檔 ```/etc/neutron/plugins/ml2/ml2_conf.ini```，並在```[ml2]```加入以下：
+在 Network 節點編輯 ML2 Plugins 配置檔 ``` /etc/neutron/plugins/ml2/ml2_conf.ini```，並在```[ml2]```加入以下：
 ```sh
 [ml2]
 mechanism_drivers = openvswitch,l2population
@@ -79,7 +80,7 @@ sudo sysctl -p
 sudo apt-get install -y neutron-l3-agent  neutron-metadata-agent
 ```
 
-在 Compute 節點編輯 ML2 Plugins 配置檔 ```/etc/neutron/plugins/ml2/ml2_conf.ini```，並在```[ml2]```加入以下：
+在 Compute 節點編輯 ML2 Plugins 配置檔 ``` /etc/neutron/plugins/ml2/ml2_conf.ini ```，並在```[ml2]```加入以下：
 ```sh
 [ml2]
 mechanism_drivers = openvswitch,l2population
@@ -104,7 +105,7 @@ arp_responder = True
 ...
 verbose = True
 interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver
-external_network_bridge = br-ex
+external_network_bridge = 
 router_delete_namespaces = True
 agent_mode = dvr
 ```

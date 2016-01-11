@@ -1,12 +1,7 @@
 # Neutron 安裝與設定
 本章節會說明與操作如何安裝```Networking```服務到OpenStack Controller節點上，並設置相關參數與設定。若對於Neutron不瞭解的人，可以參考[Neutron 網路套件章節](http://kairen.gitbooks.io/openstack/content/neutron/index.html)
 
-### 目錄
-* [Controller節點安裝與設置](#Controller節點安裝與設置)
-* [Network節點安裝與設置](#Network節點安裝與設置)
-* [Compute節點安裝與設置](#Compute節點安裝與設置)
-
-# Controller節點安裝與設置
+# Controller 節點安裝與設置
 ### 安裝前準備
 設置OpenStack 網路(neutron) 服務之前，必須建立資料庫、服務憑證和API 端點。
 我們需要在Database底下建立儲存 Neutron 資訊的資料庫，利用```mysql```指令進入：
@@ -41,17 +36,11 @@ openstack endpoint create  --publicurl http://controller:9696  --adminurl http:/
 ```sh
 sudo apt-get install neutron-server neutron-plugin-ml2 python-neutronclient
 ```
-Networking 伺服器套件的設置包含資料庫、驗證機制、訊息佇列、拓撲變化通知和插件。編輯``` /etc/neutron/neutron.conf```並完成以下操作，修改```[database]```註解掉```SQLite```，加入以下：
-```sh
-[database]
-...
-# connection = sqlite:////var/lib/neutron/neutron.sqlite
-connection = mysql://neutron:NEUTRON_DBPASS@controller/neutron
-```
-在```[DEFAULT]```部分加入以下設定，RabbitMQ存取、Keystone存取、啟用Modular Layer 2插件、router服務、overlapping IP與網路通知運算網路拓樸變化：
+Networking 伺服器套件的設置包含資料庫、驗證機制、訊息佇列、拓撲變化通知和插件。編輯``` /etc/neutron/neutron.conf```，在```[DEFAULT]```部分加入以下設定：
 ```sh
 [DEFAULT]
 ...
+verbose = True
 rpc_backend = rabbit
 auth_strategy = keystone
 core_plugin = ml2
@@ -61,6 +50,14 @@ notify_nova_on_port_status_changes = True
 notify_nova_on_port_data_changes = True
 nova_url = http://controller:8774/v2
 ```
+
+在```[database]```註解掉```SQLite```，並加入以下：
+```sh
+[database]
+# connection = sqlite:////var/lib/neutron/neutron.sqlite
+connection = mysql://neutron:NEUTRON_DBPASS@controller/neutron
+```
+
 加入```[oslo_messaging_rabbit]```設定RabbitMQ存取：
 ```sh
 [oslo_messaging_rabbit]
@@ -73,10 +70,6 @@ rabbit_password = RABBIT_PASS
 加入```[keystone_authtoken]```設定Keystone驗證：
 ```sh
 [keystone_authtoken]
-# identity_uri = http://127.0.0.1:5000
-# admin_tenant_name = %SERVICE_TENANT_NAME%
-# admin_user = %SERVICE_USER%
-# admin_password = %SERVICE_PASSWORD%
 auth_uri = http://controller:5000
 auth_url = http://controller:35357
 auth_plugin = password
@@ -88,7 +81,7 @@ password = NEUTRON_PASS
 ```
 > 這邊若```NEUTRON_PASS```有更改的話，請記得更改。
 
-在```[nova]```設置以下：
+在```[nova]```設定以下：
 ```sh
 [nova]
 auth_url = http://controller:35357
@@ -102,12 +95,6 @@ password = NOVA_PASS
 ```
 > 這邊若```NOVA_PASS```有更改的話，請記得更改。
 
-最後可以選擇是否要在```[DEFAULT]```中，開啟詳細Logs，為後期的故障排除提供幫助：
-```
-[DEFAULT]
-...
-verbose = True
-```
 
 ### 設置 Modular Layer 2 (ML2) 插件
 ML2 插件使用Open vSwitch (OVS) 機制(代理) 來為Instance建立虛擬網路架構。但是，Controller節點不需要OVS 套件，因為它並不處理Instance網路的傳輸。編輯```/etc/neutron/plugins/ml2/ml2_conf.ini```並完成以下操作，在```[ml2]```部分，啟用flat, VLAN, generic routing encapsulation (GRE), and virtual extensible LAN (VXLAN) 的網路類型驅動，GRE租戶網絡和OVS機制驅動：
@@ -124,7 +111,7 @@ mechanism_drivers = openvswitch
 [ml2_type_gre]
 tunnel_id_ranges = 1:1000
 ```
-在```[securitygroup]```設置啟用安全群組、ipset並設置OVS iptables 防火牆驅動：
+在```[securitygroup]```設置啟用安全群組，並設置OVS iptables 防火牆驅動：
 ```sh
 [securitygroup]
 enable_security_group = True
@@ -158,7 +145,7 @@ admin_password = NEUTRON_PASS
 ### 完成安裝
 完成後，同步資料庫：
 ```sh
-sudo neutron-db-manage --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade kilo
+sudo neutron-db-manage --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade liberty
 ```
 重啟 Compute 服務：
 ```sh
@@ -217,25 +204,27 @@ sudo sysctl -p
 ```sh
 sudo apt-get install neutron-plugin-ml2 neutron-plugin-openvswitch-agent neutron-l3-agent neutron-dhcp-agent neutron-metadata-agent
 ```
-Networking套件的設定會包含驗證機制、訊息佇列和插件，編輯```/etc/neutron/neutron.conf```在```[database]```註解所有```connection```參數：
-```sh
-[database]
-# connection = sqlite:////var/lib/neutron/neutron.sqlite
-```
-在```[DEFAULT]```加入RabbitMQ存取、Keystone存取、啟用Modular Layer 2插件、router服務、overlapping IP：
+Networking套件的設定會包含驗證機制、訊息佇列和插件，編輯```/etc/neutron/neutron.conf```，在```[DEFAULT]```加入RabbitMQ存取、Keystone存取、啟用Modular Layer 2插件、router服務、overlapping IP：
 ```sh
 [DEFAULT]
 ...
+verbose = True
 rpc_backend = rabbit
 auth_strategy = keystone
 core_plugin = ml2
 service_plugins = router
 allow_overlapping_ips = True
 ```
+
+在```[database]```註解所有```connection```參數：
+```sh
+[database]
+# connection = sqlite:////var/lib/neutron/neutron.sqlite
+```
+
 在```[oslo_messaging_rabbit]```加入RabbitMQ存取：
 ```sh
 [oslo_messaging_rabbit]
-...
 rabbit_host = controller
 rabbit_userid = openstack
 rabbit_password = RABBIT_PASS
@@ -245,7 +234,6 @@ rabbit_password = RABBIT_PASS
 在```[keystone_authtoken]```加入Keystone存取，註解其他：
 ```sh
 [keystone_authtoken]
-...
 auth_uri = http://controller:5000
 auth_url = http://controller:35357
 auth_plugin = password
@@ -257,12 +245,6 @@ password = NEUTRON_PASS
 ```
 > 這邊若```NEUTRON_PASS```有更改的話，請記得更改。
 
-最後可以選擇是否要在```[DEFAULT]```中，開啟詳細Logs，為後期的故障排除提供幫助：
-```
-[DEFAULT]
-...
-verbose = True
-```
 
 ### 設定Modular Layer 2 (ML2) 插件
 ML2 插件使用Open vSwitch (OVS) 機制(代理) 來為Instance建立虛擬網路框架。編輯```/etc/neutron/plugins/ml2/ml2_conf.ini```在```[ml2]```啟用flat, VLAN, generic routing encapsulation (GRE), and virtual extensible LAN (VXLAN) 的網路類型驅動，GRE租戶網絡和OVS機制驅動：
@@ -307,33 +289,24 @@ Layer-3 (L3) proxy為虛擬網路提供路由服務。編輯```/etc/neutron/l3_a
 ```sh
 [DEFAULT]
 ...
+verbose = True
 interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver
 external_network_bridge = 
 router_delete_namespaces = True
 ```
 > external_network_bridge 選項預留一個值，用來在單個代理上啟用多個外部網路。相關設定可以觀看[L3 Agent](http://docs.openstack.org/havana/config-reference/content/section_adv_cfg_l3_agent.html)。
 
-最後可以選擇是否要在```[DEFAULT]```中，開啟詳細Logs，為後期的故障排除提供幫助：
-```
-[DEFAULT]
-...
-verbose = True
-```
 ### 設定DHCP代理
 DHCP proxy為Instance提供DHCP服務。編輯```/etc/neutron/dhcp_agent.ini```在```[DEFAULT]```設定介面與DHCP驅動，啟用刪除廢棄路由器命名空間的功能：
 ```sh
 [DEFAULT]
 ...
+verbose = True
 interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver
 dhcp_driver = neutron.agent.linux.dhcp.Dnsmasq
 dhcp_delete_namespaces = True
 ```
-最後可以選擇是否要在```[DEFAULT]```中，開啟詳細Logs，為後期的故障排除提供幫助：
-```
-[DEFAULT]
-...
-verbose = True
-```
+
 完成以上後，接下面的部分是一個選擇性設定，可依照個人需求設定。
 
 由於類似GRE的協定包含了額外的Header封包，這些封包增加了網路開銷，而減少了有效的封包可用空間。在不了解虛擬網路架構的情況下，Instance會用預設的eth maximum transmission unit(MTU) 1500 bytes來傳送封包。IP網路利用path MTU discovery (PMTUD)機制來偵測與調整封包大小。但是有些作業系統或、網路阻塞、缺乏對PMTUD支援等因素，會造成效能的下效或是連接錯誤。
@@ -359,6 +332,7 @@ metadata agent 提供一些設定訊息，如Instance的的相關資訊。編輯
 ```sh
 [DEFAULT]
 ...
+verbose = Tru
 auth_uri = http://controller:5000
 auth_url = http://controller:35357
 auth_region = RegionOne
@@ -373,14 +347,9 @@ metadata_proxy_shared_secret = METADATA_SECRET
 ```
 > 這邊若```NEUTRON_PASS```有更改的話，請記得更改。
 
-> 將其中的METADATA_SECRET 替換為一個合適的metadata 代理的secret。
+> 將其中的```METADATA_SECRET```替換為一個合適的 metadata 代理的 secret。
 
-最後可以選擇是否要在```[DEFAULT]```中，開啟詳細Logs，為後期的故障排除提供幫助：
-```
-[DEFAULT]
-...
-verbose = True
-```
+
 到```Controlelr```上編輯```/etc/nova/nova.conf```，在```[neutron]```部分啟用metadata代理並設定secret：
 ```sh
 [neutron]
@@ -396,9 +365,7 @@ sudo service nova-api restart
 ```
 
 ### 設定Open vSwitch (OVS) 服務
-OVS 服務為實例提供了底層的虛擬網絡框架。整合的橋接br-int 處理內部實例網絡在OVS 中的傳輸。外部橋接br-ex 處理外部實例網絡在OVS 中的傳輸。外部橋接需要一個在物理外部網絡接口上的端口來為實例提供外部網絡的訪問。本質上，這個端口連接了您環境中虛擬的和物理的外部網絡。**(未修改)**
-
-回到```Network```節點，重啟Open vSwitch服務：
+首先回到```Network```節點，重啟Open vSwitch服務：
 ```sh
 sudo service openvswitch-switch restart
 ```
@@ -468,26 +435,28 @@ sudo sysctl -p
 ```sh
 sudo apt-get install neutron-plugin-ml2 neutron-plugin-openvswitch-agent
 ```
-Networking套件的設定會包含驗證機制、訊息佇列和插件，編輯```/etc/neutron/neutron.conf```在```[database]```部分註解到所有```connection```選項：
-```sh
-[database]
-...
-# connection = sqlite:////var/lib/neutron/neutron.sqlite
-```
-在```[DEFAULT]```設定RabbitMQ存取、Keystone存取、啟用Modular Layer 2插件、router服務、overlapping IP：
+Networking套件的設定會包含驗證機制、訊息佇列和插件，編輯```/etc/neutron/neutron.conf```，在```[DEFAULT]```設定RabbitMQ存取、Keystone存取、啟用Modular Layer 2插件、router服務、overlapping IP：
 ```sh
 [DEFAULT]
 ...
+verbose = True
 rpc_backend = rabbit
 auth_strategy = keystone
 core_plugin = ml2
 service_plugins = router
 allow_overlapping_ips = True
 ```
+
+在```[database]```部分註解到所有```connection```選項：
+```sh
+[database]
+...
+# connection = sqlite:////var/lib/neutron/neutron.sqlite
+```
+
 在```[oslo_messaging_rabbit]```部分設定RabbitMQ：
 ```sh
 [oslo_messaging_rabbit]
-...
 rabbit_host = controller
 rabbit_userid = openstack
 rabbit_password = RABBIT_PASS
@@ -497,7 +466,6 @@ rabbit_password = RABBIT_PASS
 在```[keystone_authtoken]```部分設定Keystone服務，並註解到不要部分：
 ```sh
 [keystone_authtoken]
-...
 auth_uri = http://controller:5000
 auth_url = http://controller:35357
 auth_plugin = password
@@ -509,12 +477,7 @@ password = NEUTRON_PASS
 ```
 > 這邊若```NEUTRON_PASS```有更改的話，請記得更改。
 
-最後可以選擇是否要在```[DEFAULT]```中，開啟詳細Logs，為後期的故障排除提供幫助：
-```
-[DEFAULT]
-...
-verbose = True
-```
+
 ### 設定Modular Layer 2 (ML2) 插件
 ML2 插件使用Open vSwitch (OVS) 機制(代理) 來為Instance建立虛擬網路框架。編輯```/etc/neutron/plugins/ml2/ml2_conf.ini```在```[ml2]```啟用flat, VLAN, generic routing encapsulation (GRE), and virtual extensible LAN (VXLAN) 的網路類型驅動，GRE租戶網絡和OVS機制驅動：
 ```sh

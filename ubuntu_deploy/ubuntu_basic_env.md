@@ -10,6 +10,9 @@
 
 > 如果您選擇安裝在虛擬機上，請確認虛擬機是否允許混雜模式，並關閉MAC地址，在外部網絡上的過濾。
 
+網路架構圖如下：
+![](OpenStack-Network-Topology.png)
+
 ### 網路分配與說明
 這次安裝會採用```Neutron```網路套件來網路的處理，本次架構需要一台Controller、Network、Compute節點(若加其他則不同)，在 Network節點上需要提供一張作為```管理網路```、一張 ```Instance溝通```、一張```外部網路```的網路介面(NIC)，詳細分配如下：
 
@@ -121,8 +124,7 @@ iface <IINTERFACE_NAME> inet manual
 10.0.0.21       network
 ```
 
-> * 注意！若有```127.0.1.1```存在的話，請將之註解掉，避免解析問題。
-
+> 注意！若有```127.0.1.1```存在的話，請將之註解掉，避免解析問題。
 
 完成上述設定後，可利用```ping```指令於每個節點做網路測試。
 
@@ -192,43 +194,37 @@ iface INTERFACE_NAME inet manual
 10.0.0.11       controller
 ```
 
-> * 注意！若有```127.0.1.1```存在的話，請將之註解掉，避免解析問題。
+> 注意！若有```127.0.1.1```存在的話，請將之註解掉，避免解析問題。
 
 
 完成上述設定後，可利用```ping```指令於每個節點做網路測試。
 
 # Network Time Protocol (NTP)
 由於要讓各節點的時間能夠同步，我們需要安裝```ntp```套件來提供服務，這邊推薦將ntp Server安裝於Controller上，再讓其他節點進行關聯即可。
-### Controller node 設定
+### Controller 節點設定
 在Controller節點上，我們可以透過```apt-get```來安裝相關套件：
 ```sh
 sudo apt-get install -y ntp
 ```
 完成安裝後，預設NTP會透過公有的伺服器來同步時間，但也可以修改```/etc/ntp.conf```來選擇伺服器：
 ```sh
-server NTP_SERVER iburst
-restrict -4 default kod notrap nomodify
-restrict -6 default kod notrap nomodify
-```
-將 ```NTP_SERVER``` 替換為主機名稱或更準確的(lower stratum) NTP 伺服器IP地址。這個設定支援多個 server 關鍵字。
-> * 對於restrict 參數，基本上需要刪除nopeer 和noquery 選項。
-* 如果系統有```/var/lib/ntp/ntp.conf.dhcp```存在，請將它刪除。
-
-台灣NTP網址：
-```
 restrict 10.0.0.0 mask 255.255.255.0 nomodify notrap
 
 server 1.tw.pool.ntp.org iburst
 server 3.asia.pool.ntp.org iburst
 server 2.asia.pool.ntp.org iburst
 ```
+將 ```NTP_SERVER``` 替換為主機名稱或更準確的(lower stratum) NTP 伺服器 IP 地址。這個設定支援多個 server 關鍵字。
+> 對於restrict 參數，基本上需要刪除nopeer 和noquery 選項。
+> 如果系統有```/var/lib/ntp/ntp.conf.dhcp```存在，請將它刪除。
+
 
 完成後，重啟服務：
 ```sh
 sudo service ntp restart
 ```
 
-### Other node 設定
+### 其他節點設定
 透過```apt-get```安裝ntp:
 ```sh
 sudo apt-get install -y ntp
@@ -288,23 +284,19 @@ ind assid status  conf reach auth condition  last_event cnt
 
 若是Ubuntu ```15.04 以下```的版本，需加入Repository來獲取套件：
 ```sh
-sudo apt-get install ubuntu-cloud-keyring
-echo "deb http://ubuntu-cloud.archive.canonical.com/ubuntu trusty-updates/kilo main" |  sudo tee /etc/apt/sources.list.d/cloudarchive-kilo.list
-```
-> ```sh
-# Liberty
 sudo apt-get install software-properties-common
 sudo add-apt-repository cloud-archive:liberty
 ```
+> 若要安裝 ```kilo```，修改為```cloud-archive:kilo```。
 
-更新Repository與更新套件：
+更新 Repository 與套件：
 ```sh
 sudo apt-get update && sudo apt-get -y  dist-upgrade
 ```
 > 如果Upgrade包含了新的核心套件的話，請重新開機。
 
 # SQL database 安裝
-大部份的OpenStack套件服務都是只用SQL 資料庫來儲存訊息，該資料庫運作於Controller上。以下我們使用了MariaDB或MySQL來分佈。OpenStack也支援了其他資料庫，諸如：PostgreSQL。
+大部份的OpenStack套件服務都是只用SQL 資料庫來儲存訊息，該資料庫運作於```Controller``` 上。以下我們使用了MariaDB或MySQL來分佈。OpenStack也支援了其他資料庫，諸如：PostgreSQL。
 
 透過```apt-get```來安裝套件：
 ```sh
@@ -338,14 +330,14 @@ sudo service mysql restart
 ```sh
 sudo mysql_secure_installation
 ```
-對於每個項目```yes```，並設置對應資訊。
+除了更換密碼外，其餘每個項目都輸入```yes```，並設置對應資訊。
 
 # Message queue 安裝
-OpenStack使用Message Queue來對整個叢集提供協調與狀態訊息服務。Openstack支援的Message Queue包含以下[RabbitMQ](http://www.rabbitmq.com/)、[Qpid](http://qpid.apache.org/)、[ZeroMQ](http://zeromq.org/)。但是大多數的發行版本支援特殊的Message Queue服務，這邊我們使用了```RabbitMQ```來實現，首先透過```apt-get```安裝套件：
+OpenStack使用 Message Queue 來對整個叢集提供協調與狀態訊息服務。Openstack支援的Message Queue包含以下[RabbitMQ](http://www.rabbitmq.com/)、[Qpid](http://qpid.apache.org/)、[ZeroMQ](http://zeromq.org/)。但是大多數的發行版本支援特殊的Message Queue服務，這邊我們使用了```RabbitMQ```來實現，並安裝於```Controller```上，透過```apt-get```安裝套件：
 ```sh
 sudo apt-get install -y rabbitmq-server
 ```
-安裝完成後，新增一個user:
+安裝完成後，新增一個 User:
 ```sh
 sudo rabbitmqctl add_user openstack RABBIT_PASS
 # 成功會看到以下資訊
@@ -354,7 +346,7 @@ Creating user "openstack" ...
 ```
 > 可以更改RABBIT_PASS，來改變密碼。
 
-為剛建立的user開啟權限：
+為剛建立的 User 開啟權限：
 ```sh
 sudo rabbitmqctl set_permissions openstack ".*" ".*" ".*"
 # 成功會看到以下資訊

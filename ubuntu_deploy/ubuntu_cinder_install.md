@@ -29,8 +29,8 @@ echo "openstack ALL = (root) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/openstack &
 並更新套件，若是```Ubuntu 14.04```需更新OpenStack Repository：
 
 ```sh
-sudo apt-get install ubuntu-cloud-keyring
-echo "deb http://ubuntu-cloud.archive.canonical.com/ubuntu trusty-updates/kilo main" |  sudo tee /etc/apt/sources.list.d/cloudarchive-kilo.list
+sudo apt-get install software-properties-common
+sudo add-apt-repository cloud-archive:liberty
 
 sudo apt-get update && sudo apt-get -y  dist-upgrade
 ```

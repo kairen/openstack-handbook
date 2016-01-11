@@ -33,14 +33,13 @@ CACHES = {
 }
 
 OPENSTACK_KEYSTONE_DEFAULT_ROLE = "user"
-
-TIME_ZONE = "TIME_ZONE"
 ```
 > Replace TIME_ZONE with an appropriate time zone identifier. For more information, see the [list of time zones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).
 
 重新讀取服務：
 ```sh
 sudo service apache2 reload
+sudo service apache2 restart
 ```
 
 # 驗證操作

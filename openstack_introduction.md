@@ -1,7 +1,9 @@
 # OpenStack 介紹技術
 OpenStack是```美國國家航空暨太空總署```和```Rackspace```共同打造的雲端開源軟體，以```Apache```許可證授權，並且是一個自由軟體和開放原始碼項目，來打造```基礎設施即服務(Infrastructure as a Service)```。OpenStack擁有三大模組```運算模組```、```網通模組```和```儲存模組```，加上一套集中式管理的```儀表板模組```，來組合成一套OpenStack共享服務，並且以提供虛擬機方式，對外帶來運算資源，以便利彈性擴充或調度。
 
-從2010年10月到現今已歷經12個版本，來到了```Kilo```與下一個版本```Liberty```，套件數也從A版的```2```個發展到現今```19```個套件，許多大廠也紛紛加入該行列，打造一套自己的雲端平台。
+從2010年10月到現今已歷經12個版本，來到了```Liberty```與下一個版本```Mitaka```，專案數也從A版的```2```個發展到現今超過```10```個以上專案，許多大廠也紛紛加入該行列，打造一套自己的雲端平台。
+
+值得一提的是 OpenStack 已在 Liberty 加入了 Big Tent 模型。讓管理人員只需要更新核心的專案，其餘專案可以隨自己需求選擇是否要更新。也將在 2016年第二季推出第一個OpenStack認證管理員（COA）認證。
 
 ![OpenStack](images/openstack_kilo_conceptual_arch.png)
 
@@ -65,8 +67,6 @@ Trove主要負責```銜接```與```簡化```實際資料庫的使用，提供Ope
 ### Ironic 裸機部署套件 (Bare Metal )
 Ironic裸機部署功能，在Kilo版中釋出，IT人員可以在實體伺服器自動化部署OpenStack，等於能用管理虛擬機器的方式，來管理實體伺服器，有助於一次部署大量OpenStack主機來滿足大型IaaS環境的需要。
 
-# OpenStack 育成專案套件
-
 ### Zaqar 雲端訊息佇列服務(Message service)
 Zaqar 是對 Web 開發人員提供了```多租戶（Multi tenant）```的雲端訊息服務。它結合開創了 Amazon 的 SQS 產品與附加的語義來支援事件的廣播想法。
 
@@ -75,10 +75,19 @@ Zaqar 是對 Web 開發人員提供了```多租戶（Multi tenant）```的雲端
 然而其他 OpenStack 的套件可以與 Zaqar 的表面事件 End users 進行整合以及與訪客的Agent運作於 『Over-cloud』層。雲端公司可以利用Zaqar提供如同 SQS 與 SNS給他們的客戶。
 
 ### Barbican 金鑰管理服務(Key management)
+Barbican 是一個以 REST API 設計來進行安全儲存、配置以及機密的管理，如密碼、加密金鑰以及 X.509 憑證。其目的是為了適用於所有環境，包含大型短暫性雲端。
 
 ### Designate DNS管理服務 (DNS)
+Designate 提供了 DNSaaS 服務於 OpenStack 上，包含以下幾項功能：
+* 使用 REST API 管理 domain/record
+* 多租戶
+* 整合 Keystone 驗證
+* 以框架來整合 Nova 與 Neutrion 的通知（自動產生記錄）
+* 支援立即可用的 PowerDNS 與 Bind9
 
 ### Manila 共享式檔案系統服務 (Shared Filesystems)
+Manila 提供 OpenStack 共享的檔案系統，核心概念有共享目錄、ACL、共享網路、快照與後端驅動程式，目前支援有 GPFS、GlusterFS、EMCVNX等。在雲端平台上，所有服務必須要考慮多租戶資源隔離，目前 Manila 的多租戶資源隔離依賴於 Neutron 的私有網路隔離。
+
 
 ### Magnum 容器即服務 (Containers service)
 Magnum 是一個 OpenStack API 服務，是由 OpenStack Containers Team 開發作為``` Container orchestration``` 的引擎，諸如 Docker、Kubernetes 這一類別可以在 Openstack 上作為資源。
@@ -88,12 +97,6 @@ Magnum 使用 Heat 來編排一個 OS Image，其中包含 Docker 以及 Kuberne
 Murano 專案引入一個 Application catalog 於 OpenStack上，使應用程式開發人員與雲端管理人員，可以發布各種已就緒的雲端應於可瀏覽的分類目錄。
 
 雲端使用者、包括沒經驗的人可以通過統一的框架與 API 實現應用程式的快速部署與應用程式的生命週期管理，來降低應用程式對底層平台（IaaS層）的依賴。
-
-### Congress (Governance service)
-
-### Mistral (Workflow service)
-
-### MagnetoDB (Key-value store as a Service)
 
 # OpenStack 相關網址
 | 名稱 | 網址 |
@@ -134,4 +137,5 @@ Murano 專案引入一個 Application catalog 於 OpenStack上，使應用程式
 * [puppetlabs-openstack](https://github.com/puppetlabs/puppetlabs-openstack)
 * [Ubuntu OpenStack](https://wiki.ubuntu.com/ServerTeam/OpenStackHA)
 * [RDO HA](https://github.com/beekhof/osp-ha-deploy/blob/master/ha-openstack.md)
+* [OpenStack Hacker 養成指南](http://www.xlgps.com/article/100059.html)
 

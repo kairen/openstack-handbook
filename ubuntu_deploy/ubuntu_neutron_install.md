@@ -350,7 +350,7 @@ metadata_proxy_shared_secret = METADATA_SECRET
 > 將其中的```METADATA_SECRET```替換為一個合適的 metadata 代理的 secret。
 
 
-到```Controlelr```上編輯```/etc/nova/nova.conf```，在```[neutron]```部分啟用metadata代理並設定secret：
+到```Controller```上編輯```/etc/nova/nova.conf```，在```[neutron]```部分啟用metadata代理並設定secret：
 ```sh
 [neutron]
 ...

@@ -35,11 +35,11 @@
        * [Glance 安裝與設定](ubuntu_deploy/ubuntu_glance_install.md)
        * [Nova 安裝與設定](ubuntu_deploy/ubuntu_nova_install.md)
            * [Nova Docker Install](ubuntu_deploy/nova_docker_install.md)
-           * 
        * [Neutron 安裝與設定](ubuntu_deploy/ubuntu_neutron_install.md)
            * [建立Neutron Netwrok](ubuntu_deploy/ubuntu_create_netwrok.md)
            * [Neutron DVR 部署](ubuntu_deploy/ubuntu_neutron_dvr_configure.md)
        * [Horizon安裝與設定](ubuntu_deploy/ubuntu_horizon_install.md)
+           * [客制化 Horizon](ubuntu_deploy/custom_horizon.md)
        * [Cinder 安裝與設定](ubuntu_deploy/ubuntu_cinder_install.md)
        * [Swift 安裝與設定](ubuntu_deploy/ubuntu_swift_install.md)
        * [Heat 安裝與設定](ubuntu_deploy/ubuntu_heat_install.md)

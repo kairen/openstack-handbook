@@ -11,7 +11,7 @@
 > 如果您選擇安裝在虛擬機上，請確認虛擬機是否允許混雜模式，並關閉MAC地址，在外部網絡上的過濾。
 
 網路架構圖如下：
-![](OpenStack-Network-Topology.png)
+![](images/OpenStack-Network-Topology.png)
 
 ### 網路分配與說明
 這次安裝會採用```Neutron```網路套件來網路的處理，本次架構需要一台Controller、Network、Compute節點(若加其他則不同)，在 Network節點上需要提供一張作為```管理網路```、一張 ```Instance溝通```、一張```外部網路```的網路介面(NIC)，詳細分配如下：

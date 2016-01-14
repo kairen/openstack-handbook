@@ -1,5 +1,5 @@
 # Keystone 安裝與設定
-本章節會說明與操作如何安裝```Keystone```服務到OpenStack Controller節點上，並設置相關參數與設定。若對於Keystone不瞭解的人，可以參考[Keystone 身份驗證套件章節](http://kairen.gitbooks.io/openstack/content/keystone/index.html)。
+本章節會說明與操作如何安裝```Identity```服務到OpenStack Controller節點上，並設置相關參數與設定。若對於Keystone不瞭解的人，可以參考[Keystone 身份驗證套件章節](http://kairen.gitbooks.io/openstack/content/keystone/index.html)。
 
 ### 安裝前準備
 我們需要在 Database 底下建立儲存 Keystone  資訊的資料庫，利用```mysql```指令進入：
@@ -202,18 +202,7 @@ openstack role add --project demo --user demo user
 > 你可以重複此過程來建立其他的Projects和Users。
 
 # 驗證操作
-在安裝其他服務之前，我們要確認Keystone的是否沒問題。因為安全問題，可以選擇是否關閉臨時驗證token機制，編輯```/etc/keystone/keystone-paste.ini```，移除以下三個區域的```admin_token_auth```參數。(option)
-```
-[pipeline:public_api]
-pipeline = sizelimit url_normalize request_id build_auth_context token_auth [admin_token_auth] json_body ec2_extension user_crud_extension public_service
-
-[pipeline:admin_api]
-pipeline = sizelimit url_normalize request_id build_auth_context token_auth [admin_token_auth] json_body ec2_extension s3_extension crud_extension admin_service
-
-[pipeline:api_v3]
-pipeline = sizelimit url_normalize request_id build_auth_context token_auth [admin_token_auth] json_body ec2_extension_v3 s3_extension simple_cert_extension revoke_extension federation_extension oauth1_extension endpoint_filter_extension endpoint_policy_extension service_v3
-```
-再來取消```OS_TOKEN```與```OS_URL```環境變數：
+在安裝其他服務之前，我們要確認 Keystone 的是否沒問題。首先取消```OS_TOKEN```與```OS_URL```環境變數：
 ```sh
 unset OS_TOKEN OS_URL
 ```

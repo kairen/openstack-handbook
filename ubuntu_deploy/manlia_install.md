@@ -41,3 +41,5 @@ OVS_PHYSICAL_BRIDGE=br-eth0
 Q_ML2_PLUGIN_MECHANISM_DRIVERS=openvswitch
 Q_ML2_PLUGIN_TYPE_DRIVERS=vlan,vxlan
 ```
+
+http://docs.openstack.org/developer/manila/adminref/quick_start.html

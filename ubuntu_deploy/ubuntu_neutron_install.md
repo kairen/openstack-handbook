@@ -332,7 +332,7 @@ metadata agent 提供一些設定訊息，如Instance的的相關資訊。編輯
 ```sh
 [DEFAULT]
 ...
-verbose = Tru
+verbose = True
 auth_uri = http://controller:5000
 auth_url = http://controller:35357
 auth_region = RegionOne
@@ -377,13 +377,13 @@ sudo ovs-vsctl add-br br-ex
 ```sh
 sudo ovs-vsctl add-port br-ex INTERFACE_NAME
 ```
-> ```INTERFACE_NAME``` 為外部網路的介面名稱，這邊為eth2。
+> ```INTERFACE_NAME``` 為``` Public 網路```的網卡介面名稱，這邊範例為```eth2```。
 
 根據網路介面的驅動，可能需要禁用generic receive offload (GRO)來實現Instance和外部網路之間的合適的吞吐量。測試環境時，在外部網路介面上暫時關閉GRO：
 ```sh
-ethtool -K INTERFACE_NAME gro off
+sudo ethtool -K INTERFACE_NAME gro off
 ```
-> ```INTERFACE_NAME``` 為外部網路的介面名稱，這邊為eth2。
+> ```INTERFACE_NAME``` 為``` Public 網路```的網卡介面名稱，這邊範例為```eth2```。
 
 ### 完成安装
 重新啟動Networking服務：

@@ -3,6 +3,8 @@
 
 #### 架設前準備
 當加入```Object storage```節點時，我們要針對[Ubuntu Neutron 多節點安裝章節](ubuntu_neutron.html)的架構來做類似實現，但這邊比較不同的是我們使用了10.0.1.x的tunnel網路，而不是10.0.2.x：
+> 這邊可以選擇是否使用兩張網卡，若一張只需要設定 Managementnet
+
 #### Object Storage Node 1
 * **主機規格**：雙核處理器, 4 GB 記憶體, 500 GB+ 儲存空間(sda),250 GB+ 儲存空間(sdb), 兩張eth介面網卡
 * **eth0 Management interface**:
@@ -72,11 +74,12 @@ openstack endpoint create  --publicurl 'http://controller:8080/v1/AUTH_%(tenant_
 ### 安裝與設置Swift套件
 我們透過```apt-get```來安裝套件：
 ```sh
-sudo apt-get install swift swift-proxy python-swiftclient python-keystoneclient python-keystonemiddleware memcached
+sudo apt-get install swift swift-proxy python-swiftclient \
+python-keystoneclient python-keystonemiddleware memcached
 ```
 安裝完成後，建立```/etc/swift```，並透過網路來從物件儲存```Repository```中取得代理服務設定檔案：
 ```sh
-sudo curl -o /etc/swift/proxy-server.conf https://git.openstack.org/cgit/openstack/swift/plain/etc/proxy-server.conf-sample?h=stable/kilo
+sudo curl -o /etc/swift/proxy-server.conf https://git.openstack.org/cgit/openstack/swift/plain/etc/proxy-server.conf-sample?h=stable/liberty
 ```
 編輯```/etc/swift/proxy-server.conf```在```[DEFAULT]```部分設定服務port與目錄：
 ```
@@ -89,13 +92,14 @@ swift_dir = /etc/swift
 在```[pipeline:main]```部分，啟用合適的模組：
 ```
 [pipeline:main]
-pipeline = catch_errors gatekeeper healthcheck proxy-logging cache container_sync bulk ratelimit authtoken keystoneauth container-quotas account-quotas slo dlo proxy-logging proxy-server
+pipeline = catch_errors gatekeeper healthcheck proxy-logging cache container_sync bulk ratelimit authtoken keystoneauth container-quotas account-quotas slo dlo versioned_writes proxy-logging proxy-server
 ```
 > 其他的模組資訊，可以參考 [Deployment Guide](http://docs.openstack.org/developer/swift/deployment_guide.html)。
 在```[app:proxy-server] ```部分，啟用帳號建立：
 ```
 [app:proxy-server]
 ...
+use = egg:swift#proxy
 account_autocreate = true
 ```
 在```[filter:keystoneauth]```部分，啟用設定操作者角色：
@@ -125,6 +129,7 @@ delay_auth_decision = true
 在```[filter:cache]```部分，設定```memcached```位置：
 ```sh
 [filter:cache]
+use = egg:swift#memcache
 ...
 memcache_servers = 127.0.0.1:11211
 ```
@@ -200,15 +205,14 @@ sudo apt-get install swift swift-account swift-container swift-object
 從物件儲存```Repository```取得accounting, container, object, container-reconciler, and object-expirer service設定檔：
 ```sh
 # Account
-sudo curl -o /etc/swift/account-server.conf  https://git.openstack.org/cgit/openstack/swift/plain/etc/account-server.conf-sample?h=stable/kilo
+sudo curl -o /etc/swift/account-server.conf https://git.openstack.org/cgit/openstack/swift/plain/etc/account-server.conf-sample?h=stable/liberty
+
 # Container server
-sudo curl -o /etc/swift/container-server.conf https://git.openstack.org/cgit/openstack/swift/plain/etc/container-server.conf-sample?h=stable/kilo
+sudo curl -o /etc/swift/container-server.conf https://git.openstack.org/cgit/openstack/swift/plain/etc/container-server.conf-sample?h=stable/liberty
+
 # Object
-sudo curl -o /etc/swift/object-server.conf https://git.openstack.org/cgit/openstack/swift/plain/etc/object-server.conf-sample?h=stable/kilo
-# Container reconciler
-sudo curl -o /etc/swift/container-reconciler.conf  https://git.openstack.org/cgit/openstack/swift/plain/etc/container-reconciler.conf-sample?h=stable/kilo
-# Object expirer
-sudo curl -o /etc/swift/object-expirer.conf https://git.openstack.org/cgit/openstack/swift/plain/etc/object-expirer.conf-sample?h=stable/kilo
+sudo curl -o /etc/swift/object-server.conf https://git.openstack.org/cgit/openstack/swift/plain/etc/object-server.conf-sample?h=stable/liberty
+
 ```
 編輯```/etc/swift/account-server.conf```，在```[DEFAULT]```設定IP、Port、帳號、設定檔案目錄和掛載目錄：
 ```
@@ -219,6 +223,7 @@ bind_port = 6002
 user = swift
 swift_dir = /etc/swift
 devices = /srv/node
+mount_check = true
 ```
 > 將```MANAGEMENT_INTERFACE_IP_ADDRESS```取代為主機Management網路介面IP
 
@@ -232,6 +237,7 @@ pipeline = healthcheck recon account-server
 在```[filter:recon]```部分，設定 recon (metrics) 快取目錄：
 ```
 [filter:recon]
+use = egg:swift#recon
 ...
 recon_cache_path = /var/cache/swift
 ```
@@ -244,6 +250,7 @@ bind_port = 6001
 user = swift
 swift_dir = /etc/swift
 devices = /srv/node
+mount_check = true
 ```
 > 將```MANAGEMENT_INTERFACE_IP_ADDRESS```取代為主機Management網路介面IP
 
@@ -257,6 +264,7 @@ pipeline = healthcheck recon container-server
 在```[filter:recon]```部分，設定recon (metrics)快取目錄：
 ```
 [filter:recon]
+use = egg:swift#recon
 ...
 recon_cache_path = /var/cache/swift
 ```
@@ -269,6 +277,7 @@ bind_port = 6000
 user = swift
 swift_dir = /etc/swift
 devices = /srv/node
+mount_check = true
 ```
 > 將```MANAGEMENT_INTERFACE_IP_ADDRESS```取代為主機Management網路介面IP
 
@@ -282,6 +291,7 @@ pipeline = healthcheck recon object-server
 在```[filter:recon]```部分，設定recon (metrics)快取與lock：
 ```
 [filter:recon]
+use = egg:swift#recon
 ...
 recon_cache_path = /var/cache/swift
 recon_lock_path = /var/lock
@@ -293,7 +303,7 @@ sudo chown -R swift:swift /srv/node
 建立 recon目錄，並確認他有適合的權限：
 ```
 sudo mkdir -p /var/cache/swift
-sudo chown -R swift:swift /var/cache/swift
+sudo chown -R root:swift /var/cache/swift
 ```
 # 建立初始化的 Rings
 首先我們要回到```Controller```來執行以下動作。
@@ -310,10 +320,13 @@ sudo swift-ring-builder account.builder create 10 3 1
 ```sh
 # Object1 sda6
 sudo swift-ring-builder account.builder add  --region 1 --zone 1 --ip 10.0.0.51 --port 6002 --device sda6 --weight 100
+
 # Object1 sdb
 sudo swift-ring-builder account.builder add  --region 1 --zone 2 --ip 10.0.0.51 --port 6002 --device sdb --weight 100
+
 # Object2 sda6
 sudo swift-ring-builder account.builder add  --region 1 --zone 3 --ip 10.0.0.52 --port 6002 --device sda6 --weight 100
+
 # Object1 sdb
 sudo swift-ring-builder account.builder add  --region 1 --zone 4 --ip 10.0.0.52 --port 6002 --device sdb --weight 100
 ```
@@ -354,10 +367,13 @@ sudo swift-ring-builder container.builder create 10 3 1
 ```sh
 # Object1 sda6
 sudo swift-ring-builder container.builder add --region 1 --zone 1 --ip 10.0.0.51 --port 6001 --device sda6 --weight 100
+
 # Object1 sdb
 sudo swift-ring-builder container.builder add --region 1 --zone 2 --ip 10.0.0.51 --port 6001 --device sdb --weight 100
+
 # Object2 sda6
 sudo swift-ring-builder container.builder add --region 1 --zone 3 --ip 10.0.0.52 --port 6001 --device sda6 --weight 100
+
 # Object2 sdb
 sudo swift-ring-builder container.builder add --region 1 --zone 4 --ip 10.0.0.52 --port 6001 --device sdb --weight 100
 ```
@@ -398,13 +414,16 @@ sudo swift-ring-builder object.builder create 10 3 1
 增加每個節點到Ring中：
 ```sh
 # Object1 sda6
-sudo swift-ring-builder object.builder add r1z1-10.0.0.51:6000/sda6 100
+sudo swift-ring-builder object.builder add --region 1 --zone 1 --ip 10.0.0.51 --port 6000 --device sda6 --weight 100
+
 # Object1 sdb
-sudo swift-ring-builder object.builder add r1z2-10.0.0.51:6000/sdb 100
+sudo swift-ring-builder object.builder add --region 1 --zone 2 --ip 10.0.0.51 --port 6000 --device sdb --weight 100
+
 # Object2 sda6
-sudo swift-ring-builder object.builder add r1z3-10.0.0.52:6000/sda6 100
-# Object1 sdb
-sudo swift-ring-builder object.builder add r1z4-10.0.0.52:6000/sdb 100
+sudo swift-ring-builder object.builder add --region 1 --zone 3 --ip 10.0.0.52 --port 6000 --device sda6 --weight 100
+
+# Object2 sdb
+sudo swift-ring-builder object.builder add --region 1 --zone 4 --ip 10.0.0.52 --port 6000 --device sdb --weight 100
 ```
 完成後，驗證內容是否正確：
 ```sh
@@ -449,7 +468,7 @@ sudo mv ~/object.ring.gz /etc/swift/
 # 完成安裝
 設定Hash與預設儲存策略，首先從Repository獲取設定檔```/etc/swift/swift.conf ```：
 ```sh
-sudo curl -o /etc/swift/swift.conf https://git.openstack.org/cgit/openstack/swift/plain/etc/swift.conf-sample?h=stable/kilo
+sudo curl -o /etc/swift/swift.conf https://git.openstack.org/cgit/openstack/swift/plain/etc/swift.conf-sample?h=stable/liberty
 ```
 編輯```/etc/swift/swift.conf```，在```[swift-hash]```部分設定前輟與後輟參數：
 ```sh
@@ -477,9 +496,9 @@ ssh object2 sudo mv ~/swift.conf /etc/swift/
 ```
 在所有節點設定```/etc/swift```權限：
 ```sh
-sudo chown -R swift:swift /etc/swift
-ssh object1 sudo chown -R swift:swift /etc/swift
-ssh object2 sudo chown -R swift:swift /etc/swift
+chown -R root:swift /etc/swift
+ssh object1 sudo chown -R root:swift /etc/swift
+ssh object2 sudo chown -R root:swift /etc/swift
 ```
 重啟服務：
 ```sh
@@ -533,4 +552,5 @@ swift -V 3 download demo-container1 [FILE]
 [FILE] [auth 0.235s, headers 0.400s, total 0.420s, 0.020 MB/
 ```
 
-https://launchpadlibrarian.net/190377130/proxy-server.conf
+# 其他參考檔案
+* [proxy-server.conf](https://launchpadlibrarian.net/190377130/proxy-server.conf)

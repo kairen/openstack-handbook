@@ -65,7 +65,7 @@ openstack service create --name cinder  --description "OpenStack Block Storage" 
 # 建立 Cinder service v2
 openstack service create --name cinderv2 --description "OpenStack Block Storage" volumev2
 # 建立 Cinder Endpoints
-openstack endpoint create  --publicurl http://controller:8776/v2/%\(tenant_id\)s  --internalurl http://controller:8776/v2/%\(tenant_id\)s --adminurl http://controller:8776/v2/%\(tenant_id\)s  --region RegionOne volume
+openstack endpoint create  --publicurl http://controller:8776/v1/%\(tenant_id\)s  --internalurl http://controller:8776/v1/%\(tenant_id\)s --adminurl http://controller:8776/v1/%\(tenant_id\)s  --region RegionOne volume
 # 建立 Cinder v2 Endpoints
 openstack endpoint create --publicurl http://controller:8776/v2/%\(tenant_id\)s --internalurl http://controller:8776/v2/%\(tenant_id\)s --adminurl http://controller:8776/v2/%\(tenant_id\)s --region RegionOne volumev2
 ```

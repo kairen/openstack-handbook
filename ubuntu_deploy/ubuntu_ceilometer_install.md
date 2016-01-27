@@ -26,7 +26,7 @@ sudo service mongodb start
 
 建立 Ceilometer 資料庫：
 ```sh
-mongo --host controller --eval '
+mongo --host 10.0.0.11 --eval '
   db = db.getSiblingDB("ceilometer");
   db.addUser({user: "ceilometer",
   pwd: "CEILOMETER_DBPASS",
@@ -52,12 +52,15 @@ connecting to: controller:27017/test
 ```sh
 # 建立 Ceilometer user
 openstack user create --password CEILOMETER_PASS --email ceilometer@example.com ceilometer
+
 # 建立 Ceilometer Role
 openstack role add --project service --user ceilometer admin
+
 # 建立 Ceilometer Service
 openstack service create --name ceilometer  --description "Telemetry" metering
+
 # 建立 Ceilometer Endpoints API
-openstack endpoint create --publicurl http://controller:8777 --internalurl http://controller:8777 --adminurl http://controller:8777 --region RegionOne metering
+openstack endpoint create --publicurl http://10.0.0.11:8777 --internalurl http://10.0.0.11:8777 --adminurl http://10.0.0.11:8777 --region RegionOne metering
 ```
 > 可自行選擇更改```CEILOMETER_PASS```密碼
 
@@ -71,41 +74,46 @@ sudo apt-get install ceilometer-api ceilometer-collector ceilometer-agent-centra
 openssl rand -hex 10
 # 4d246a04c645a2fa04d9
 ```
-編輯```/etc/ceilometer/ceilometer.conf```，在``` [database]```部分加入以下：
-```
-[database]
-connection = mongodb://ceilometer:CEILOMETER_DBPASS@controller:27017/ceilometer
-```
-> 可自行選擇更改```CEILOMETER_DBPASS```密碼
-
-在```[DEFAULT]```加入RabbitMQ與Keystone存取：
+編輯```/etc/ceilometer/ceilometer.conf```，在```[DEFAULT]```加入以下內容：
 ```
 [DEFAULT]
 rpc_backend = rabbit
 auth_strategy = keystone
 ```
-在```[oslo_messaging_rabbit]```部分，修改為以下：
+
+在``` [database]```部分加入以下：
+```
+[database]
+connection = mongodb://ceilometer:CEILOMETER_DBPASS@10.0.0.11:27017/ceilometer
+```
+> 可自行選擇更改```CEILOMETER_DBPASS```密碼
+
+
+在```[oslo_messaging_rabbit]```部分設定以下內容：
 ```
 [oslo_messaging_rabbit]
-rabbit_host = controller
+rabbit_host = 10.0.0.11
 rabbit_userid = openstack
 rabbit_password = RABBIT_PASS
 ```
-在```[keystone_authtoken]```部分，修改設定keystone存取以及註解所有auth_host、auth_port 和auth_protocol，因為Keystone預設已包含：
+在```[keystone_authtoken]```部分設定以下內容：
 ```
 [keystone_authtoken]
-auth_uri = http://controller:5000/v2.0
-identity_uri = http://controller:35357
-admin_tenant_name = service
-admin_user = ceilometer
-admin_password = CEILOMETER_PASS
+auth_uri = http://10.0.0.11:5000
+auth_url = http://10.0.0.11:35357
+auth_plugin = password
+project_domain_id = default
+user_domain_id = default
+project_name = service
+username = ceilometer
+password = CEILOMETER_PASS
 ```
 > 可自行選擇更改```CEILOMETER_PASS```密碼
 
-在```[service_credentials] ```部分，修改以下：
+在```[service_credentials] ```部分設定以下內容：
 ```
 [service_credentials]
-os_auth_url = http://controller:5000/v2.0
+os_auth_url = http://10.0.0.11:5000/v2.0
 os_username = ceilometer
 os_tenant_name = service
 os_password = CEILOMETER_PASS
@@ -121,12 +129,6 @@ telemetry_secret = TELEMETRY_SECRET
 ```
 > 將```TELEMETRY_SECRET```更改為剛剛產生的亂數字串 ```d246a04c645a2fa04d9```
 
-最後可以選擇是否要在```[DEFAULT]```中，開啟詳細Logs，為後期的故障排除提供幫助：
-```
-[DEFAULT]
-...
-verbose = True
-```
 完成後，重啟服務：
 ```sh
 sudo service ceilometer-agent-central restart
@@ -145,22 +147,16 @@ Telemetry 透過結合使用通知與proxy來收集Computer測量值。若要監
 ```sh
 sudo apt-get install ceilometer-agent-compute
 ```
-安裝完成後，編輯```/etc/ceilometer/ceilometer.conf```，在```[publisher] ```修改一下：
-```
-[publisher]
-telemetry_secret = d246a04c645a2fa04d9
-```
-> 將```TELEMETRY_SECRET```更改為剛剛產生的亂數字串 ```d246a04c645a2fa04d9```
-
-在```[DEFAULT]```部分，設定RabbitMQ與Keystone存取：
+安裝完成後，編輯```/etc/ceilometer/ceilometer.conf```，在```[DEFAULT]```部分，設定RabbitMQ與Keystone存取：
 ```
 [DEFAULT]
 rpc_backend = rabbit
 ```
+
 在```[oslo_messaging_rabbit]```部分，設定RabbitMQ資訊：
 ```
 [oslo_messaging_rabbit]
-rabbit_host = controller
+rabbit_host = 10.0.0.11
 rabbit_userid = openstack
 rabbit_password = RABBIT_PASS
 ```
@@ -169,31 +165,35 @@ rabbit_password = RABBIT_PASS
 在```[keystone_authtoken]```部分，設定Keystone資訊，以及註解所有auth_host、auth_port 和auth_protocol，因為Keystone預設已包含：
 ```
 [keystone_authtoken]
-auth_uri = http://controller:5000/v2.0
-identity_uri = http://controller:35357
-admin_tenant_name = service
-admin_user = ceilometer
-admin_password = CEILOMETER_PASS
+auth_uri = http://10.0.0.11:5000
+auth_url = http://10.0.0.11:35357
+auth_plugin = password
+project_domain_id = default
+user_domain_id = default
+project_name = service
+username = ceilometer
+password = CEILOMETER_PASS
 ```
 > 可自行選擇更改```CEILOMETER_PASS```密碼
 
 在```[service_credentials]```部分，設定以下：
 ```
 [service_credentials]
-os_auth_url = http://controller:5000/v2.0
+os_auth_url = http://10.0.0.11:5000/v2.0
 os_username = ceilometer
 os_tenant_name = service
 os_password = CEILOMETER_PASS
 os_endpoint_type = internalURL
 os_region_name = RegionOne
 ```
-最後可以選擇是否要在```[DEFAULT]```中，開啟詳細Logs，為後期的故障排除提供幫助：
+在```[publisher] ```修改一下：
 ```
-[DEFAULT]
-...
-verbose = True
+[publisher]
+telemetry_secret = d246a04c645a2fa04d9
 ```
-### 配置Notification
+> 將```TELEMETRY_SECRET```更改為剛剛產生的亂數字串 ```d246a04c645a2fa04d9```
+
+### 配置 Notification
 編輯```/etc/nova/nova.conf ```設定通知於```[DEFAULT]```部分：
 ```
 [DEFAULT]
@@ -210,13 +210,17 @@ sudo service nova-compute restart
 ```
 
 # 設定 Image 監控服務
-為了取得image-oriented時間與範例，需要配置Image service來發送訊息給Message bus，在```Controller```上執行這些步驟，編輯```/etc/glance/glance-api.conf```與```/etc/glance/glance-registry.conf```，在```[DEFAULT]```修改以下：
+為了取得 image-oriented 時間與範例，需要配置 Image service 來發送訊息給 Message bus，在```Controller```上執行這些步驟，編輯```/etc/glance/glance-api.conf```與```/etc/glance/glance-registry.conf```，在```[DEFAULT]```修改以下：
 ```
 [DEFAULT]
 ...
 notification_driver = messagingv2
 rpc_backend = rabbit
-rabbit_host = controller
+```
+在```[oslo_messaging_rabbit]```部分，設定RabbitMQ資訊：
+```sh
+[oslo_messaging_rabbit]
+rabbit_host = 10.0.0.11
 rabbit_userid = openstack
 rabbit_password = RABBIT_PASS
 ```
@@ -312,7 +316,7 @@ export OS_AUTH_URL=http://controller:35357
 export OS_IMAGE_API_VERSION=2
 export OS_VOLUME_API_VERSION=2
 ```
-首先source admin使用者，進行驗證：
+首先 source admin 使用者，進行驗證：
 ```sh
 source admin-ceilometer-openrc.sh
 ```

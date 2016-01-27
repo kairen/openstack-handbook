@@ -6,26 +6,27 @@
 > 這邊可以選擇是否使用兩張網卡，若一張只需要設定 Managementnet
 
 #### Object Storage Node 1
-* **主機規格**：雙核處理器, 4 GB 記憶體, 500 GB+ 儲存空間(sda),250 GB+ 儲存空間(sdb), 兩張eth介面網卡
+主機規格為雙核處理器，4 GB 記憶體，250 GB+ 儲存空間(sda)，500 GB+ 儲存空間(sdb)，兩張 eth 介面網卡
 * **eth0 Management interface**:
     * IP address: 10.0.0.51
     * Network mask: 255.255.255.0 (or /24)
     * Default gateway: 10.0.0.1
-* **eth1 Instance tunnel interface**：
+* **eth1 Storage interface**（Option）：
     * IP address: 10.0.1.51
     * Network mask: 255.255.255.0 (or /24)
-* 設定Hostname為```object1```
-* 安裝```NTP```，並與Controller節點同步
+* 設定 Hostname 為```object1```
+* 安裝```NTP```，並與 Controller 節點同步
+
 #### Object Storage Node 2
-* **主機規格**：雙核處理器, 4 GB 記憶體, 500 GB+ 儲存空間(sda),250 GB+ 儲存空間(sdb), 兩張eth介面網卡
+主機規格為雙核處理器, 4 GB 記憶體, 500 GB+ 儲存空間(sda),250 GB+ 儲存空間(sdb), 兩張eth介面網卡
 * **eth0 Management interface**:
     * IP address: 10.0.0.52
     * Network mask: 255.255.255.0 (or /24)
     * Default gateway: 10.0.0.1
-* **eth1 Instance tunnel interface**：
+* **eth1 Storage interface**（Option）：
     * IP address: 10.0.1.52
     * Network mask: 255.255.255.0 (or /24)
-* 設定Hostname為```object2```
+* 設定 Hostname 為```object2```
 * 安裝```NTP```，並與Controller節點同步
 
 設定```sudo```不需要密碼：
@@ -50,13 +51,11 @@ sudo add-apt-repository cloud-archive:liberty
 sudo apt-get update && sudo apt-get -y  dist-upgrade
 ```
 
-# Controller節點安裝與設置
+# Controller 節點安裝與設置
 ### 安裝前準備
-在Controller上的Swift套件，不使用SQL資料庫，取而代之，我們在每個Object storage節點上使用分散式的SQLite資料庫。
+在Controller上的 Swift 套件，不使用 SQL 資料庫，取而代之，我們在每個 Object storage 節點上使用分散式的 SQLite 資料庫。
 
-對象存儲服務在控制節點上不使用SQL 數據庫。取而代之，在每個存儲節點上它使用分佈式SQLite數據庫。
-
-首先我們要導入Keystone的```admin```帳號，來建立服務：
+首先我們要導入 Keystone 的```admin```帳號，來建立服務：
 ```sh
 source admin-openrc.sh
 ```
@@ -64,18 +63,23 @@ source admin-openrc.sh
 ```sh
 # 建立 Swift User
 openstack user create --password SWIFT_PASS --email swift@example.com swift
+
 # 建立 Swift Role
 openstack role add --project service --user swift admin
+
 # 建立 Swift service
 openstack service create --name swift  --description "OpenStack Object Storage" object-store
+
 # 建立 Swift URL
-openstack endpoint create  --publicurl 'http://controller:8080/v1/AUTH_%(tenant_id)s'  --internalurl 'http://controller:8080/v1/AUTH_%(tenant_id)s'  --adminurl http://controller:8080  --region RegionOne  object-store
+openstack endpoint create --publicurl 'http://controller:8080/v1/AUTH_%(tenant_id)s' \
+--internalurl 'http://controller:8080/v1/AUTH_%(tenant_id)s' \
+--adminurl http://controller:8080 \
+--region RegionOne  object-store
 ```
 ### 安裝與設置Swift套件
 我們透過```apt-get```來安裝套件：
 ```sh
-sudo apt-get install swift swift-proxy python-swiftclient \
-python-keystoneclient python-keystonemiddleware memcached
+sudo apt-get install swift swift-proxy python-swiftclient python-keystoneclient python-keystonemiddleware memcached
 ```
 安裝完成後，建立```/etc/swift```，並透過網路來從物件儲存```Repository```中取得代理服務設定檔案：
 ```sh
@@ -95,6 +99,7 @@ swift_dir = /etc/swift
 pipeline = catch_errors gatekeeper healthcheck proxy-logging cache container_sync bulk ratelimit authtoken keystoneauth container-quotas account-quotas slo dlo versioned_writes proxy-logging proxy-server
 ```
 > 其他的模組資訊，可以參考 [Deployment Guide](http://docs.openstack.org/developer/swift/deployment_guide.html)。
+
 在```[app:proxy-server] ```部分，啟用帳號建立：
 ```
 [app:proxy-server]
@@ -140,24 +145,20 @@ memcache_servers = 127.0.0.1:11211
 ```sh
 sudo apt-get install xfsprogs rsync
 ```
-然後將```/dev/sda6```與```/dev/sdb```進行格式化：
+然後將```/dev/sdb```進行格式化：
 ```sh
-sudo mkfs.xfs -f /dev/sda6
 sudo mkfs.xfs -f /dev/sdb
 ```
-建立Monut載點目錄：
+建立 Monut 載點目錄：
 ```sh
-sudo mkdir -p /srv/node/sda6
 sudo mkdir -p /srv/node/sdb
 ```
 然後編輯```/etc/fstab```檔案，加入以下：
 ```
-/dev/sda6 /srv/node/sda6 xfs noatime,nodiratime,nobarrier,logbufs=8 0 2
 /dev/sdb /srv/node/sdb xfs noatime,nodiratime,nobarrier,logbufs=8 0 2
 ```
-Mount裝置：
+Mount 裝置：
 ```sh
-sudo mount /srv/node/sda6
 sudo mount /srv/node/sdb
 ```
 編輯```/etc/rsyncd.conf```，加入以下：
@@ -166,7 +167,7 @@ uid = swift
 gid = swift
 log file = /var/log/rsyncd.log
 pid file = /var/run/rsyncd.pid
-address = MANAGEMENT_INTERFACE_IP_ADDRESS
+address = MANAGEMENT_IP
 
 [account]
 max connections = 2
@@ -186,7 +187,7 @@ path = /srv/node/
 read only = false
 lock file = /var/lock/object.lock
 ```
-> 將```MANAGEMENT_INTERFACE_IP_ADDRESS```取代為主機Management網路介面IP，rsync 服務不需要認證，因此可以考慮將其運作在私人網絡中。
+> 將```MANAGEMENT_IP```取代為主機 Management 網路介面IP，rsync 服務不需要認證，因此可以考慮將其運作在私有網路。
 
 編輯```/etc/default/rsync```，並開啟rsync服務：
 ```
@@ -218,14 +219,14 @@ sudo curl -o /etc/swift/object-server.conf https://git.openstack.org/cgit/openst
 ```
 [DEFAULT]
 ...
-bind_ip = MANAGEMENT_INTERFACE_IP_ADDRESS
+bind_ip = MANAGEMENT_IP
 bind_port = 6002
 user = swift
 swift_dir = /etc/swift
 devices = /srv/node
 mount_check = true
 ```
-> 將```MANAGEMENT_INTERFACE_IP_ADDRESS```取代為主機Management網路介面IP
+> 將```MANAGEMENT_IP```取代為主機 Management 網路介面IP
 
 在```[pipeline:main]```部分，啟用適合的模組：
 ```sh
@@ -272,14 +273,14 @@ recon_cache_path = /var/cache/swift
 ```
 [DEFAULT]
 ...
-bind_ip = MANAGEMENT_INTERFACE_IP_ADDRESS
+bind_ip = MANAGEMENT_IP
 bind_port = 6000
 user = swift
 swift_dir = /etc/swift
 devices = /srv/node
 mount_check = true
 ```
-> 將```MANAGEMENT_INTERFACE_IP_ADDRESS```取代為主機Management網路介面IP
+> 將```MANAGEMENT_IP```取代為主機Management網路介面IP
 
 在```[pipeline:main]```部分，啟用適合的模組：
 ```
@@ -318,17 +319,11 @@ sudo swift-ring-builder account.builder create 10 3 1
 ```
 增加每個節點到Ring中：
 ```sh
-# Object1 sda6
-sudo swift-ring-builder account.builder add  --region 1 --zone 1 --ip 10.0.0.51 --port 6002 --device sda6 --weight 100
-
 # Object1 sdb
-sudo swift-ring-builder account.builder add  --region 1 --zone 2 --ip 10.0.0.51 --port 6002 --device sdb --weight 100
+sudo swift-ring-builder account.builder add  --region 1 --zone 1 --ip 10.0.0.51 --port 6002 --device sdb --weight 100
 
-# Object2 sda6
-sudo swift-ring-builder account.builder add  --region 1 --zone 3 --ip 10.0.0.52 --port 6002 --device sda6 --weight 100
-
-# Object1 sdb
-sudo swift-ring-builder account.builder add  --region 1 --zone 4 --ip 10.0.0.52 --port 6002 --device sdb --weight 100
+# Object2 sdb
+sudo swift-ring-builder account.builder add  --region 1 --zone 2 --ip 10.0.0.52 --port 6002 --device sdb --weight 100
 ```
 完成後，驗證內容是否正確：
 ```sh
@@ -341,10 +336,8 @@ account.builder, build version 4
 The minimum number of hours before a partition can be reassigned is 1
 The overload factor is 0.00% (0.000000)
 Devices:    id  region  zone      ip address  port  replication ip  replication port      name weight partitions balance meta
-             0       1     1       10.0.0.51  6002       10.0.0.51              6002      sda6 100.00          0 -100.00
-             1       1     2       10.0.0.51  6002       10.0.0.51              6002       sdb 100.00          0 -100.00
-             2       1     3       10.0.0.52  6002       10.0.0.52              6002      sda6 100.00          0 -100.00
-             3       1     4       10.0.0.52  6002       10.0.0.52              6002       sdb 100.00          0 -100.00
+             1       1     1       10.0.0.51  6002       10.0.0.51              6002       sdb 100.00          0 -100.00
+             2       1     2       10.0.0.52  6002       10.0.0.52              6002       sdb 100.00          0 -100.00
 ```
 將Ring作平衡調整：
 ```sh
@@ -365,17 +358,11 @@ sudo swift-ring-builder container.builder create 10 3 1
 ```
 增加每個節點到Ring中：
 ```sh
-# Object1 sda6
-sudo swift-ring-builder container.builder add --region 1 --zone 1 --ip 10.0.0.51 --port 6001 --device sda6 --weight 100
-
 # Object1 sdb
-sudo swift-ring-builder container.builder add --region 1 --zone 2 --ip 10.0.0.51 --port 6001 --device sdb --weight 100
-
-# Object2 sda6
-sudo swift-ring-builder container.builder add --region 1 --zone 3 --ip 10.0.0.52 --port 6001 --device sda6 --weight 100
+sudo swift-ring-builder container.builder add --region 1 --zone 1 --ip 10.0.0.51 --port 6001 --device sdb --weight 100
 
 # Object2 sdb
-sudo swift-ring-builder container.builder add --region 1 --zone 4 --ip 10.0.0.52 --port 6001 --device sdb --weight 100
+sudo swift-ring-builder container.builder add --region 1 --zone 2 --ip 10.0.0.52 --port 6001 --device sdb --weight 100
 ```
 完成後，驗證內容是否正確：
 ```sh
@@ -388,10 +375,8 @@ container.builder, build version 4
 The minimum number of hours before a partition can be reassigned is 1
 The overload factor is 0.00% (0.000000)
 Devices:    id  region  zone      ip address  port  replication ip  replication port      name weight partitions balance meta
-             0       1     1       10.0.0.51  6001       10.0.0.51              6001      sda6 100.00          0 -100.00
-             1       1     2       10.0.0.51  6001       10.0.0.51              6001       sdb 100.00          0 -100.00
-             2       1     3       10.0.0.52  6001       10.0.0.52              6001      sda6 100.00          0 -100.00
-             3       1     4       10.0.0.52  6001       10.0.0.52              6001       sdb 100.00          0 -100.00
+             1       1     1       10.0.0.51  6001       10.0.0.51              6001       sdb 100.00          0 -100.00
+             2       1     2       10.0.0.52  6001       10.0.0.52              6001       sdb 100.00          0 -100.00
 ```
 將Ring作平衡調整：
 ```sh
@@ -413,17 +398,11 @@ sudo swift-ring-builder object.builder create 10 3 1
 ```
 增加每個節點到Ring中：
 ```sh
-# Object1 sda6
-sudo swift-ring-builder object.builder add --region 1 --zone 1 --ip 10.0.0.51 --port 6000 --device sda6 --weight 100
-
 # Object1 sdb
-sudo swift-ring-builder object.builder add --region 1 --zone 2 --ip 10.0.0.51 --port 6000 --device sdb --weight 100
-
-# Object2 sda6
-sudo swift-ring-builder object.builder add --region 1 --zone 3 --ip 10.0.0.52 --port 6000 --device sda6 --weight 100
+sudo swift-ring-builder object.builder add --region 1 --zone 1 --ip 10.0.0.51 --port 6000 --device sdb --weight 100
 
 # Object2 sdb
-sudo swift-ring-builder object.builder add --region 1 --zone 4 --ip 10.0.0.52 --port 6000 --device sdb --weight 100
+sudo swift-ring-builder object.builder add --region 1 --zone 2 --ip 10.0.0.52 --port 6000 --device sdb --weight 100
 ```
 完成後，驗證內容是否正確：
 ```sh
@@ -436,10 +415,8 @@ object.builder, build version 4
 The minimum number of hours before a partition can be reassigned is 1
 The overload factor is 0.00% (0.000000)
 Devices:    id  region  zone      ip address  port  replication ip  replication port      name weight partitions balance meta
-             0       1     1       10.0.0.51  6000       10.0.0.51              6000      sda6 100.00          0 -100.00
-             1       1     2       10.0.0.51  6000       10.0.0.51              6000       sdb 100.00          0 -100.00
-             2       1     3       10.0.0.52  6000       10.0.0.52              6000      sda6 100.00          0 -100.00
-             3       1     4       10.0.0.52  6000       10.0.0.52              6000       sdb 100.00          0 -100.00
+             1       1     1       10.0.0.51  6000       10.0.0.51              6000       sdb 100.00          0 -100.00
+             2       1     2       10.0.0.52  6000       10.0.0.52              6000       sdb 100.00          0 -100.00
 ```
 將Ring作平衡調整：
 ```
@@ -449,7 +426,7 @@ sudo swift-ring-builder object.builder rebalance
 ```
 Reassigned 1024 (100.00%) partitions. Balance is now 0.00.  Dispersion is now 0.00
 ```
-### 分佈檔案
+### 分散檔案到儲存節點
 將 account.ring.gz、container.ring.gz 和 object.ring.gz複製到其他儲存節點與代理服務節點上的目錄```/etc/swift```：
 ```sh
 scp account.ring.gz container.ring.gz object.ring.gz object1:~/

@@ -1,5 +1,5 @@
 # Nova 安裝與設定
-本章節會說明與操作如何安裝```Compute```服務到OpenStack Controller節點上與Compute節點上，並設置相關參數與設定。若對於Nova不瞭解的人，可以參考[Nova 運算套件章節](http://kairen.gitbooks.io/openstack/content/nova/index.html)
+本章節會說明與操作如何安裝```Compute```服務到 OpenStack  Controller 節點上與 Compute 節點上，並設置相關參數與設定。若對於 Nova 不瞭解的人，可以參考[Nova 運算套件章節](http://kairen.gitbooks.io/openstack/content/nova/index.html)
 
 # Controller節點安裝與設置
 ### 安裝前準備
@@ -23,12 +23,18 @@ source admin-openrc.sh
 ```sh
 # 建立 Nova User
 openstack user create --password NOVA_PASS --email nova@example.com nova
+
 # 建立 Nova Role
 openstack role add --project service --user nova admin
+
 # 建立 Nova service
 openstack service create --name nova --description "OpenStack Compute" compute
+
 # 建立 Nova Endpoints
-openstack endpoint create  --publicurl http://controller:8774/v2/%\(tenant_id\)s  --internalurl http://controller:8774/v2/%\(tenant_id\)s --adminurl http://controller:8774/v2/%\(tenant_id\)s  --region RegionOne compute
+openstack endpoint create  --publicurl http://10.0.0.11:8774/v2/%\(tenant_id\)s \
+--internalurl http://10.0.0.11:8774/v2/%\(tenant_id\)s \
+--adminurl http://10.0.0.11:8774/v2/%\(tenant_id\)s \
+--region RegionOne compute
 ```
 ### 安裝與設置Nova套件
 首先我們要透過```apt-get```安裝```nova```相關套件：
@@ -39,7 +45,6 @@ sudo apt-get install nova-api nova-cert nova-conductor nova-consoleauth  nova-no
 ```sh
 [DEFAULT]
 ...
-verbose = True
 rpc_backend = rabbit
 auth_strategy = keystone
 my_ip = 10.0.0.11
@@ -50,7 +55,7 @@ vncserver_proxyclient_address = 10.0.0.11
 在```[database]```部分，設定以下：
 ```sh
 [database]
-connection = mysql://nova:NOVA_DBPASS@controller/nova
+connection = mysql://nova:NOVA_DBPASS@10.0.0.11/nova
 ```
 > 這邊若```NOVA_DBPASS```有更改的話，請記得更改。
 
@@ -58,7 +63,7 @@ connection = mysql://nova:NOVA_DBPASS@controller/nova
 加入```[oslo_messaging_rabbit]```設定RabbitMQ存取：
 ```sh
 [oslo_messaging_rabbit]
-rabbit_host = controller
+rabbit_host = 10.0.0.11
 rabbit_userid = openstack
 rabbit_password = RABBIT_PASS
 ```
@@ -67,8 +72,8 @@ rabbit_password = RABBIT_PASS
 加入```[keystone_authtoken]```設定Keystone驗證：
 ```sh
 [keystone_authtoken]
-auth_uri = http://controller:5000
-auth_url = http://controller:35357
+auth_uri = http://10.0.0.11:5000
+auth_url = http://10.0.0.11:35357
 auth_plugin = password
 project_domain_id = default
 user_domain_id = default
@@ -81,7 +86,7 @@ password = NOVA_PASS
 加入```[glance]```與```[oslo_concurrency]```，設定Glance Host與lock_path：
 ```sh
 [glance]
-host = controller
+host = 10.0.0.11
 
 [oslo_concurrency]
 lock_path = /var/lib/nova/tmp
@@ -117,9 +122,9 @@ sudo apt-get install -y nova-compute sysfsutils
 ```sh
 [DEFAULT]
 ...
-verbose = True
 rpc_backend = rabbit
 auth_strategy = keystone
+resume_guests_state_on_host_boot = true
 my_ip = 10.0.0.31
 ```
 加入```[vnc]```設定 vnc server 資訊：
@@ -128,13 +133,13 @@ my_ip = 10.0.0.31
 enabled = True
 vncserver_listen = 0.0.0.0
 vncserver_proxyclient_address = 10.0.0.31
-novncproxy_base_url = http://controller:6080/vnc_auto.html
+novncproxy_base_url = http://10.0.0.11:6080/vnc_auto.html
 ```
 
 加入```[oslo_messaging_rabbit]```設定RabbitMQ存取：
 ```sh
 [oslo_messaging_rabbit]
-rabbit_host = controller
+rabbit_host = 10.0.0.11
 rabbit_userid = openstack
 rabbit_password = RABBIT_PASS
 ```
@@ -143,8 +148,8 @@ rabbit_password = RABBIT_PASS
 加入```[keystone_authtoken]```設定Keystone驗證：
 ```sh
 [keystone_authtoken]
-auth_uri = http://controller:5000
-auth_url = http://controller:35357
+auth_uri = http://10.0.0.11:5000
+auth_url = http://10.0.0.11:35357
 auth_plugin = password
 project_domain_id = default
 user_domain_id = default
@@ -157,7 +162,7 @@ password = NOVA_PASS
 加入```[glance]```與```[oslo_concurrency]```，設定Glance Host與lock_path：
 ```sh
 [glance]
-host = controller
+host = 10.0.0.11
 
 [oslo_concurrency]
 lock_path = /var/lib/nova/tmp

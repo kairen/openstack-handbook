@@ -3,17 +3,19 @@
 
 #### 架設前準備
 當加入```Storage節點```時，我們要針對[Ubuntu Neutron 多節點安裝章節](ubuntu_neutron.html)的架構來做類似實現，但這邊比較不同的是我們使用了10.0.1.x的tunnel網路，而不是10.0.2.x：
+> 這邊可以選擇是否使用兩張網卡，若一張只需要設定 Managementnet
+
 #### Block Storage Node
-*  **主機規格**：雙核處理器, 4 GB 記憶體, 500 GB+ 儲存空間(sda),250 GB+ 儲存空間(sdb), 兩張eth介面網卡
+主機規格為雙核處理器，4 GB 記憶體，250 GB+ 儲存空間(sda)，500 GB+ 儲存空間(sdb)，兩張 eth 介面網卡
 * **eth0 Management interface**:
     * IP address: 10.0.0.41
     * Network mask: 255.255.255.0 (or /24)
     * Default gateway: 10.0.0.1
-* **eth1 Instance tunnel interface**：
+* **eth1 Storage interface**（Option）：
     * IP address: 10.0.1.41
     * Network mask: 255.255.255.0 (or /24)
 * 設定Hostname為```block1```
-* 安裝```NTP```，並與Controller節點同步
+* 安裝```NTP```，並與 Controller 節點同步
 
 設定```sudo```不需要密碼：
 ```sh
@@ -35,7 +37,7 @@ sudo add-apt-repository cloud-archive:liberty
 sudo apt-get update && sudo apt-get -y  dist-upgrade
 ```
 
-# Controller節點安裝與設置
+# Controller 節點安裝與設置
 ### 安裝前準備
 設置OpenStack Cinder服務之前，必須建立資料庫、服務憑證和API 端點。
 我們需要在Database底下建立儲存 Cinder 資訊的資料庫，利用```mysql```指令進入：
@@ -58,16 +60,27 @@ source admin-openrc.sh
 ```sh
 # 建立 Cinder User
 openstack user create --password CINDER_PASS --email cinder@example.com cinder
+
 # 建立 Cinder Role
 openstack role add --project service --user cinder admin
+
 # 建立 Cinder service
 openstack service create --name cinder  --description "OpenStack Block Storage" volume
+
 # 建立 Cinder service v2
 openstack service create --name cinderv2 --description "OpenStack Block Storage" volumev2
+
 # 建立 Cinder Endpoints
-openstack endpoint create  --publicurl http://controller:8776/v1/%\(tenant_id\)s  --internalurl http://controller:8776/v1/%\(tenant_id\)s --adminurl http://controller:8776/v1/%\(tenant_id\)s  --region RegionOne volume
+openstack endpoint create  --publicurl  http://10.0.0.11:8776/v1/%\(tenant_id\)s \
+--internalurl  http://10.0.0.11:8776/v1/%\(tenant_id\)s \
+--adminurl  http://10.0.0.11:8776/v1/%\(tenant_id\)s \
+--region RegionOne volume
+
 # 建立 Cinder v2 Endpoints
-openstack endpoint create --publicurl http://controller:8776/v2/%\(tenant_id\)s --internalurl http://controller:8776/v2/%\(tenant_id\)s --adminurl http://controller:8776/v2/%\(tenant_id\)s --region RegionOne volumev2
+openstack endpoint create --publicurl http://10.0.0.11:8776/v2/%\(tenant_id\)s \
+--internalurl http://10.0.0.11:8776/v2/%\(tenant_id\)s \
+--adminurl http://10.0.0.11:8776/v2/%\(tenant_id\)s \
+--region RegionOne volumev2
 ```
 
 ### 安裝與設置Cinder套件
@@ -75,12 +88,7 @@ openstack endpoint create --publicurl http://controller:8776/v2/%\(tenant_id\)s 
 ```sh
 sudo apt-get install cinder-api cinder-scheduler python-cinderclient
 ```
-接下來編輯```/etc/cinder/cinder.conf```，並在```[database]```部分設定以下：
-```sh
-[database]
-connection = mysql://cinder:CINDER_DBPASS@controller/cinder
-```
-在```[DEFAULT]```部分，設定RabbitMQ存取、my ip提供管理與Keystone存取：
+接下來編輯```/etc/cinder/cinder.conf```，並在```[DEFAULT]```部分，設定RabbitMQ存取、my ip提供管理與Keystone存取：
 ```sh
 [DEFAULT]
 ...
@@ -88,10 +96,17 @@ rpc_backend = rabbit
 auth_strategy = keystone
 my_ip = 10.0.0.11
 ```
+
+在```[database]```部分設定以下：
+```sh
+[database]
+connection = mysql://cinder:CINDER_DBPASS@10.0.0.11/cinder
+```
+
 在```[oslo_messaging_rabbit]```部分，設定RabbitMQ資訊：
 ```sh
 [oslo_messaging_rabbit]
-rabbit_host = controller
+rabbit_host = 10.0.0.11
 rabbit_userid = openstack
 rabbit_password = RABBIT_PASS
 ```
@@ -100,8 +115,8 @@ rabbit_password = RABBIT_PASS
 在```[keystone_authtoken]```部分，設定Keystone資訊，並註解掉其他設定：
 ```sh
 [keystone_authtoken]
-auth_uri = http://controller:5000
-auth_url = http://controller:35357
+auth_uri = http://10.0.0.11:5000
+auth_url = http://10.0.0.11:35357
 auth_plugin = password
 project_domain_id = default
 user_domain_id = default
@@ -116,12 +131,7 @@ password = CINDER_PASS
 [oslo_concurrency]
 lock_path = /var/lock/cinder
 ```
-最後可以選擇是否要在```[DEFAULT]```中，開啟詳細Logs，為後期的故障排除提供幫助：
-```
-[DEFAULT]
-...
-verbose = True
-```
+
 完成後，同步資料庫：
 ```sh
 sudo cinder-manage db sync
@@ -140,19 +150,17 @@ sudo rm -f /var/lib/cinder/cinder.sqlite
 ```sh
 sudo apt-get install -y qemu lvm2
 ```
-> 有些Ubuntu的版本預設已安裝```lvm2```
+> 有些 Ubuntu 的版本預設已安裝```lvm2```
 
 透過```pvcreate```指令，建立LVM Physical Volume ```/dev/sdb```：
 ```sh
 sudo pvcreate /dev/sdb
 # 成功會看到以下資訊：
 Physical volume "/dev/sdb" successfully created
-
-sudo pvcreate /dev/sda6
-# 成功會看到以下資訊：
-Physical volume "/dev/sda6" successfully created
 ```
-> 若不知道disk資訊，可以透過```fdisk -l```查找。
+> 若有多個磁碟，則重複以上動作
+
+> 若不知道 disk 資訊，可以透過```fdisk -l```查找。
 ```sh
 sudo fdisk -l
 ```
@@ -163,12 +171,12 @@ sudo mkfs -t ext4 /dev/sdb
 
 透過```vgcreate```，建立LVM Volume 群組：
 ```sh
-sudo vgcreate cinder-volumes /dev/sdb /dev/sda6
+sudo vgcreate cinder-volumes /dev/sdb
 # 成功會看到以下資訊：
 Volume group "cinder-volumes" successfully created
 ```
 
-因為只有Instance能夠存取區塊儲存Volume。但是底層的作業系統管理著這些裝置連結到Volume上。預設情況下，LVM Volume的掃描工具會掃到包含Vloume的區塊儲存裝置/dev。如果項目在Volume上使用LVM，掃描工具會檢查這些Volume，並嘗試緩存目錄，這會在底層系統與項目Volume上產生各式各樣問題，所以必須重新配置LVM，針對cinder-volume的Volume Group的設備。透過編輯```/etc/lvm/lvm.conf```完成以下設定，在```device```部分增加一個filter，只接收```/dev/sdb1```：
+因為只有 Instance 能夠存取區塊儲存 Volume。但是底層的作業系統管理著這些裝置連結到 Volume 上。預設情況下，LVM Volume的掃描工具會掃到包含Vloume的區塊儲存裝置/dev。如果項目在Volume上使用LVM，掃描工具會檢查這些Volume，並嘗試緩存目錄，這會在底層系統與項目Volume上產生各式各樣問題，所以必須重新配置LVM，針對cinder-volume的Volume Group的設備。透過編輯```/etc/lvm/lvm.conf```完成以下設定，在```device```部分增加一個filter，只接收```/dev/sdb1```：
 ```sh
 devices {
 ...
@@ -181,7 +189,7 @@ filter = [ "a/.*/" ]
 ```sh
 sudo  pvdisplay
 ```
-會看到類似以下資訊，因為我使採用兩顆不同硬碟組成的Volume，故會有點不一樣：
+會看到類似以下資訊，因為我使採用兩顆不同硬碟組成的 Volume，故會有點不一樣：
 ```
   --- Physical volume ---
   PV Name               /dev/sdb
@@ -193,53 +201,45 @@ sudo  pvdisplay
   Free PE               59362
   Allocated PE          256
   PV UUID               tsYzd6-a4s8-32iL-aYdA-AMol-qtj2-4RMhvA
-
-  --- Physical volume ---
-  PV Name               /dev/sda6
-  VG Name               cinder-volumes
-  PV Size               368.88 GiB / not usable 4.00 MiB
-  Allocatable           yes
-  PE Size               4.00 MiB
-  Total PE              94433
-  Free PE               94433
-  Allocated PE          0
-  PV UUID               c6ABuL-8hXK-3Dhx-SAMP-fq5W-12z2-lgkMtC
 ```
 ### 安裝與設置Cinder套件
 我們透過```apt-get```安裝相關套件：
 ```sh
 sudo apt-get install cinder-volume python-mysqldb
 ```
-接下來編輯```/etc/cinder/cinder.conf```，並在```[database]```部分設定以下：
-```sh
-[database]
-connection = mysql://cinder:CINDER_DBPASS@controller/cinder
-```
-在```[DEFAULT]```部分，設定RabbitMQ存取、my ip提供管理與Keystone存取、lvm backend：
+接下來編輯```/etc/cinder/cinder.conf```，並在```[DEFAULT]```部分設定以下內容：
 ```sh
 [DEFAULT]
+...
 rpc_backend = rabbit
 auth_strategy = keystone
-my_ip = MANAGEMENT_INTERFACE_IP_ADDRESS
+my_ip = MANAGEMENT_IP
 enabled_backends = lvm
-glance_host = controller
+glance_host = 10.0.0.11
 ```
-> ```MANAGEMENT_INTERFACE_IP_ADDRESS```為主機的管理網路IP位址，這邊為```10.0.0.41```
+> ```MANAGEMENT_IP```為主機的管理網路IP位址，這邊為```10.0.0.41```
 
-在```[oslo_messaging_rabbit]```部分，設定RabbitMQ資訊：
+
+在```[database]```部分設定以下內容：
+```sh
+[database]
+connection = mysql://cinder:CINDER_DBPASS@10.0.0.11/cinder
+```
+
+在```[oslo_messaging_rabbit]```部分設定以下內容：
 ```sh
 [oslo_messaging_rabbit]
-rabbit_host = controller
+rabbit_host = 10.0.0.11
 rabbit_userid = openstack
 rabbit_password = RABBIT_PASS
 ```
 > 這邊若```RABBIT_PASS```有更改的話，請記得更改。
 
-在```[keystone_authtoken]```部分，設定Keystone資訊，並註解掉其他設定：
+在```[keystone_authtoken]```部分設定以下內容：
 ```sh
 [keystone_authtoken]
-auth_uri = http://controller:5000
-auth_url = http://controller:35357
+auth_uri = http://10.0.0.11:5000
+auth_url = http://10.0.0.11:35357
 auth_plugin = password
 project_domain_id = default
 user_domain_id = default
@@ -249,7 +249,7 @@ password = CINDER_PASS
 ```
 > 這邊若```CINDER_PASS```有更改的話，請記得更改。
 
-在```[lvm]```部分，使用LVM驅動配置後台的cinder-volumes的volume group、iSCSi協定與iSCSi服務：
+在```[lvm]```部分，使用 LVM 驅動配置後台的 cinder-volumes 的 volume group、iSCSi 協定與 iSCSi 服務：
 ```sh
 [lvm]
 volume_driver = cinder.volume.drivers.lvm.LVMVolumeDriver
@@ -257,17 +257,13 @@ volume_group = cinder-volumes
 iscsi_protocol = iscsi
 iscsi_helper = tgtadm
 ```
+
 在```[oslo_concurrency]```部分，加入lock path：
 ```sh
 [oslo_concurrency]
 lock_path = /var/lock/cinder
 ```
-最後可以選擇是否要在```[DEFAULT]```中，開啟詳細Logs，為後期的故障排除提供幫助：
-```
-[DEFAULT]
-...
-verbose = True
-```
+
 ### 完成安裝
 重新開啟服務，並刪除SQLite資料庫：
 ```sh
@@ -345,8 +341,8 @@ cinder list
 | 0d81efd2-67f8-4abe-a9a7-ade2944168b5 | available | demo-volume1 |  1   |     None    |  false   |             |
 +--------------------------------------+-----------+--------------+------+-------------+----------+-------------+
 ```
-若看到```available```代表著Volume沒問題。
+若看到```available```代表著 Volume 沒問題。
 > 若不是```available```，請檢查Controller節點的```/var/log/cinder```檔案的Logs。
 
-也可以到```Dashboard```查看雲硬碟管理介面：
+最後可以到```Dashboard```查看雲硬碟管理介面：
 ![Dashboard](images/dashboard_hard.png)

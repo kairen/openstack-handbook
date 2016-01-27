@@ -24,12 +24,18 @@ source admin-openrc.sh
 ```sh
 # 建立 Neutron User
 openstack user create --password NEUTRON_PASS --email neutron@example.com neutron
+
 # 建立 Neutron Role
 openstack role add --project service --user neutron admin
+
 # 建立 Neutron service
 openstack service create --name neutron --description "OpenStack Networking" network
+
 # 建立 Neutron Endpoints
-openstack endpoint create  --publicurl http://controller:9696  --adminurl http://controller:9696  --internalurl http://controller:9696  --region RegionOne  network
+openstack endpoint create --publicurl http://10.0.0.11:9696 \
+--adminurl http://10.0.0.11:9696 \
+--internalurl http://10.0.0.11:9696 \
+--region RegionOne network
 ```
 ### 安裝與設置Neutron套件
 透過```apt-get```來安裝套件：
@@ -40,7 +46,6 @@ Networking 伺服器套件的設置包含資料庫、驗證機制、訊息佇列
 ```sh
 [DEFAULT]
 ...
-verbose = True
 rpc_backend = rabbit
 auth_strategy = keystone
 core_plugin = ml2
@@ -48,20 +53,20 @@ service_plugins = router
 allow_overlapping_ips = True
 notify_nova_on_port_status_changes = True
 notify_nova_on_port_data_changes = True
-nova_url = http://controller:8774/v2
+nova_url = http://10.0.0.11:8774/v2
 ```
 
 在```[database]```註解掉```SQLite```，並加入以下：
 ```sh
 [database]
 # connection = sqlite:////var/lib/neutron/neutron.sqlite
-connection = mysql://neutron:NEUTRON_DBPASS@controller/neutron
+connection = mysql://neutron:NEUTRON_DBPASS@10.0.0.11/neutron
 ```
 
 加入```[oslo_messaging_rabbit]```設定RabbitMQ存取：
 ```sh
 [oslo_messaging_rabbit]
-rabbit_host = controller
+rabbit_host = 10.0.0.11
 rabbit_userid = openstack
 rabbit_password = RABBIT_PASS
 ```
@@ -70,8 +75,8 @@ rabbit_password = RABBIT_PASS
 加入```[keystone_authtoken]```設定Keystone驗證：
 ```sh
 [keystone_authtoken]
-auth_uri = http://controller:5000
-auth_url = http://controller:35357
+auth_uri = http://10.0.0.11:5000
+auth_url = http://10.0.0.11:35357
 auth_plugin = password
 project_domain_id = default
 user_domain_id = default
@@ -84,11 +89,11 @@ password = NEUTRON_PASS
 在```[nova]```設定以下：
 ```sh
 [nova]
-auth_url = http://controller:35357
+auth_uri = http://10.0.0.11:5000
+auth_url = http://10.0.0.11:35357
 auth_plugin = password
 project_domain_id = default
 user_domain_id = default
-region_name = RegionOne
 project_name = service
 username = nova
 password = NOVA_PASS
@@ -133,12 +138,14 @@ firewall_driver = nova.virt.firewall.NoopFirewallDriver
 在```[neutron]```部分，設置存取的參數：
 ```sh
 [neutron]
-url = http://controller:9696
-auth_strategy = keystone
-admin_auth_url = http://controller:35357/v2.0
-admin_tenant_name = service
-admin_username = neutron
-admin_password = NEUTRON_PASS
+auth_uri = http://10.0.0.11:5000
+auth_url = http://10.0.0.11:35357
+auth_plugin = password
+project_domain_id = default
+user_domain_id = default
+project_name = service
+username = neutron
+password = NEUTRON_PASS
 ```
 > 這邊若```NEUTRON_PASS```有更改的話，請記得更改。
 
@@ -225,17 +232,17 @@ allow_overlapping_ips = True
 在```[oslo_messaging_rabbit]```加入RabbitMQ存取：
 ```sh
 [oslo_messaging_rabbit]
-rabbit_host = controller
+rabbit_host = 10.0.0.11
 rabbit_userid = openstack
 rabbit_password = RABBIT_PASS
 ```
 > 這邊若```RABBIT_PASS```有更改的話，請記得更改。
 
-在```[keystone_authtoken]```加入Keystone存取，註解其他：
+在```[keystone_authtoken]```加入 Keystone 存取服務，若已存在的參數要記得修改：
 ```sh
 [keystone_authtoken]
-auth_uri = http://controller:5000
-auth_url = http://controller:35357
+auth_uri = http://10.0.0.11:5000
+auth_url = http://10.0.0.11:35357
 auth_plugin = password
 project_domain_id = default
 user_domain_id = default
@@ -274,10 +281,10 @@ firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewal
 在```[ovs]```部分啟用tunnels，設定本地tunnel 端點，並映射外部供應商網路到```br-ex```外部網路橋接上：
 ```sh
 [ovs]
-local_ip = 10.0.1.21
+local_ip = TUNNELS_IP
 bridge_mappings = external:br-ex
 ```
-> 將```INSTANCE_TUNNELS_INTERFACE_IP_ADDRESS```取代成與Instance溝通的ip，這邊為```10.0.1.21```。
+> 將```TUNNELS_IP```取代成與Instance溝通的ip，這邊為```10.0.1.21```。
 
 在```[agent]```部分啟用GRE通道：
 ```sh
@@ -296,7 +303,7 @@ router_delete_namespaces = True
 ```
 > external_network_bridge 選項預留一個值，用來在單個代理上啟用多個外部網路。相關設定可以觀看[L3 Agent](http://docs.openstack.org/havana/config-reference/content/section_adv_cfg_l3_agent.html)。
 
-### 設定DHCP代理
+### 設定 DHCP proxy
 DHCP proxy為Instance提供DHCP服務。編輯```/etc/neutron/dhcp_agent.ini```在```[DEFAULT]```設定介面與DHCP驅動，啟用刪除廢棄路由器命名空間的功能：
 ```sh
 [DEFAULT]
@@ -327,14 +334,14 @@ echo 'dhcp-option-force=26,1454' | sudo tee /etc/neutron/dnsmasq-neutron.conf
 ```sh
 pkill dnsmasq
 ```
-### 設定metadata代理
+### 設定 Metadata agent
 metadata agent 提供一些設定訊息，如Instance的的相關資訊。編輯```/etc/neutron/metadata_agent.ini```在```[DEFAULT]```部分設定服務存取與metadata主機，註解掉不必要設定：
 ```sh
 [DEFAULT]
 ...
 verbose = True
-auth_uri = http://controller:5000
-auth_url = http://controller:35357
+auth_uri = http://10.0.0.11:5000
+auth_url = http://10.0.0.11:35357
 auth_region = RegionOne
 auth_plugin = password
 project_domain_id = default
@@ -342,7 +349,7 @@ user_domain_id = default
 project_name = service
 username = neutron
 password = NEUTRON_PASS
-nova_metadata_ip = controller
+nova_metadata_ip = 10.0.0.11
 metadata_proxy_shared_secret = METADATA_SECRET
 ```
 > 這邊若```NEUTRON_PASS```有更改的話，請記得更改。
@@ -457,7 +464,7 @@ allow_overlapping_ips = True
 在```[oslo_messaging_rabbit]```部分設定RabbitMQ：
 ```sh
 [oslo_messaging_rabbit]
-rabbit_host = controller
+rabbit_host = 10.0.0.11
 rabbit_userid = openstack
 rabbit_password = RABBIT_PASS
 ```
@@ -466,14 +473,12 @@ rabbit_password = RABBIT_PASS
 在```[keystone_authtoken]```部分設定Keystone服務，並註解到不要部分：
 ```sh
 [keystone_authtoken]
-auth_uri = http://controller:5000
-auth_url = http://controller:35357
-auth_plugin = password
-project_domain_id = default
-user_domain_id = default
-project_name = service
-username = neutron
-password = NEUTRON_PASS
+url = http://10.0.0.11:9696
+auth_strategy = keystone
+admin_auth_url = http://10.0.0.11:35357/v2.0
+admin_tenant_name = service
+admin_username = neutron
+admin_password = NEUTRON_PASS
 ```
 > 這邊若```NEUTRON_PASS```有更改的話，請記得更改。
 
@@ -501,9 +506,9 @@ firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewal
 在```[ovs]```部分，部分啟用tunnels，設定本地tunnel 端點：
 ```sh
 [ovs]
-local_ip = INSTANCE_TUNNELS_INTERFACE_IP_ADDRESS
+local_ip = TUNNELS_IP
 ```
-> 將```INSTANCE_TUNNELS_INTERFACE_IP_ADDRESS```改為Compute與Netwrok Instance溝通IP，這邊為```10.0.1.31```。
+> 將```TUNNELS_IP```改為Compute與Netwrok Instance溝通IP，這邊為```10.0.1.31```。
 
 在```[agent]```部分啟用GRE通道：
 ```sh
@@ -515,7 +520,7 @@ tunnel_types = gre
 ```sh
 sudo service openvswitch-switch restart
 ```
-### 設定Compute使用 Networking
+### 設定 Compute 使用 Networking
 預設情況下，Compute 會使用傳統網絡(nova-network)。您必需重新設定Compute 來透過Networking來管理網路。編輯```/etc/nova/nova.conf```在```[DEFAULT]```部分設定APIs和drivers：
 ```sh
 [DEFAULT]
@@ -530,12 +535,14 @@ firewall_driver = nova.virt.firewall.NoopFirewallDriver
 在```[neutron]```部分設定存取參數：
 ```sh
 [neutron]
-url = http://controller:9696
-auth_strategy = keystone
-admin_auth_url = http://controller:35357/v2.0
-admin_tenant_name = service
-admin_username = neutron
-admin_password = NEUTRON_PASS
+auth_uri = http://10.0.0.11:5000
+auth_url = http://10.0.0.11:35357
+auth_plugin = password
+project_domain_id = default
+user_domain_id = default
+project_name = service
+username = neutron
+password = NEUTRON_PASS
 ```
 > 這邊若```NEUTRON_PASS```有更改的話，請記得更改。
 

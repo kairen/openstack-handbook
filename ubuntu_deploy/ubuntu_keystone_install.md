@@ -35,15 +35,13 @@ sudo apt-get install keystone python-openstackclient apache2 libapache2-mod-wsgi
 安裝完後，編輯```/etc/keystone/keystone.conf```，將ADMIN_TOKEN替換為上一步中，產生的隨機字串：
 ```
 [DEFAULT]
-...
-verbose = True
 admin_token = e0cae61b16320e8569fd
 ```
 在```[database]```部分修改如下：
-```
+```sh
 [database]
 # connection = sqlite:////var/lib/keystone/keystone.db
-connection = mysql://keystone:KEYSTONE_DBPASS@controller/keystone
+connection = mysql://keystone:KEYSTONE_DBPASS@10.0.0.11/keystone
 ```
 在```[memcache]```部分修改如下：
 ```
@@ -69,7 +67,7 @@ sudo keystone-manage db_sync
 ### 設置Apache HTTP伺服器
 編輯```/etc/apache2/apache2.conf```的ServerName設為```controller```：
 ```
-ServerName controller
+ServerName 10.0.0.11
 ```
 再來建立```/etc/apache2/sites-available/wsgi-keystone.conf```，修改為以下：
 ```
@@ -114,7 +112,7 @@ sudo mkdir -p /var/www/cgi-bin/keystone
 ```
 從網路上下載```WSGI```元件到該目錄底下：
 ```sh
-sudo curl http://git.openstack.org/cgit/openstack/keystone/plain/httpd/keystone.py?h=stable/kilo | sudo tee /var/www/cgi-bin/keystone/main /var/www/cgi-bin/keystone/admin
+sudo curl http://git.openstack.org/cgit/openstack/keystone/plain/httpd/keystone.py?h=stable/liberty | sudo tee /var/www/cgi-bin/keystone/main /var/www/cgi-bin/keystone/admin
 ```
 透過```chown```與```chmod```調整目錄權限：
 ```sh
@@ -134,7 +132,7 @@ sudo  rm -f /var/lib/keystone/keystone.db
 首先透過```export```設定 OS_TOKEN 環境變數，輸入 openssh 建立的字串與 API URL：
 ```sh
 export OS_TOKEN=e0cae61b16320e8569fd
-export OS_URL=http://controller:35357/v2.0
+export OS_URL=http://10.0.0.11:35357/v2.0
 ```
 建立服務實體和身份驗證服務：
 ```sh
@@ -156,17 +154,20 @@ openstack service create  --name keystone --description "OpenStack Identity" ide
 
 身份驗證服務管理了一個與環境相關的API 端點的目錄。服務使用這個目錄來決定如何與環境中的其他服務進行溝通。透過以下建立一個API端點：
 ```sh
-openstack endpoint create --publicurl http://controller:5000/v2.0 --internalurl http://controller:5000/v2.0 --adminurl http://controller:35357/v2.0  --region RegionOne identity
+openstack endpoint create --publicurl http://10.0.0.11:5000/v2.0 \
+--internalurl http://10.0.0.11:5000/v2.0 \
+--adminurl http://10.0.0.11:35357/v2.0 \
+--region RegionOne identity
 ```
 會看到產生類似以下資訊：
 ```
 +--------------+----------------------------------+
 | Field        | Value                            |
 +--------------+----------------------------------+
-| adminurl     | http://controller:35357/v2.0     |
+| adminurl     | http://10.0.0.11:35357/v2.0     |
 | id           | dd69029787b04bb890d9e6ef6624f082 |
-| internalurl  | http://controller:5000/v2.0      |
-| publicurl    | http://controller:5000/v2.0      |
+| internalurl  | http://10.0.0.11:5000/v2.0      |
+| publicurl    | http://10.0.0.11:5000/v2.0      |
 | region       | RegionOne                        |
 | service_id   | 317ef3c6861d40a3b5a04b8d14b4b276 |
 | service_name | keystone                         |
@@ -181,25 +182,30 @@ openstack endpoint create --publicurl http://controller:5000/v2.0 --internalurl 
 ```sh
 # 建立 admin Project(tenant)
 openstack project create --description "Admin Project" admin
+
 # 建立 admin User
 openstack user create --password passwd --email admin@example.com admin
+
 # 建立 admin Role
 openstack role create admin
+
 # 將 admin role 加到 project與user
 openstack role add --project admin --user admin admin
+
 # 建立 service project
 openstack project create --description "Service Project" service
 ```
-為了驗證，我們建立一個沒有特權的使用者```Demo```：
+為了驗證，我們建立一個沒有特權的使用者```demo```：
 ```sh
 # 建立 demo Project(tenant)
 openstack project create --description "Demo Project" demo
+
 # 建立 demo User
 openstack user create --password demo --email demo@example.com demo
 openstack role create user
 openstack role add --project demo --user demo user
 ```
-> 你可以重複此過程來建立其他的Projects和Users。
+> 你可以重複此過程來建立其他的 Projects 和 Users。
 
 # 驗證操作
 在安裝其他服務之前，我們要確認 Keystone 的是否沒問題。首先取消```OS_TOKEN```與```OS_URL```環境變數：
@@ -208,7 +214,7 @@ unset OS_TOKEN OS_URL
 ```
 透過```admin```來驗證Identity v2.0，請求一個```token```，記得輸入設定的密碼，這邊範例為```passwd```：
 ```sh
-openstack --os-auth-url http://controller:35357 --os-project-name admin --os-username admin --os-auth-type password  token issue
+openstack --os-auth-url http://10.0.0.11:35357 --os-project-name admin --os-username admin --os-auth-type password  token issue
 ```
 成功後，會看到以下資訊：
 ```
@@ -223,7 +229,7 @@ openstack --os-auth-url http://controller:35357 --os-project-name admin --os-use
 ```
 接下來驗證Identity v3.0，因為v3.0增加了對包含Project與User的Domain的支援。Project與User可以在不同的Domain使用相同名稱，因此要使用v3.0 API，請求至少必須顯示包含```default domain```或者```User ID```。為了簡化驗證，這邊用```default domain```，這樣範例可以用使用者帳號名稱，而不是透過ID，指令如下：
 ```sh
-openstack --os-auth-url http://controller:35357  --os-project-domain-id default --os-user-domain-id default  --os-project-name admin --os-username admin --os-auth-type password  token issue
+openstack --os-auth-url http://10.0.0.11:35357  --os-project-domain-id default --os-user-domain-id default  --os-project-name admin --os-username admin --os-auth-type password  token issue
 ```
 成功的話，會如上資訊一樣。
 ```
@@ -238,7 +244,7 @@ openstack --os-auth-url http://controller:35357  --os-project-domain-id default 
 ```
 接下來透過```admin```來列出所有的```project (tenant)```，來驗證```admin```權限：
 ```sh
-openstack --os-auth-url http://controller:35357  --os-project-name admin --os-username admin --os-auth-type password  project list
+openstack --os-auth-url http://10.0.0.11:35357  --os-project-name admin --os-username admin --os-auth-type password  project list
 ```
 成功的話，會看到類似以下資訊：
 ```
@@ -252,7 +258,7 @@ openstack --os-auth-url http://controller:35357  --os-project-name admin --os-us
 ```
 也可以透過```admin```來列出所有```user```：
 ```sh
-openstack --os-auth-url http://controller:35357  --os-project-name admin --os-username admin --os-auth-type password  user list
+openstack --os-auth-url http://10.0.0.11:35357  --os-project-name admin --os-username admin --os-auth-type password  user list
 ```
 成功會看到類似以下資訊：
 ```
@@ -265,7 +271,7 @@ openstack --os-auth-url http://controller:35357  --os-project-name admin --os-us
 ```
 然後列出所有```role```：
 ```sh
-openstack --os-auth-url http://controller:35357  --os-project-name admin --os-username admin --os-auth-type password role list
+openstack --os-auth-url http://10.0.0.11:35357  --os-project-name admin --os-username admin --os-auth-type password role list
 ```
 成功會看到以下資訊，這會隨著```role```的不同，而改變：
 ```
@@ -278,7 +284,7 @@ openstack --os-auth-url http://controller:35357  --os-project-name admin --os-us
 ```
 接下來我們透過```demo```來驗證權限，先利用v3.0來獲取```token```：
 ```sh
-openstack --os-auth-url http://controller:5000  --os-project-domain-id default --os-user-domain-id default  --os-project-name demo --os-username demo --os-auth-type password  token issue
+openstack --os-auth-url http://10.0.0.11:5000  --os-project-domain-id default --os-user-domain-id default  --os-project-name demo --os-username demo --os-auth-type password  token issue
 ```
 成功會看到回傳以下資訊：
 ```
@@ -295,7 +301,7 @@ openstack --os-auth-url http://controller:5000  --os-project-domain-id default -
 
 透過```demo```來嘗試獲取擁有權限的操作：
 ```sh
-openstack --os-auth-url http://controller:5000  --os-project-domain-id default --os-user-domain-id default  --os-project-name demo --os-username demo --os-auth-type password  user list
+openstack --os-auth-url http://10.0.0.11:5000  --os-project-domain-id default --os-user-domain-id default  --os-project-name demo --os-username demo --os-auth-type password  user list
 ```
 若請求成功，會看到錯誤資訊：
 ```
@@ -312,7 +318,7 @@ export OS_PROJECT_NAME=admin
 export OS_TENANT_NAME=admin
 export OS_USERNAME=admin
 export OS_PASSWORD=passwd
-export OS_AUTH_URL=http://controller:35357/v3
+export OS_AUTH_URL=http://10.0.0.11:35357/v3
 ```
 > 注意！```OS_PASSWORD```記得修改為設定密碼，這邊採用```passwd```。
 
@@ -324,7 +330,7 @@ export OS_PROJECT_NAME=demo
 export OS_TENANT_NAME=demo
 export OS_USERNAME=demo
 export OS_PASSWORD=demo
-export OS_AUTH_URL=http://controller:5000/v3
+export OS_AUTH_URL=http://10.0.0.11:5000/v3
 ```
 > 注意！```OS_PASSWORD```記得修改為設定密碼，這邊採用```demo```。
 

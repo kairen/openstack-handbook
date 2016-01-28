@@ -51,13 +51,13 @@ servers = localhost:11211
 在```[token]```部分修改如下：
 ```
 [token]
-provider = keystone.token.providers.uuid.Provider
-driver = keystone.token.persistence.backends.memcache.Token
+provider = uuid
+driver = memcache
 ```
 在```[revoke]```部分修改如下：
 ```
 [revoke]
-driver = keystone.contrib.revoke.backends.sql.Revoke
+driver = sql
 ```
 
 完成後同步資料庫：
@@ -132,7 +132,8 @@ sudo  rm -f /var/lib/keystone/keystone.db
 首先透過```export```設定 OS_TOKEN 環境變數，輸入 openssh 建立的字串與 API URL：
 ```sh
 export OS_TOKEN=e0cae61b16320e8569fd
-export OS_URL=http://10.0.0.11:35357/v2.0
+export OS_URL=http://10.0.0.11:35357/v3
+export OS_IDENTITY_API_VERSION=3
 ```
 建立服務實體和身份驗證服務：
 ```sh

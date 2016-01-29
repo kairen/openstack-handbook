@@ -60,7 +60,11 @@ openstack role add --project service --user ceilometer admin
 openstack service create --name ceilometer  --description "Telemetry" metering
 
 # 建立 Ceilometer Endpoints API
-openstack endpoint create --publicurl http://10.0.0.11:8777 --internalurl http://10.0.0.11:8777 --adminurl http://10.0.0.11:8777 --region RegionOne metering
+openstack endpoint create \
+--publicurl http://10.0.0.11:8777 \
+--internalurl http://10.0.0.11:8777 \
+--adminurl http://10.0.0.11:8777 \
+--region RegionOne metering
 ```
 > 可自行選擇更改```CEILOMETER_PASS```密碼
 
@@ -283,7 +287,7 @@ pipeline = authtoken cache healthcheck keystoneauth proxy-logging ceilometer pro
 ...
 paste.filter_factory = ceilometermiddleware.swift:filter_factory
 control_exchange = swift
-url = rabbit://openstack:RABBIT_PASS@controller:5672/
+url = rabbit://openstack:RABBIT_PASS@10.0.0.11:5672/
 driver = messagingv2
 topic = notifications
 log_level = WARN
@@ -296,7 +300,7 @@ sudo usermod -a -G ceilometer swift
 ```
 安裝```ceilometermiddleware```套件：
 ```sh
-pip install ceilometermiddleware
+sudo pip install ceilometermiddleware
 ```
 重啟服務：
 ```sh
@@ -311,8 +315,8 @@ unset OS_USER_DOMAIN_ID
 export OS_PROJECT_NAME=admin
 export OS_TENANT_NAME=admin
 export OS_USERNAME=admin
-export OS_PASSWORD=ADMIN
-export OS_AUTH_URL=http://controller:35357
+export OS_PASSWORD=passwd
+export OS_AUTH_URL=http://10.0.0.11:35357
 export OS_IMAGE_API_VERSION=2
 export OS_VOLUME_API_VERSION=2
 ```

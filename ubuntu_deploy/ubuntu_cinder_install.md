@@ -71,13 +71,15 @@ openstack service create --name cinder  --description "OpenStack Block Storage" 
 openstack service create --name cinderv2 --description "OpenStack Block Storage" volumev2
 
 # 建立 Cinder Endpoints
-openstack endpoint create  --publicurl  http://10.0.0.11:8776/v1/%\(tenant_id\)s \
+openstack endpoint create \
+--publicurl  http://10.0.0.11:8776/v1/%\(tenant_id\)s \
 --internalurl  http://10.0.0.11:8776/v1/%\(tenant_id\)s \
 --adminurl  http://10.0.0.11:8776/v1/%\(tenant_id\)s \
 --region RegionOne volume
 
 # 建立 Cinder v2 Endpoints
-openstack endpoint create --publicurl http://10.0.0.11:8776/v2/%\(tenant_id\)s \
+openstack endpoint create \
+--publicurl http://10.0.0.11:8776/v2/%\(tenant_id\)s \
 --internalurl http://10.0.0.11:8776/v2/%\(tenant_id\)s \
 --adminurl http://10.0.0.11:8776/v2/%\(tenant_id\)s \
 --region RegionOne volumev2

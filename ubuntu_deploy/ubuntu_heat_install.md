@@ -23,22 +23,38 @@ source admin-openrc.sh
 ```sh
 # 建立 Heat User
 openstack user create --password HEAT_PASS --email heat@example.com heat
+
 # 建立 Heat Role
 openstack role add --project service --user heat admin
+
 # 建立 Heat stack owner
 openstack role create heat_stack_owner
+
 # 建立 Owner Role
 openstack role add --project demo --user demo heat_stack_owner
+
 # 建立 Heat stack user
 openstack role create heat_stack_user
+
 # 建立 Heat service
 openstack service create --name heat --description "Orchestration" orchestration
+
 # 建立 Heat-cfn 服務
 openstack service create --name heat-cfn  --description "Orchestration" cloudformation
+
 # 建立 Heat orchestration endpoints
-openstack endpoint create  --publicurl http://controller:8004/v1/%\(tenant_id\)s  --internalurl http://controller:8004/v1/%\(tenant_id\)s --adminurl http://controller:8004/v1/%\(tenant_id\)s  --region RegionOne  orchestration
+openstack endpoint create \
+--publicurl http://10.0.0.11:8004/v1/%\(tenant_id\)s \
+--internalurl http://10.0.0.11:8004/v1/%\(tenant_id\)s \
+--adminurl http://10.0.0.11:8004/v1/%\(tenant_id\)s \
+--region RegionOne orchestration
+
 # 建立 Heat cloudformation endpoinst
-openstack endpoint create  --publicurl http://controller:8000/v1  --internalurl http://controller:8000/v1 --adminurl http://controller:8000/v1  --region RegionOne cloudformation
+openstack endpoint create \
+--publicurl http://10.0.0.11:8000/v1 \
+--internalurl http://10.0.0.11:8000/v1 \
+--adminurl http://10.0.0.11:8000/v1 \
+--region RegionOne cloudformation
 ```
 > 這邊若```HEAT_PASS```要更改的話，可以更改。
 
@@ -47,21 +63,13 @@ openstack endpoint create  --publicurl http://controller:8000/v1  --internalurl 
 ```sh
 sudo apt-get install heat-api heat-api-cfn heat-engine python-heatclient
 ```
-編輯```/etc/heat/heat.conf```，在```[database]```部分加入：
-```
-[database]
-...
-connection = mysql://heat:HEAT_DBPASS@controller/heat
-```
-> 這邊若```HEAT_DBPASS```有更改的話，請記得更改。
-
-在```[DEFAULT]```部分，設定RabbitMQ、Keystone存取、metadata與url、heat 認證服務：
+編輯```/etc/heat/heat.conf```，在```[DEFAULT]```部分，設定RabbitMQ、Keystone存取、metadata與url、heat 認證服務：
 ```
 [DEFAULT]
 ...
 rpc_backend = rabbit
-heat_metadata_server_url = http://controller:8000
-heat_waitcondition_server_url = http://controller:8000/v1/waitcondition
+heat_metadata_server_url = http://10.0.0.11:8000
+heat_waitcondition_server_url = http://10.0.0.11:8000/v1/waitcondition
 
 stack_domain_admin = heat_domain_admin
 stack_domain_admin_password = HEAT_PASS
@@ -69,10 +77,21 @@ stack_user_domain_name = heat_user_domain
 ```
 > 這邊若```HEAT_PASS```有更改的話，請記得更改。
 
-在```[oslo_messaging_rabbit]```部分，設定RabbitMQ：
+
+在```[database]```部分加入：
+```
+[database]
+...
+connection = mysql://heat:HEAT_DBPASS@10.0.0.11/heat
+```
+> 這邊若```HEAT_DBPASS```有更改的話，請記得更改。
+
+
+
+在```[oslo_messaging_rabbit]```部分，設定 Rabbit Server：
 ```
 [oslo_messaging_rabbit]
-rabbit_host = controller
+rabbit_host = 10.0.0.11
 rabbit_userid = openstack
 rabbit_password = RABBIT_PASS
 ```
@@ -81,29 +100,44 @@ rabbit_password = RABBIT_PASS
 在```[keystone_authtoken]```與```[ec2authtoken]```部分，設定keystone存取以及註解所有auth_host、auth_port 和auth_protocol，因為Keystone預設已包含：
 ```
 [keystone_authtoken]
-auth_uri = http://controller:5000/v2.0
-identity_uri = http://controller:35357
-admin_tenant_name = service
-admin_user = heat
-admin_password = HEAT_PASS
+auth_uri = http://10.0.0.11:5000
+auth_url = http://10.0.0.11:35357
+auth_plugin = password
+project_domain_id = default
+user_domain_id = default
+project_name = service
+username = heat
+password = HEAT_PASS
+
+[clients_keystone]
+auth_uri = http://10.0.0.11:5000
 
 [ec2authtoken]
-auth_uri = http://controller:5000/v2.0
+auth_uri = http://10.0.0.11:5000
 ```
 > 這邊若```HEAT_PASS```有更改的話，請記得更改。
 
-最後可以選擇是否要在```[DEFAULT]```中，開啟詳細Logs，為後期的故障排除提供幫助：
+在```[trustee]```部分，加入一下：
+```sh
+[trustee]
+auth_uri = http://10.0.0.11:5000
+auth_url = http://10.0.0.11:35357
+auth_plugin = password
+project_domain_id = default
+user_domain_id = default
+project_name = service
+username = heat
+password = HEAT_PASS
 ```
-[DEFAULT]
-...
-verbose = True
-```
-完成後建立Heat Domain：
+
+完成後建立 Heat Domain：
 ```sh
 heat-keystone-setup-domain  --stack-user-domain-name heat_user_domain --stack-domain-admin heat_domain_admin --stack-domain-admin-password HEAT_DOMAIN_PASS
 ```
-會取得以下資訊，並更新```/etc/heat/heat.conf```的```[DEFAULT]```以下資訊：
+會取得以下資訊，並手動更新```/etc/heat/heat.conf```的```[DEFAULT]```改為以下內容：
 ```
+[DEFAULT]
+...
 stack_user_domain_id=1a6d106bf43641f2bdcb7ded3a49e6a2
 stack_domain_admin=heat_domain_admin
 stack_domain_admin_password=HEAT_DOMAIN_PASS
@@ -157,6 +191,8 @@ outputs:
 NET_ID=$(nova net-list | awk '/ demo-net / { print $2 }')
 heat stack-create -f test-stack.yml -P "ImageID=cirros-0.3.4-x86_64;NetID=$NET_ID" testStack
 ```
+> ```P.S``` 這邊的 ```NET_ID``` 要注意執行指令時，抓取的網路是否存在。
+
 成功會看到類似以下資訊：
 ```
 +--------------------------------------+------------+--------------------+----------------------+

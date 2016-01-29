@@ -30,7 +30,8 @@ openstack role add --project service --user glance admin
 openstack service create --name glance  --description "OpenStack Image service" image
 
 # 建立 Glance Endpoints
-openstack endpoint create --publicurl http://10.0.0.11:9292 \
+openstack endpoint create \
+--publicurl http://10.0.0.11:9292 \
 --internalurl http://10.0.0.11:9292 \
 --adminurl http://10.0.0.11:9292 \
 --region RegionOne image

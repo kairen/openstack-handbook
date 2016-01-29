@@ -132,8 +132,7 @@ sudo  rm -f /var/lib/keystone/keystone.db
 首先透過```export```設定 OS_TOKEN 環境變數，輸入 openssh 建立的字串與 API URL：
 ```sh
 export OS_TOKEN=e0cae61b16320e8569fd
-export OS_URL=http://10.0.0.11:35357/v3
-export OS_IDENTITY_API_VERSION=3
+export OS_URL=http://10.0.0.11:35357/v2.0
 ```
 建立服務實體和身份驗證服務：
 ```sh
@@ -155,7 +154,8 @@ openstack service create  --name keystone --description "OpenStack Identity" ide
 
 身份驗證服務管理了一個與環境相關的API 端點的目錄。服務使用這個目錄來決定如何與環境中的其他服務進行溝通。透過以下建立一個API端點：
 ```sh
-openstack endpoint create --publicurl http://10.0.0.11:5000/v2.0 \
+openstack endpoint create \
+--publicurl http://10.0.0.11:5000/v2.0 \
 --internalurl http://10.0.0.11:5000/v2.0 \
 --adminurl http://10.0.0.11:35357/v2.0 \
 --region RegionOne identity

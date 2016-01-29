@@ -31,7 +31,8 @@ openstack role add --project service --user nova admin
 openstack service create --name nova --description "OpenStack Compute" compute
 
 # 建立 Nova Endpoints
-openstack endpoint create  --publicurl http://10.0.0.11:8774/v2/%\(tenant_id\)s \
+openstack endpoint create \
+--publicurl http://10.0.0.11:8774/v2/%\(tenant_id\)s \
 --internalurl http://10.0.0.11:8774/v2/%\(tenant_id\)s \
 --adminurl http://10.0.0.11:8774/v2/%\(tenant_id\)s \
 --region RegionOne compute

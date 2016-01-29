@@ -71,9 +71,10 @@ openstack role add --project service --user swift admin
 openstack service create --name swift  --description "OpenStack Object Storage" object-store
 
 # 建立 Swift URL
-openstack endpoint create --publicurl 'http://controller:8080/v1/AUTH_%(tenant_id)s' \
---internalurl 'http://controller:8080/v1/AUTH_%(tenant_id)s' \
---adminurl http://controller:8080 \
+openstack endpoint create \
+--publicurl 'http://10.0.0.11:8080/v1/AUTH_%(tenant_id)s' \
+--internalurl 'http://10.0.0.11:8080/v1/AUTH_%(tenant_id)s' \
+--adminurl http://10.0.0.11:8080/v1 \
 --region RegionOne  object-store
 ```
 ### 安裝與設置Swift套件
@@ -119,8 +120,8 @@ operator_roles = admin,user
 [filter:authtoken]
 paste.filter_factory = keystonemiddleware.auth_token:filter_factory
 ...
-auth_uri = http://controller:5000
-auth_url = http://controller:35357
+auth_uri = http://10.0.0.11:5000
+auth_url = http://10.0.0.11:35357
 auth_plugin = password
 project_domain_id = default
 user_domain_id = default
@@ -491,6 +492,9 @@ ssh object2 sudo swift-init all start
 # 驗證操作
 這個部分，將描述如何在```Controller```驗證物件存儲服務的操作。
 > Swift Client需要使用 -V 3參數，來使用驗證版本V3 API。
+```sh
+$ echo "export OS_AUTH_VERSION=3" | tee -a admin-openrc.sh demo-openrc.sh
+```
 
 首先使用```demo```來驗證：
 ```sh

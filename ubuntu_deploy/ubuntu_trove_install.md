@@ -23,17 +23,18 @@ source admin-openrc.sh
 ```sh
 # 建立 Trove User
 openstack user create --password TROVE_PASS --email trove@example.com trove
+
 # 建立 Trove Role
 openstack role add --project service --user trove admin
+
 # 建立 Trove Service
 openstack service create --name trove  --description "OpenStack Database service" database
+
 # 建立 Trove Endpoint
-openstack endpoint create \
-  --publicurl http://controller:8779/v1.0/%\(tenant_id\)s \
-  --internalurl http://controller:8779/v1.0/%\(tenant_id\)s \
-  --adminurl http://controller:8779/v1.0/%\(tenant_id\)s \
-  --region RegionOne \
-  database
+openstack endpoint create --publicurl http://10.0.0.11:8779/v1.0/%\(tenant_id\)s \
+--internalurl http://10.0.0.11:8779/v1.0/%\(tenant_id\)s \
+--adminurl http://10.0.0.11:8779/v1.0/%\(tenant_id\)s \
+--region RegionOne database
 ```
 > 這邊若 ```TROVE_PASS``` 要更改的話，可以更改。
 

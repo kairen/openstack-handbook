@@ -63,13 +63,18 @@ openstack endpoint create \
 ```sh
 sudo apt-get install heat-api heat-api-cfn heat-engine python-heatclient
 ```
+> 若有使用```magnum```的話，請務必再安裝```heat-api-cloudwatch```。
+
 編輯```/etc/heat/heat.conf```，在```[DEFAULT]```部分，設定RabbitMQ、Keystone存取、metadata與url、heat 認證服務：
 ```
 [DEFAULT]
 ...
+debug = True
 rpc_backend = rabbit
-heat_metadata_server_url = http://10.0.0.11:8000
+
+heat_watch_server_url = http://10.0.0.11:8003
 heat_waitcondition_server_url = http://10.0.0.11:8000/v1/waitcondition
+heat_metadata_server_url = http://10.0.0.11:8000
 
 stack_domain_admin = heat_domain_admin
 stack_domain_admin_password = HEAT_PASS
@@ -86,8 +91,6 @@ connection = mysql://heat:HEAT_DBPASS@10.0.0.11/heat
 ```
 > 這邊若```HEAT_DBPASS```有更改的話，請記得更改。
 
-
-
 在```[oslo_messaging_rabbit]```部分，設定 Rabbit Server：
 ```
 [oslo_messaging_rabbit]
@@ -97,9 +100,10 @@ rabbit_password = RABBIT_PASS
 ```
 > 這邊若```RABBIT_PASS```有更改的話，請記得更改。
 
-在```[keystone_authtoken]```與```[ec2authtoken]```部分，設定keystone存取以及註解所有auth_host、auth_port 和auth_protocol，因為Keystone預設已包含：
+在```[keystone_authtoken]```部分，設定以下內容：
 ```
 [keystone_authtoken]
+memcache_servers = localhost:11211
 auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
 auth_plugin = password
@@ -108,26 +112,37 @@ user_domain_id = default
 project_name = service
 username = heat
 password = HEAT_PASS
-
-[clients_keystone]
-auth_uri = http://10.0.0.11:5000
-
-[ec2authtoken]
-auth_uri = http://10.0.0.11:5000
 ```
 > 這邊若```HEAT_PASS```有更改的話，請記得更改。
 
 在```[trustee]```部分，加入一下：
 ```sh
 [trustee]
-auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
 auth_plugin = password
-project_domain_id = default
 user_domain_id = default
-project_name = service
 username = heat
 password = HEAT_PASS
+```
+> 這邊若```HEAT_PASS```有更改的話，請記得更改。
+
+在```/etc/heat/heat.conf```最後一行加入以下內容：
+```sh
+[clients_keystone]
+auth_uri = http://10.0.0.11:5000
+
+[ec2authtoken]
+auth_uri = http://10.0.0.11:5000
+
+[heat_api]
+workers = 2
+bind_port = 8004
+
+[heat_api_cfn]
+bind_port = 8000
+
+[heat_api_cloudwatch]
+bind_port = 8003
 ```
 
 完成後建立 Heat Domain：

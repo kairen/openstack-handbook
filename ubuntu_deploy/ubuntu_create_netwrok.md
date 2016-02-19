@@ -15,7 +15,9 @@ source admin-openrc.sh
 ```
 透過```neutron net-create```指令建立網路：
 ```sh
-neutron net-create ext-net --router:external --provider:physical_network external --provider:network_type flat
+neutron net-create ext-net --router:external \
+--provider:physical_network external \
+--provider:network_type flat
 ```
 成功的話會看到類似以下資訊：
 ```sh
@@ -41,7 +43,10 @@ neutron net-create ext-net --router:external --provider:physical_network externa
 #### 建立外部子網路
 我們可以透過```neutron subnet-create```建立子網路：
 ```sh
-neutron subnet-create ext-net EXTERNAL_NETWORK_CIDR --name ext-subnet  --allocation-pool start=FLOATING_IP_START,end=FLOATING_IP_END  --disable-dhcp --gateway EXTERNAL_NETWORK_GATEWAY
+neutron subnet-create ext-net EXTERNAL_NETWORK_CIDR \
+--allocation-pool start=FLOATING_IP_START,end=FLOATING_IP_END \
+--disable-dhcp --gateway EXTERNAL_NETWORK_GATEWAY \
+--name ext-subnet
 ```
 > * 使用想用來分配給浮動IP的第一個或最後一個IP來替換```FLOATING_IP_START```與```FLOATING_IP_END```。
 * 用與物理網路相關的子網路替換```EXTERNAL_NETWORK_CIDR```。
@@ -50,7 +55,10 @@ neutron subnet-create ext-net EXTERNAL_NETWORK_CIDR --name ext-subnet  --allocat
 
 如下面範例所示：
 ```sh
-neutron subnet-create ext-net 192.168.20.0/24 --name ext-subnet --allocation-pool start=192.168.20.101,end=192.168.20.200 --disable-dhcp --gateway 192.168.20.1
+neutron subnet-create ext-net 192.168.20.0/24 \
+--allocation-pool start=192.168.20.101,end=192.168.20.200 \
+--disable-dhcp --gateway 192.168.20.1 \
+--name ext-subnet
 ```
 成功的話會看到類似以下資訊：
 ```
@@ -110,14 +118,16 @@ neutron net-create demo-net
 #### 租戶網路建立子網路
 透過```neutron subnet-create```建立子網路：
 ```sh
-neutron subnet-create demo-net TENANT_NETWORK_CIDR  --name demo-subnet --gateway TENANT_NETWORK_GATEWAY
+neutron subnet-create demo-net TENANT_NETWORK_CIDR \
+--name demo-subnet --gateway TENANT_NETWORK_GATEWAY
 ```
 > * 將```TENANT_NETWORK_CIDR```替換為你想關聯到租戶網路的子網路。
 * 將```TENANT_NETWORK_GATEWAY```替換為你想關聯的子網路Gateway。
 
 這邊建立一個```192.168.1.0/24```的子網路：
 ```sh
-neutron subnet-create demo-net 192.168.1.0/24  --name demo-subnet --gateway 192.168.1.1
+neutron subnet-create demo-net 192.168.1.0/24 \
+--name demo-subnet --gateway 192.168.1.1
 ```
 成功會看到類似以下資訊：
 ```

@@ -16,10 +16,10 @@ GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'%' IDENTIFIED BY 'KEYSTONE_DBP
 
 完成後，透過```quit```指令離開資料庫，並透過```openssl```建立一個隨機的admin token：
 ```sh
-openssl rand -hex 10
+openssl rand -hex 24
 
 # 會產生如下密碼
-e0cae61b16320e8569fd
+21d7fb48086e09f30d40be5a5e95a7196f2052b2cae6b491
 ```
 ### 安裝與設置Keystone套件
 首先我們設定安裝完成後，不要自動開啟服務：
@@ -35,7 +35,7 @@ sudo apt-get install keystone python-openstackclient apache2 libapache2-mod-wsgi
 安裝完後，編輯```/etc/keystone/keystone.conf```，將ADMIN_TOKEN替換為上一步中，產生的隨機字串：
 ```
 [DEFAULT]
-admin_token = e0cae61b16320e8569fd
+admin_token = 21d7fb48086e09f30d40be5a5e95a7196f2052b2cae6b491
 ```
 在```[database]```部分修改如下：
 ```sh
@@ -131,12 +131,13 @@ sudo  rm -f /var/lib/keystone/keystone.db
 # 建立服務實體和 API 端點
 首先透過```export```設定 OS_TOKEN 環境變數，輸入 openssh 建立的字串與 API URL：
 ```sh
-export OS_TOKEN=e0cae61b16320e8569fd
+export OS_TOKEN=21d7fb48086e09f30d40be5a5e95a7196f2052b2cae6b491
 export OS_URL=http://10.0.0.11:35357/v2.0
 ```
 建立服務實體和身份驗證服務：
 ```sh
-openstack service create  --name keystone --description "OpenStack Identity" identity
+openstack service create --name keystone \
+--description "OpenStack Identity" identity
 ```
 會看到產生類似以下資訊：
 ```
@@ -215,7 +216,11 @@ unset OS_TOKEN OS_URL
 ```
 透過```admin```來驗證Identity v2.0，請求一個```token```，記得輸入設定的密碼，這邊範例為```passwd```：
 ```sh
-openstack --os-auth-url http://10.0.0.11:35357 --os-project-name admin --os-username admin --os-auth-type password  token issue
+openstack --os-auth-url http://10.0.0.11:35357 \
+--os-project-name admin \
+--os-username admin \
+--os-auth-type password \
+token issue
 ```
 成功後，會看到以下資訊：
 ```
@@ -230,7 +235,13 @@ openstack --os-auth-url http://10.0.0.11:35357 --os-project-name admin --os-user
 ```
 接下來驗證Identity v3.0，因為v3.0增加了對包含Project與User的Domain的支援。Project與User可以在不同的Domain使用相同名稱，因此要使用v3.0 API，請求至少必須顯示包含```default domain```或者```User ID```。為了簡化驗證，這邊用```default domain```，這樣範例可以用使用者帳號名稱，而不是透過ID，指令如下：
 ```sh
-openstack --os-auth-url http://10.0.0.11:35357  --os-project-domain-id default --os-user-domain-id default  --os-project-name admin --os-username admin --os-auth-type password  token issue
+openstack --os-auth-url http://10.0.0.11:35357 \
+--os-project-domain-id default \
+--os-user-domain-id default \
+--os-project-name admin \
+--os-username admin \
+--os-auth-type password \
+token issue
 ```
 成功的話，會如上資訊一樣。
 ```
@@ -245,7 +256,11 @@ openstack --os-auth-url http://10.0.0.11:35357  --os-project-domain-id default -
 ```
 接下來透過```admin```來列出所有的```project (tenant)```，來驗證```admin```權限：
 ```sh
-openstack --os-auth-url http://10.0.0.11:35357  --os-project-name admin --os-username admin --os-auth-type password  project list
+openstack --os-auth-url http://10.0.0.11:35357 \
+--os-project-name admin \
+--os-username admin \
+--os-auth-type password \
+project list
 ```
 成功的話，會看到類似以下資訊：
 ```
@@ -259,7 +274,11 @@ openstack --os-auth-url http://10.0.0.11:35357  --os-project-name admin --os-use
 ```
 也可以透過```admin```來列出所有```user```：
 ```sh
-openstack --os-auth-url http://10.0.0.11:35357  --os-project-name admin --os-username admin --os-auth-type password  user list
+openstack --os-auth-url http://10.0.0.11:35357 \
+--os-project-name admin \
+--os-username admin \
+--os-auth-type password \
+user list
 ```
 成功會看到類似以下資訊：
 ```
@@ -272,7 +291,11 @@ openstack --os-auth-url http://10.0.0.11:35357  --os-project-name admin --os-use
 ```
 然後列出所有```role```：
 ```sh
-openstack --os-auth-url http://10.0.0.11:35357  --os-project-name admin --os-username admin --os-auth-type password role list
+openstack --os-auth-url http://10.0.0.11:35357 \
+--os-project-name admin \
+--os-username admin \
+--os-auth-type password \
+role list
 ```
 成功會看到以下資訊，這會隨著```role```的不同，而改變：
 ```
@@ -285,7 +308,13 @@ openstack --os-auth-url http://10.0.0.11:35357  --os-project-name admin --os-use
 ```
 接下來我們透過```demo```來驗證權限，先利用v3.0來獲取```token```：
 ```sh
-openstack --os-auth-url http://10.0.0.11:5000  --os-project-domain-id default --os-user-domain-id default  --os-project-name demo --os-username demo --os-auth-type password  token issue
+openstack --os-auth-url http://10.0.0.11:5000 \
+--os-project-domain-id default \
+--os-user-domain-id default \
+--os-project-name demo \
+--os-username demo \
+--os-auth-type password \
+token issue
 ```
 成功會看到回傳以下資訊：
 ```
@@ -302,7 +331,13 @@ openstack --os-auth-url http://10.0.0.11:5000  --os-project-domain-id default --
 
 透過```demo```來嘗試獲取擁有權限的操作：
 ```sh
-openstack --os-auth-url http://10.0.0.11:5000  --os-project-domain-id default --os-user-domain-id default  --os-project-name demo --os-username demo --os-auth-type password  user list
+openstack --os-auth-url http://10.0.0.11:5000 \
+--os-project-domain-id default \
+--os-user-domain-id default \
+--os-project-name demo \
+--os-username demo \
+--os-auth-type password \
+user list
 ```
 若請求成功，會看到錯誤資訊：
 ```

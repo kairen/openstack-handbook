@@ -193,7 +193,7 @@ os_region_name = RegionOne
 在```[publisher] ```修改一下：
 ```
 [publisher]
-telemetry_secret = d246a04c645a2fa04d9
+telemetry_secret = TELEMETRY_SECRET
 ```
 > 將```TELEMETRY_SECRET```更改為剛剛產生的亂數字串 ```d246a04c645a2fa04d9```
 
@@ -332,3 +332,7 @@ ceilometer meter-list
 ```sh
 ceilometer statistics -m image.download -p 60
 ```
+
+# 參考與其他資訊
+* [Ceilometer Measurements](http://docs.openstack.org/admin-guide-cloud/telemetry-measurements.html)
+* [OpenStack configuration overview for ceilometer](http://docs.openstack.org/liberty/config-reference/content/section_ceilometer.conf.html)

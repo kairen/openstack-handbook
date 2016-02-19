@@ -132,7 +132,10 @@ wget -P /tmp/images http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-d
 ```
 利用```QCOW2```磁碟格式，與```空白的```容器格式，並且為公有映樣檔，來提供往後使用：
 ```sh
-glance image-create --name "cirros-0.3.4-x86_64" --file /tmp/images/cirros-0.3.4-x86_64-disk.img  --disk-format qcow2 --container-format bare --visibility public --progress
+glance image-create --name "cirros-0.3.4-x86_64" \
+--file /tmp/images/cirros-0.3.4-x86_64-disk.img \
+--disk-format qcow2 --container-format bare \
+--visibility public --progress
 ```
 > * 有關```glance image-create```指令的參數，可以參考 [Glacne Doc](http://docs.openstack.org/cli-reference/content/glanceclient_commands.html#glanceclient_subcommand_image-create) 的指令指南。
 * 有關映像檔格式的資訊，可以參考 [Disk and container formats for images](http://docs.openstack.org/image-guide/content/image-formats.html)。

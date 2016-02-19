@@ -7,7 +7,7 @@
 
 首先我們先將user設置為不需要密碼的sudoer (以openstack使用者為例)：
 ```sh
-echo "openstack ALL = (root) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/openstack && sudo chmod 440 /etc/sudoers.d/openstack
+$ echo "openstack ALL = (root) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/openstack && sudo chmod 440 /etc/sudoers.d/openstack
 ```
 
 ### 套件更新
@@ -18,24 +18,24 @@ echo "deb http://ubuntu-cloud.archive.canonical.com/ubuntu trusty-updates/kilo m
 ```
 更新套件後，並重新開機：
 ```sh
-sudo apt-get update && sudo apt-get -y upgrade
-sudo reboot
+$ sudo apt-get update && sudo apt-get -y upgrade
+$ sudo reboot
 ```
 
 ### 安裝 RaabitMQ server
 首先安裝套件：
 ```sh
-sudo apt-get install -y rabbitmq-server
+$ sudo apt-get install -y rabbitmq-server
 ```
 更改RabbitMQ的guest密碼：
 ```sh
-sudo rabbitmqctl change_password guest rabbit
+$ sudo rabbitmqctl change_password guest rabbit
 ```
 
 ### 安裝 MySQL server
 安裝Database:
 ```sh
-sudo apt-get install -y mysql-server python-mysqldb
+$ sudo apt-get install -y mysql-server python-mysqldb
 ```
 編輯``` /etc/mysql/my.cnf```檔案，若是15.04則編輯```/etc/mysql/mysql.conf.d/mysqld.cnf```，加入一下：
 ```txt
@@ -50,12 +50,12 @@ character-set-server = utf8
 ```
 重啟服務：
 ```sh
-sudo service mysql restart
+$ sudo service mysql restart
 ```
 ### 安裝ntp、vlan、bridge-utils
 安裝網路相關套件：
 ```sh
-sudo apt-get install -y ntp vlan bridge-utils
+$ sudo apt-get install -y ntp vlan bridge-utils
 ```
 並且編輯```/etc/sysctl.conf```，修改以下：
 ```txt
@@ -71,11 +71,11 @@ sudo sysctl -p
 # Keystone
 安裝驗證套件：
 ```sh
-sudo apt-get install -y keystone
+$ sudo apt-get install -y keystone
 ```
 在database新增，keystone套件資料庫：
 ```sh
-mysql -u root -p
+$ mysql -u root -p
 ```
 ```sql
 CREATE DATABASE keystone;
@@ -93,31 +93,36 @@ connection = mysql://keystone:keystone_dbpass@172.16.240.135/keystone
 ```
 重啟服務：
 ```sh
-sudo service keystone restart
-sudo keystone-manage db_sync
+$ sudo service keystone restart
+$ sudo keystone-manage db_sync
 ```
 新增keystone 驗證，首先export兩個環境變數```api url```與```service account```:
 ```sh
-export OS_SERVICE_TOKEN=ADMIN
-export OS_SERVICE_ENDPOINT=http://172.16.240.135:35357/v2.0
+$ export OS_SERVICE_TOKEN=ADMIN
+$ export OS_SERVICE_ENDPOINT=http://172.16.240.135:35357/v2.0
 ```
 開始新增驗證角色與服務：
 ```sh
-keystone tenant-create --name=admin --description="Admin Tenant"
-keystone tenant-create --name=service --description="Service Tenant"
-keystone user-create --name=admin --pass=ADMIN --email=admin@example.com
-keystone role-create --name=admin
-keystone user-role-add --user=admin --tenant=admin --role=admin
+$ keystone tenant-create --name=admin --description="Admin Tenant"
+
+$ keystone tenant-create --name=service --description="Service Tenant"
+
+$ keystone user-create --name=admin --pass=ADMIN --email=admin@example.com
+
+$ keystone role-create --name=admin
+
+$ keystone user-role-add --user=admin --tenant=admin --role=admin
 ```
 建立Keystone service與endpoint :
 ```sh
-keystone service-create --name=keystone --type=identity --description="Keystone Identity Service"
-keystone endpoint-create --service=keystone --publicurl=http://172.16.240.135:5000/v2.0 --internalurl=http://172.16.240.135:5000/v2.0 --adminurl=http://172.16.240.135:35357/v2.0
+$ keystone service-create --name=keystone --type=identity --description="Keystone Identity Service"
+
+$ keystone endpoint-create --service=keystone --publicurl=http://172.16.240.135:5000/v2.0 --internalurl=http://172.16.240.135:5000/v2.0 --adminurl=http://172.16.240.135:35357/v2.0
 ```
 完成後Unset掉環境變數：
 ```sh
-unset OS_SERVICE_TOKEN
-unset OS_SERVICE_ENDPOINT
+$ unset OS_SERVICE_TOKEN
+$ unset OS_SERVICE_ENDPOINT
 ```
 建立一個檔案名為```creds``，並加入以下，我們會用來設定環境變數用：
 ```sh
@@ -128,22 +133,22 @@ export OS_AUTH_URL=http://172.16.240.135:35357/v2.0
 ```
 完成後，透過```source```來建置驗證環境變數：
 ```sh
-source creds
+$ source creds
 ```
 測試KeyStone是否正常：
 ```sh
-keystone token-get
-keystone user-list
+$ keystone token-get
+$ keystone user-list
 ```
 
 # Glance
 首先安裝套件：
 ```sh
-sudo apt-get install -y glance
+$ sudo apt-get install -y glance
 ```
 一樣建立Service 資料庫:
 ```sh
-mysql -u root -p
+$ mysql -u root -p
 ```
 ```sql
 CREATE DATABASE glance;
@@ -153,10 +158,10 @@ quit;
 ```
 建立KeyStone的Glance entries:
 ```sh
-keystone user-create --name=glance --pass=glance_pass --email=glance@example.com
-keystone user-role-add --user=glance --tenant=service --role=admin
-keystone service-create --name=glance --type=image --description="Glance Image Service"
-keystone endpoint-create --service=glance --publicurl=http://172.16.240.135:9292 --internalurl=http://172.16.240.135:9292 --adminurl=http://172.16.240.135:9292
+$ keystone user-create --name=glance --pass=glance_pass --email=glance@example.com
+$ keystone user-role-add --user=glance --tenant=service --role=admin
+$ keystone service-create --name=glance --type=image --description="Glance Image Service"
+$ keystone endpoint-create --service=glance --publicurl=http://172.16.240.135:9292 --internalurl=http://172.16.240.135:9292 --adminurl=http://172.16.240.135:9292
 ```
 編輯```/etc/glance/glance-api.conf```，並修改一下：
 ```txt
@@ -191,28 +196,29 @@ flavor = keystone
 ```
 重啟服務：
 ```sh
-sudo service glance-api restart
-sudo service glance-registry restart
+$ sudo service glance-api restart
+$ sudo service glance-registry restart
 ```
 同步資料庫：
 ```sh
-sudo glance-manage db_sync
-````
+$ sudo glance-manage db_sync
+```
+
 下載一個映像檔 Example```Cirros```:
 ```sh
-glance image-create --name Cirros --is-public true --container-format bare --disk-format qcow2 --location https://launchpad.net/cirros/trunk/0.3.0/+download/cirros-0.3.0-x86_64-disk.img
-glance image-list
+$ glance image-create --name Cirros --is-public true --container-format bare --disk-format qcow2 --location https://launchpad.net/cirros/trunk/0.3.0/+download/cirros-0.3.0-x86_64-disk.img
+$ glance image-list
 ```
 > Cirros 是OpenStack的小型的測試OS。
 
 # Nova
 安裝套件：
 ```sh
-sudo apt-get install -y nova-api nova-cert nova-conductor nova-consoleauth nova-novncproxy nova-scheduler python-novaclient nova-compute nova-console
+$ sudo apt-get install -y nova-api nova-cert nova-conductor nova-consoleauth nova-novncproxy nova-scheduler python-novaclient nova-compute nova-console
 ```
 建立Nova資料庫：
 ```sh
-mysql -u root -p
+$ mysql -u root -p
 ```
 ```sql
 CREATE DATABASE nova;
@@ -222,10 +228,10 @@ quit
 ```
 建立Nova的KeyStone entries:
 ```sh
-keystone user-create --name=nova --pass=nova_pass --email=nova@example.com
-keystone user-role-add --user=nova --tenant=service --role=admin
-keystone service-create --name=nova --type=compute --description="OpenStack Compute"
-keystone endpoint-create --service=nova --publicurl=http://172.16.240.135:8774/v2/%\(tenant_id\)s --internalurl=http://172.16.240.135:8774/v2/%\(tenant_id\)s --adminurl=http://172.16.240.135:8774/v2/%\(tenant_id\)s
+$ keystone user-create --name=nova --pass=nova_pass --email=nova@example.com
+$ keystone user-role-add --user=nova --tenant=service --role=admin
+$ keystone service-create --name=nova --type=compute --description="OpenStack Compute"
+$ keystone endpoint-create --service=nova --publicurl=http://172.16.240.135:8774/v2/%\(tenant_id\)s --internalurl=http://172.16.240.135:8774/v2/%\(tenant_id\)s --adminurl=http://172.16.240.135:8774/v2/%\(tenant_id\)s
 ```
 編輯```/etc/nova/nova.conf```，並修改一下：
 ```txt
@@ -291,7 +297,7 @@ admin_password = neutron_pass
 ```
 同步資料庫：
 ```sh
-sudo nova-manage db sync
+$ sudo nova-manage db sync
 ```
 重新開啟相關服務：
 ```sh
@@ -306,18 +312,18 @@ sudo service nova-console restart
 ```
 測試Nova是否正常：
 ```sh
-nova-manage service list
-nova list
+$ nova-manage service list
+$ nova list
 ```
 
 # Neutron
 安裝套件：
 ```sh
-sudo apt-get install -y neutron-server neutron-plugin-openvswitch neutron-plugin-openvswitch-agent neutron-common neutron-dhcp-agent neutron-l3-agent neutron-metadata-agent openvswitch-switch
+$ sudo apt-get install -y neutron-server neutron-plugin-openvswitch neutron-plugin-openvswitch-agent neutron-common neutron-dhcp-agent neutron-l3-agent neutron-metadata-agent openvswitch-switch
 ```
 建立 Neutron 資料庫：
 ```sh
-mysql -u root -p
+$ mysql -u root -p
 ```
 ```sql
 CREATE DATABASE neutron;
@@ -451,7 +457,7 @@ use_namespaces = True
 ```
 同步資料庫：
 ```sh
-sudo neutron-db-manage --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade kilo
+$ sudo neutron-db-manage --config-file /etc/neutron/neutron.conf --config-file /etc/neutron/plugins/ml2/ml2_conf.ini upgrade kilo
 ```
 重啟服務：
 ```sh
@@ -472,11 +478,11 @@ neutron agent-list
 # Horizon
 安裝Ubuntu的Horizon：
 ```sh
-sudo apt-get install -y openstack-dashboard
+$ sudo apt-get install -y openstack-dashboard
 ```
 > Ubuntu 安裝openstack-dashboard時，會有```ubuntu-theme```套件，若發生問題或者不需要，可以直接刪除該套件。
 ```sh
-sudo apt-get remove --purge openstack-dashboard-ubuntu-theme
+$ sudo apt-get remove --purge openstack-dashboard-ubuntu-theme
 ```
 
 完成後，可以到Browser登入[Horizon Dashboard](http://172.16.240.135/horizon)。

@@ -7,23 +7,29 @@ Horizon 可以透過修改原始碼，或者是加入```CSS```來改變樣式，
 
 在```/usr/share/openstack-dashboard/openstack_dashboard/static/dashboard/css```加入一個```custom.css```：
 ```css
-.topbar {
-background: #33495e;
+.navbar {
+background-color: #33495e;
+border-color:#33495e;
+}
+.navbar-default .navbar-nav > li > a {
+color: #f5f5f5;
 }
 .topbar h1.brand {
 background: #33495e repeat-x top left;
 padding-left: 0px;
 }
-.topbar h1.brand a {
+.navbar-header {
 padding-left: 0px;
 background: url(../img/NUTC_cloud_small.png) no-repeat center 0px;
+}
+.navbar-brand img {
+visibility: hidden;
 }
 .topbar .switcher_bar .btn.btn-topnav {
 background-color: #33495e;
 color:#ffffff;
 border-color:#33495e;
 }
-
 #splash .login {
 background: #33495e url(../img/NUTC_cloud.png) no-repeat center 25px;
 }

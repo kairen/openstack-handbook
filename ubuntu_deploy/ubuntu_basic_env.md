@@ -42,10 +42,39 @@ auto eth0
 iface eth0 inet static
         address 10.0.0.11
         netmask 255.255.255.0
-        network 10.0.0.0
-        broadcast 10.0.0.255
         gateway 10.0.0.1
         dns-nameservers 8.8.8.8
+```
+設定腳本：
+```sh
+ID=$((30+$(hostname | grep -o "[0-9]*")))
+MANAGE_ETH=eth2 
+TUNNEL_ETH=eth0
+PUBLIC_ETH=eth1
+echo "auto lo" | sudo tee /etc/network/interfaces
+echo "
+auto ${MANAGE_ETH}
+iface ${MANAGE_ETH} inet static
+        address 10.0.0.${ID}
+        netmask 255.255.255.0
+        gateway 10.0.0.1
+        dns-nameservers 8.8.8.8
+" | sudo tee -a /etc/network/interfaces
+
+echo "
+auto ${TUNNEL_ETH}
+iface ${TUNNEL_ETH} inet static
+        address 10.0.1.${ID}
+        netmask 255.255.255.0
+" | sudo tee -a /etc/network/interfaces
+
+echo "
+auto ${PUBLIC_ETH}
+iface ${PUBLIC_ETH} inet manual
+        up ip link set dev \$IFACE up
+        down ip link set dev \$IFACE down
+" | sudo tee -a /etc/network/interfaces
+
 ```
 
 ### Controller node 設定
@@ -210,9 +239,9 @@ sudo apt-get install -y ntp
 ```sh
 restrict 10.0.0.0 mask 255.255.255.0 nomodify notrap
 
-server 1.tw.pool.ntp.org iburst
-server 3.asia.pool.ntp.org iburst
-server 2.asia.pool.ntp.org iburst
+server 2.tw.pool.ntp.org
+server 3.asia.pool.ntp.org
+server 0.asia.pool.ntp.org
 ```
 將 ```NTP_SERVER``` 替換為主機名稱或更準確的(lower stratum) NTP 伺服器 IP 地址。這個設定支援多個 server 關鍵字。
 > 對於restrict 參數，基本上需要刪除nopeer 和noquery 選項。
@@ -284,8 +313,8 @@ ind assid status  conf reach auth condition  last_event cnt
 
 若是Ubuntu ```15.04 以下```的版本，需加入Repository來獲取套件：
 ```sh
-sudo apt-get install software-properties-common
-sudo add-apt-repository cloud-archive:liberty
+sudo apt-get install -y software-properties-common 
+sudo add-apt-repository -y cloud-archive:liberty
 ```
 > 若要安裝 ```kilo```，修改為```cloud-archive:kilo```。
 
@@ -330,6 +359,16 @@ sudo service mysql restart
 ```sh
 sudo mysql_secure_installation
 ```
+> 若要備份資料庫可以用以下指令：
+```sh
+mysqldump --user=root -p --all-databases > mysql.sql
+```
+> 若要恢復資料庫可以用以下指令：
+```sh
+mysql -u root -p < mysql.sql
+```
+
+
 除了更換密碼外，其餘每個項目都輸入```yes```，並設置對應資訊。
 
 # Message queue 安裝

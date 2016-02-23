@@ -474,12 +474,14 @@ rabbit_password = RABBIT_PASS
 在```[keystone_authtoken]```部分設定Keystone服務，並註解到不要部分：
 ```sh
 [keystone_authtoken]
-url = http://10.0.0.11:9696
-auth_strategy = keystone
-admin_auth_url = http://10.0.0.11:35357/v2.0
-admin_tenant_name = service
-admin_username = neutron
-admin_password = NEUTRON_PASS
+auth_uri = http://10.0.0.11:5000
+auth_url = http://10.0.0.11:35357
+auth_plugin = password
+project_domain_id = default
+user_domain_id = default
+project_name = service
+username = neutron
+password = NEUTRON_PASS
 ```
 > 這邊若```NEUTRON_PASS```有更改的話，請記得更改。
 

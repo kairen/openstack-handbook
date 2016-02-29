@@ -1,9 +1,9 @@
 # DevStack all-in-one 安裝
 以下將利用 DevStack 進行 ```Kilo版本``` 單一節點的安裝，來提供一個開發與測試用OpenStack環境，首先安裝```Git```套件與下載OpenStack git 資源庫：
 ```sh
-sudo apt-get install -y git
-git clone https://git.openstack.org/openstack-dev/devstack
-git checkout stable/kilo
+$ sudo apt-get install -y git
+$ git clone https://git.openstack.org/openstack-dev/devstack
+$ git checkout stable/kilo
 ```
 
 ### 網路設定
@@ -70,19 +70,19 @@ Q_FLOATING_ALLOCATION_POOL=start=10.21.20.100,end=10.21.20.150
 ### 確認 ovs 設定
 透過 ```ovs-vsctl show``` 確認是否正確建立一個名為```br-ex```虛擬 switch ：
 ```sh
-sudo ovs-vsctl show
+$ sudo ovs-vsctl show
 ```
 > 若沒有透過 ```sudo ovs-vsctl add-br br-ex``` 新增。
 
 將```eth1```當作```br-ex```介面：
 ```sh
-sudo ovs-vsctl add-port br-ex eth1
+$ sudo ovs-vsctl add-port br-ex eth1
 ```
 
 ### 執行與驗證
 當完成以上配置後，我們在 devstack 目錄底下執行該Script：
 ```sh
-./stack.sh
+$ ./stack.sh
 ```
 完成後會看到以下資訊：
 ![](images/devstack_finish.png)
@@ -92,7 +92,7 @@ sudo ovs-vsctl add-port br-ex eth1
 ### 停止服務與清除
 若不想再使用本次安裝，可以透過以下方式做移除動作：
 ```sh
-./unstack.sh
-./clean.sh
+$ ./unstack.sh
+$ ./clean.sh
 ```
 

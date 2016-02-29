@@ -1,15 +1,15 @@
 # Horizon 安裝與設定
 首先透過 ```apt-get``` 下載相關套件：
 ```sh
-sudo apt-get install -y python-setuptools python-virtualenv python-dev gettext git gcc libpq-dev libmysqlclient-dev python-pip python-tox libffi-dev
+sudo apt-get install -y python-setuptools python-virtualenv python-dev gettext git gcc libpq-dev python-pip python-tox libffi-dev
 ```
 透過git clone 來下載 ```OpenStack GitHub``` 的 Horizon 資源庫：
 ```sh
-git clone https://github.com/openstack/horizon.git /opt/horizon stable/kilo
+git clone https://github.com/openstack/horizon.git /opt/horizon stable/liberty
 ```
 設定目錄權限，這邊 user 為```openstack```：
 ```sh
-sudo chown -R openstack:openstack /opt/horizon
+sudo chown -R $USER:$USER /opt/horizon
 ```
 > 若權限還有問題，可採用```sudo chmod 775 -R /opt/horizon```。
 
@@ -34,7 +34,7 @@ OPENSTACK_HOST = "controller"
 OPENSTACK_KEYSTONE_URL = "http://%s:5000/v2.0" % OPENSTACK_HOST
 OPENSTACK_KEYSTONE_DEFAULT_ROLE = "user"
 
-
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
@@ -50,7 +50,7 @@ CACHES = {
 ```
 > 更多的部署與設定可以參考 [Deploying Horizon](http://docs.openstack.org/developer/horizon/topics/deployment.html)與[Settings and Configuration](http://docs.openstack.org/developer/horizon/topics/settings.html)。
 
-壓縮 Django （選擇性）：
+壓縮 Django：
 ```sh
 ./manage.py collectstatic
 ./manage.py compress
@@ -76,11 +76,11 @@ sudo apt-get install apache2 libapache2-mod-wsgi
     ErrorLog /var/log/apache2/horizon-error.log
     CustomLog /var/log/apache2/horizon-access.log combined
 
-    WSGIDaemonProcess horizon user=openstack group=openstack processes=3 threads=10 home=/opt/horizon display-name=%{GROUP}
+    WSGIDaemonProcess horizon user=ubuntu group=ubuntu processes=3 threads=10 home=/opt/horizon display-name=%{GROUP}
     WSGIApplicationGroup %{GLOBAL}
 
-    SetEnv APACHE_RUN_USER openstack
-    SetEnv APACHE_RUN_GROUP openstack
+    SetEnv APACHE_RUN_USER ubuntu
+    SetEnv APACHE_RUN_GROUP ubuntu
     WSGIProcessGroup horizon
 
     WSGIScriptAlias / /opt/horizon/openstack_dashboard/wsgi/django.wsgi

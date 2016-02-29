@@ -10,6 +10,7 @@ OpenStack是```美國國家航空暨太空總署```和```Rackspace```共同打�
 # 套件介紹
 ### Keystone 身分識別套件 (Identity service)
 Keystone套件作為OpenStack的```身份驗證```服務，具有中央目錄能查看哪位使用者可存取哪些服務，並且提供了多種驗證方式，包括使用者帳號密碼、Token以及類似AWS的登入機制。另外，Keystone可以整合現有的中央控管系統，像是LDAP（輕型目錄訪問協議）。
+> 類似 Amazon AWS 的 IAM。
 
 ### Nova 運算套件 (Compute)
 Nova 主要擔任著```部署```與```管理```虛擬機角色。Nova提供了一套API來開發額外的應用程式，IT人員可以透過網頁介面來查看與管理資源狀態，且可以控制啟動、停止、調整虛擬機。
@@ -88,54 +89,17 @@ Designate 提供了 DNSaaS 服務於 OpenStack 上，包含以下幾項功能：
 ### Manila 共享式檔案系統服務 (Shared Filesystems)
 Manila 提供 OpenStack 共享的檔案系統，核心概念有共享目錄、ACL、共享網路、快照與後端驅動程式，目前支援有 GPFS、GlusterFS、EMCVNX等。在雲端平台上，所有服務必須要考慮多租戶資源隔離，目前 Manila 的多租戶資源隔離依賴於 Neutron 的私有網路隔離。
 
-
 ### Magnum 容器即服務 (Containers service)
 Magnum 是一個 OpenStack API 服務，是由 OpenStack Containers Team 開發作為``` Container orchestration``` 的引擎，諸如 Docker、Kubernetes 這一類別可以在 Openstack 上作為資源。
 
 Magnum 使用 Heat 來編排一個 OS Image，其中包含 Docker 以及 Kubernetes，並執行 Image 於任何的虛擬機或 bare metal 叢集配置。
+
 ### Murano 應用程式目錄服務(Application catalog)
 Murano 專案引入一個 Application catalog 於 OpenStack上，使應用程式開發人員與雲端管理人員，可以發布各種已就緒的雲端應於可瀏覽的分類目錄。
 
 雲端使用者、包括沒經驗的人可以通過統一的框架與 API 實現應用程式的快速部署與應用程式的生命週期管理，來降低應用程式對底層平台（IaaS層）的依賴。
 
-# OpenStack 相關網址
-| 名稱 | 網址 |
-| -- | -- |
-| OpenStack 基金會 | http://www.openstack.org/ |
-| OpenStack Docs | http://docs.openstack.org/ |
-| OpenStack Launchpad | https://launchpad.net/openstack |
-| OpenStack Wiki  | https://wiki.openstack.org |
-| OpenStack Training  | http://www.openstack.org/marketplace/training |
-| 版本藍圖 | https://wiki.openstack.org/wiki/Releases |
-| Kilo版本 | https://wiki.openstack.org/wiki/ReleaseNotes/Kilo |
-| Stackalytics | http://stackalytics.com/ |
-| Facebook OpenStack Taiwan User Group | https://www.facebook.com/groups/openstack.tw/ |
-| MeetUp OpenStack Taiwan User Group | http://www.meetup.com/OpenStack-Taiwan-User-Group/ |
+### Monasca
 
-
-# 相關套件指令
-| 名稱 | 官方網址 |
-| -- | -- |
-| Linux CLI  | http://www.computerworld.com/article/2598082/linux/linux-linux-command-line-cheat-sheet.html |
-| OpenStack CLI  | http://docs.openstack.org/cli-reference/content/ |
-| Rabbit CLI  | https://www.rabbitmq.com/management-cli.html |
-| Open vSwitch CLI  | http://openvswitch.org/support/dist-docs/ovs-vsctl.8.txt |
-| MySQL CLI  | http://dev.mysql.com/doc/refman/5.6/en/mysql.html |
-| LVM CLI  | https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/4/html/Cluster_Logical_Volume_Manager/LVM_CLI.html|
-| Libvirt CLI  | http://libvirt.org/virshcmdref.html |
-
-
-# OpenStack 安裝與部署相關資源
-* [OpenStack Kilo Install Guide](http://docs.openstack.org/kilo/install-guide/install/apt/content/)
-* [DevStack](http://docs.openstack.org/developer/devstack/)
-* [Red Hat OpenStack](https://www.rdoproject.org/Main_Page)
-* [Fuel OpenStack](https://wiki.openstack.org/wiki/Fuel)
-* [HP Helion](http://www8.hp.com/us/en/cloud/helion-overview.html)
-* [Compass Openstack](https://wiki.openstack.org/wiki/Compass)
-* [TripleO](https://wiki.openstack.org/wiki/TripleO)
-* [PackStack](https://wiki.openstack.org/wiki/Packstack)
-* [puppetlabs-openstack](https://github.com/puppetlabs/puppetlabs-openstack)
-* [Ubuntu OpenStack](https://wiki.ubuntu.com/ServerTeam/OpenStackHA)
-* [RDO HA](https://github.com/beekhof/osp-ha-deploy/blob/master/ha-openstack.md)
-* [OpenStack Hacker 養成指南](http://www.xlgps.com/article/100059.html)
+### Senlin
 

@@ -22,4 +22,10 @@ Neutron 為 OpenStack 提供了 ```Network Service```，負責虛擬網路架構
 
 有了以上的機制，讓 Firewall-as-a-Service 以及 Load-Balancing-as-a-Service 等變很容易去實現。
 
-
+Neutron 基本元件由以下幾個：
+* **Neutron-server**：提供外部呼叫的 API 以及其他套件互動介面。
+* **Plug-in agent**：提供給 Instance 網路的插件。
+* **DHCP agent**：提供租戶網路 DHCP 服務，主要作為租戶網路的虛擬機動態 IP 分配。
+* **L3 agent**：提供 Layer 3 網路功能與網路位址轉換（NAT）功能，來讓租戶網路的 Instance 可以與外部網路溝通。
+* **Metadata agent**：提供獲取的 metadata 請求轉送給 nova-api-metadata。主要獲得 Instance 與 Tenant 的 ID，並新增至請求的 HTTP Header 中。
+> OpenStack Metadata 服務機制。在雲端運算 IaaS 平台中，虛擬機開啟時的自定義設定是非常重要的功能。OpenStack 就是使用 Metadata 服務來實現虛擬機的用戶自定義設定。

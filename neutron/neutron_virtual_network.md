@@ -6,7 +6,7 @@ Neutron 為 Tenant 提供了虛擬化的網路、子網路、埠口、交換器�
 
 根據建立網路的使用者權限，Neutron network 可以分為以下：
 * **Provider network  **：管理者建立的一個直接與實體網路連接的網路。
-* **Tenant network**：Tenant 一般使用者建立的網路，由 Neutron 根據管理者的在系統中設定決定網路的分配。
+* **Tenant network**：一般使用者建立的網路，由 Neutron 根據管理者的在系統中設定決定網路的分配。
 
 根據網路的類型，Neutron network 可以分為：
 * **VLAN network**： 基於實體 VLAN 網路實現的虛擬網路。共享同一個實體網路的多個 VLAN 網路是可以互相隔離的，甚至可以使用重疊的 IP 位址空間。每個支援 VLAN Network的實體網路可以被視為一個分離的 VLAN trunk，它使用一組獨佔的 VLAN ID。有效的 VLAN ID 範圍從 ```1 ~ 4094```。

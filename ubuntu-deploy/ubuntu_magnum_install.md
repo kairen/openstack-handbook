@@ -1,5 +1,5 @@
 # Magnum 安裝與設定
-本章節會說明與操作如何安裝```Container as a Service```服務到OpenStack Controller節點上，並設置相關參數與設定。若對於 Magnum 不瞭解的人，可以參考 [Magnum 容器服務套件章節](http://kairen.gitbooks.io/openstack/content/magnum/index.html)
+本章節會說明與操作如何安裝```Container as a Service```服務到OpenStack Controller節點上，並設置相關參數與設定。
 
 ### 安裝前準備
 我們需要在 Database 底下建立儲存 Magnum 資料庫，利用```mysql```指令進入：
@@ -192,14 +192,14 @@ sudo start magnum-conductor
 ### 驗證 Container 服務
 首先上傳 magnum 使用的通用映像檔```fedora-21-atomic```，透過```wget```下載檔案：
 ```sh
-wget https://fedorapeople.org/groups/magnum/fedora-21-atomic-5.qcow2
+wget https://fedorapeople.org/groups/magnum/fedora-23-atomic-7.qcow2
 ```
 透過```glance```指令上傳映像檔至 image service：
 ```sh
-glance image-create --name fedora-21-atomic-7  \
+glance image-create --name fedora-23-atomic-7  \
 --disk-format=qcow2 --container-format=bare \
 --property os_distro='fedora-atomic' \
---file=fedora-21-atomic-7.qcow2 \
+--file=fedora-23-atomic-7.qcow2 \
 --visibility public --progress
 ```
 
@@ -216,12 +216,12 @@ glance image-create --name  ubuntu-mesos  \
 --visibility public --progress
 ```
 
-#### Kubernetes 
+#### Kubernetes
 採用 Kubernetes 可以使用以下指令建立 baymodel：
 ```sh
 magnum baymodel-create --name k8sbaymodel \
---image-id fedora-21-atomic-5 \
---keypair-id MyKey \
+--image-id fedora-23-atomic-7 \
+--keypair-id <Your_KEY> \
 --external-network-id ext-net \
 --dns-nameserver 8.8.8.8 \
 --flavor-id m1.small \
@@ -262,7 +262,7 @@ magnum baymodel-create --name k8sbaymodel \
 ```
 完成後，就可以建立實例的 bay 來部署叢集：
 ```sh
-magnum bay-create --name k8sbay --baymodel k8sbaymodels-bai --node-count 1
+magnum bay-create --name k8sbay --baymodel k8sbaymodel --node-count 1
 ```
 > 若要更新節點數可以用以下指令：
 ```sh
@@ -277,10 +277,11 @@ tar -xvzf kubernetes.tar.gz
 > 範例操作還是看這邊比較快 [Developer Quick-Start](http://docs.openstack.org/developer/magnum/dev/dev-quickstart.html)。
 
 
-#### Mesos 
+#### Mesos
 採用 Mesos 可以使用以下指令建立 baymodel：
 ```sh
-magnum baymodel-create --name mesosbaymodel --image-id ubuntu-mesos \
+magnum baymodel-create --name mesosbaymodel \
+--image-id ubuntu-mesos \
 --keypair-id kairen \
 --external-network-id ext-net \
 --dns-nameserver 8.8.8.8 \
@@ -332,7 +333,7 @@ magnum bay-create --name mesosbay --baymodel mesosbaymodel --node-count 2
 採用 Docker Swarm 可以使用以下指令建立 baymodel：
 ```
 magnum baymodel-create --name swarmbaymodel \
---image-id fedora-21-atomic-5 \
+--image-id fedora-23-atomic-7 \
 --keypair-id kairen \
 --external-network-id ext-net \
 --dns-nameserver 8.8.8.8 \

@@ -17,7 +17,7 @@
        * [Distributed Virtual Router 分散式路由](conceptions/neutron/distributed_virtual_router.md)
        * [Virtual Router Redundancy Protocol](conceptions/neutron/vrrp.md)
    * [Horizon 儀表板套件](conceptions/horizon/README.md)
-   * [Cinder 區塊儲存套件](cconceptions/cinder/README.md)
+   * [Cinder 區塊儲存套件](conceptions/cinder/README.md)
    * [Swift 物件儲存套件](conceptions/swift/README.md)
    * [Heat 協調整合套件](conceptions/heat/README.md)
    * [Ceilometer 資料監控套件](conceptions/ceilometer/README.md)

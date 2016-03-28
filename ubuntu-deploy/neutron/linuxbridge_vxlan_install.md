@@ -1,10 +1,7 @@
-# Neutron OVS GRE 安裝與設定
-本章節會說明與操作如何安裝```Networking```服務到OpenStack Controller節點上，並設置相關參數與設定。若對於Neutron不瞭解的人，可以參考[Neutron 網路套件章節](http://kairen.gitbooks.io/openstack/content/neutron/index.html)
-
 # Controller 節點安裝與設置
 ### 安裝前準備
-設置OpenStack 網路(neutron) 服務之前，必須建立資料庫、服務憑證和API 端點。
-我們需要在Database底下建立儲存 Neutron 資訊的資料庫，利用```mysql```指令進入：
+設置 OpenStack 網路（Neutron）服務之前，必須建立資料庫、服務憑證和 API 端點。
+我們需要在 Database 底下建立儲存 Neutron 資訊的資料庫，利用```mysql```指令進入：
 ```sh
 mysql -u root -p
 ```
@@ -103,29 +100,30 @@ password = NOVA_PASS
 
 
 ### 設置 Modular Layer 2 (ML2) 插件
-ML2 插件使用Open vSwitch (OVS) 機制(代理) 來為Instance建立虛擬網路架構。但是，Controller節點不需要OVS 套件，因為它並不處理Instance網路的傳輸。編輯```/etc/neutron/plugins/ml2/ml2_conf.ini```並完成以下操作，在```[ml2]```部分，啟用flat, VLAN, generic routing encapsulation (GRE), and virtual extensible LAN (VXLAN) 的網路類型驅動，GRE租戶網絡和OVS機制驅動：
+ML2 插件使用 Linux Bridge 機制(代理) 來為 Instance 建立虛擬網路架構。但是，Controller 節點不需要 Linux Bridge 套件，因為它並不處理 Instance 網路的傳輸。編輯```/etc/neutron/plugins/ml2/ml2_conf.ini```並完成以下操作，在```[ml2]```部分，新增以下內容：
 ```sh
 [ml2]
 type_drivers = flat,vlan,gre,vxlan
-tenant_network_types = gre
-mechanism_drivers = openvswitch
+tenant_network_types = vxlan
+mechanism_drivers = linuxbridge,l2population
+extension_drivers = port_security
 ```
-> 一旦您設定好了ML2 插件，修改type_drivers選項的值會導致資料庫的不一致。
+> 一旦您設定好了 ML2 插件，修改 type_drivers 選項的值會導致資料庫的不一致。
 
-在```[ml2_type_gre]```設定通道id：
+在```[ml2_type_vxlan]```設定 VNI 範圍：
 ```sh
-[ml2_type_gre]
-tunnel_id_ranges = 1:1000
+[ml2_type_vxlan]
+vni_ranges = 1:1000
 ```
 在```[securitygroup]```設置啟用安全群組，並設置OVS iptables 防火牆驅動：
 ```sh
 [securitygroup]
-enable_security_group = True
 enable_ipset = True
-firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
+enable_security_group = True
+firewall_driver = neutron.agent.linux.iptables_firewall.IptablesFirewallDriver
 ```
-### 設定 Nova 套件使用Networking
-預設情況下，Nova  使用傳統網路(nova-network)。您必需重新配置 Nova 來透過Networking 來管理網路。編輯```/etc/nova/nova.conf```完成以下操作，在```[DEFAULT]```部分，設置APIs和drivers：
+### 設定 Nova 套件使用 Networking
+預設情況下，Nova  使用傳統網路（nova-network）。您必需重新配置 Nova 來透過 Networking 來管理網路。編輯```/etc/nova/nova.conf```完成以下操作，在```[DEFAULT]```部分，設置APIs和drivers：
 ```sh
 [DEFAULT]
 ...
@@ -134,7 +132,7 @@ security_group_api = neutron
 linuxnet_interface_driver = nova.network.linux_net.LinuxOVSInterfaceDriver
 firewall_driver = nova.virt.firewall.NoopFirewallDriver
 ```
-> 預設情況下，Compute 使用內部的防火牆服務。由於Networking 包含了一個防火牆服務，您必須使用nova.virt.firewall.NoopFirewallDriver 防火牆驅動來禁用Compute 的防火牆服務。
+> 預設情況下，Compute 使用內部的防火牆服務。由於 Networking 包含了一個防火牆服務，您必須使用nova.virt.firewall.NoopFirewallDriver 防火牆驅動來禁用Compute 的防火牆服務。
 
 在```[neutron]```部分，設置存取的參數：
 ```sh
@@ -173,29 +171,33 @@ neutron ext-list
 +-----------------------+-----------------------------------------------+
 | alias                 | name                                          |
 +-----------------------+-----------------------------------------------+
-| security-group        | security-group                                |
-| l3_agent_scheduler    | L3 Agent Scheduler                            |
-| net-mtu               | Network MTU                                   |
+| dns-integration       | DNS Integration                               |
 | ext-gw-mode           | Neutron L3 Configurable external gateway mode |
 | binding               | Port Binding                                  |
-| provider              | Provider Network                              |
 | agent                 | agent                                         |
-| quotas                | Quota management support                      |
 | subnet_allocation     | Subnet Allocation                             |
-| dhcp_agent_scheduler  | DHCP Agent Scheduler                          |
-| l3-ha                 | HA Router extension                           |
-| multi-provider        | Multi Provider Network                        |
+| l3_agent_scheduler    | L3 Agent Scheduler                            |
 | external-net          | Neutron external network                      |
-| router                | Neutron L3 Router                             |
-| allowed-address-pairs | Allowed Address Pairs                         |
+| flavors               | Neutron Service Flavors                       |
+| net-mtu               | Network MTU                                   |
+| quotas                | Quota management support                      |
+| l3-ha                 | HA Router extension                           |
+| provider              | Provider Network                              |
+| multi-provider        | Multi Provider Network                        |
 | extraroute            | Neutron Extra Route                           |
+| router                | Neutron L3 Router                             |
 | extra_dhcp_opt        | Neutron Extra DHCP opts                       |
+| security-group        | security-group                                |
+| dhcp_agent_scheduler  | DHCP Agent Scheduler                          |
+| rbac-policies         | RBAC Policies                                 |
+| port-security         | Port Security                                 |
+| allowed-address-pairs | Allowed Address Pairs                         |
 | dvr                   | Distributed Virtual Router                    |
 +-----------------------+-----------------------------------------------+
 ```
 
-# Network節點安裝與設置
-Network節點主要是為了處理虛擬內部和外部網路路由及DHCP服務。
+# Network 節點安裝與設置
+Network 節點主要是為了處理虛擬的內部和外部網路路由及 DHCP 服務。
 ### 安裝前準備
 在安裝和設定OpenStack網路之前，必須設定某些核心網路參數。編輯```/etc/sysctl.conf```將以下參數加入：
 ```sh
@@ -210,9 +212,9 @@ sudo sysctl -p
 ### 安裝與設定網路套件
 首先透過```apt-get```安裝相關套件：
 ```sh
-sudo apt-get install neutron-plugin-ml2 neutron-plugin-openvswitch-agent neutron-l3-agent neutron-dhcp-agent neutron-metadata-agent
+sudo apt-get install -y neutron-plugin-ml2 neutron-plugin-linuxbridge-agent neutron-l3-agent neutron-dhcp-agent neutron-metadata-agent
 ```
-Networking套件的設定會包含驗證機制、訊息佇列和插件，編輯```/etc/neutron/neutron.conf```，在```[DEFAULT]```加入RabbitMQ存取、Keystone存取、啟用Modular Layer 2插件、router服務、overlapping IP：
+Networking 套件的設定會包含驗證機制、訊息佇列和插件，編輯```/etc/neutron/neutron.conf```，在```[DEFAULT]```加入 RabbitMQ 存取、Keystone 存取、啟用 Modular Layer 2 插件、Router 服務、overlapping IP：
 ```sh
 [DEFAULT]
 ...
@@ -253,73 +255,92 @@ password = NEUTRON_PASS
 ```
 > 這邊若```NEUTRON_PASS```有更改的話，請記得更改。
 
-
-### 設定Modular Layer 2 (ML2) 插件
-ML2 插件使用Open vSwitch (OVS) 機制(代理) 來為Instance建立虛擬網路框架。編輯```/etc/neutron/plugins/ml2/ml2_conf.ini```在```[ml2]```啟用flat, VLAN, generic routing encapsulation (GRE), and virtual extensible LAN (VXLAN) 的網路類型驅動，GRE租戶網絡和OVS機制驅動：
+### 設定 Modular Layer 2 (ML2) 插件
+ML2 插件使用 Linux Bridge 機制(代理) 來為 Instance 建立虛擬網路框架。編輯```/etc/neutron/plugins/ml2/ml2_conf.ini```在```[ml2]```啟用 Flat, VLAN, GRE, VXLAN 的網路類型驅動，並設定 VXLAN 與 linuxbridge driver ：
 ```sh
 [ml2]
 type_drivers = flat,vlan,gre,vxlan
-tenant_network_types = gre
-mechanism_drivers = openvswitch
+tenant_network_types = vxlan
+mechanism_drivers = linuxbridge,l2population
+extension_drivers = port_security
 ```
 在```[ml2_type_flat]```部分設定外部網路：
 ```sh
 [ml2_type_flat]
 flat_networks = external
 ```
-在```[ml2_type_gre]```部分設定通道ID：
+在```[ml2_type_vxlan]```部分設定 VNI：
 ```sh
-[ml2_type_gre]
-tunnel_id_ranges = 1:1000
+[ml2_type_vxlan]
+vni_ranges = 1:1000
 ```
 在```[securitygroup]```部分設定啟用安全群組、ipset並設置OVS iptables 防火牆驅動：
 ```sh
 [securitygroup]
-enable_security_group = True
 enable_ipset = True
-firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
+enable_security_group = True
+firewall_driver = neutron.agent.linux.iptables_firewall.IptablesFirewallDriver
 ```
-在```[ovs]```部分啟用tunnels，設定本地tunnel 端點，並映射外部供應商網路到```br-ex```外部網路橋接上：
-```sh
-[ovs]
-local_ip = TUNNELS_IP
-bridge_mappings = external:br-ex
-```
-> 將```TUNNELS_IP```取代成與Instance溝通的ip，這邊為```10.0.1.21```。
 
-在```[agent]```部分啟用GRE通道：
+接著編輯```/etc/neutron/plugins/ml2/linuxbridge_agent.ini```，在```[linux_bridge]```加入以下內容：
+```sh
+[linux_bridge]
+physical_interface_mappings = external:<physical_interface>
+```
+> 這邊```<physical_interface>```為```eth1```。
+
+在```[vxlan]```部分加入以下內容：
+```sh
+[vxlan]
+local_ip = OVERLAY_INTERFACE_IP_ADDRESS
+enable_vxlan = true
+l2_population = True
+```
+> 這邊```OVERLAY_INTERFACE_IP_ADDRESS```為```10.0.1.21```。
+
+在```[agent]```部分加入以下內容：
 ```sh
 [agent]
-tunnel_types = gre
+tunnel_types = vxlan
+prevent_arp_spoofing = True
 ```
+
+在```[securitygroup]```部分加入以下內容：
+```sh
+[securitygroup]
+enable_ipset = True
+enable_security_group = True
+firewall_driver = neutron.agent.linux.iptables_firewall.IptablesFirewallDriver
+```
+
 ### 設定 Layer-3 (L3) proxy
-Layer-3 (L3) proxy為虛擬網路提供路由服務。編輯```/etc/neutron/l3_agent.ini```在```[DEFAULT]```部分設定介面驅動、外部網路橋接和啟用刪除廢棄路由器命名空間的功能:
+Layer-3 (L3) proxy 為虛擬網路提供路由服務。編輯```/etc/neutron/l3_agent.ini```在```[DEFAULT]```部分加入以下內容:
 ```sh
 [DEFAULT]
 ...
+interface_driver = neutron.agent.linux.interface.BridgeInterfaceDriver
+external_network_bridge =
 verbose = True
-interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver
-external_network_bridge = 
-router_delete_namespaces = True
 ```
-> external_network_bridge 選項預留一個值，用來在單個代理上啟用多個外部網路。相關設定可以觀看[L3 Agent](http://docs.openstack.org/havana/config-reference/content/section_adv_cfg_l3_agent.html)。
+> external_network_bridge 選項預留一個值，用來在單個代理上啟用多個外部網路。相關設定可以觀看 [L3 Agent](http://docs.openstack.org/havana/config-reference/content/section_adv_cfg_l3_agent.html)。
 
 ### 設定 DHCP proxy
-DHCP proxy為Instance提供DHCP服務。編輯```/etc/neutron/dhcp_agent.ini```在```[DEFAULT]```設定介面與DHCP驅動，啟用刪除廢棄路由器命名空間的功能：
+DHCP proxy 為 Instance 提供 DHCP 服務。編輯```/etc/neutron/dhcp_agent.ini```在```[DEFAULT]```部分加入以下內容：
 ```sh
 [DEFAULT]
 ...
-verbose = True
-interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver
+interface_driver = neutron.agent.linux.interface.BridgeInterfaceDriver
 dhcp_driver = neutron.agent.linux.dhcp.Dnsmasq
-dhcp_delete_namespaces = True
+enable_isolated_metadata = True
+verbose = True
+dnsmasq_config_file = /etc/neutron/dnsmasq-neutron.conf
 ```
 
 完成以上後，接下面的部分是一個選擇性設定，可依照個人需求設定。
 
-由於類似GRE的協定包含了額外的Header封包，這些封包增加了網路開銷，而減少了有效的封包可用空間。在不了解虛擬網路架構的情況下，Instance會用預設的eth maximum transmission unit(MTU) 1500 bytes來傳送封包。IP網路利用path MTU discovery (PMTUD)機制來偵測與調整封包大小。但是有些作業系統或、網路阻塞、缺乏對PMTUD支援等因素，會造成效能的下效或是連接錯誤。
+由於類似 VXLAN 的協定包含了額外的 Header 封包，這些封包增加了網路開銷，而減少了有效的封包可用空間。在不了解虛擬網路架構的情況下，Instance會用預設的 eth maximum transmission unit(MTU) 1500 bytes來傳送封包。IP 網路利用 Path MTU discovery (PMTUD)機制來偵測與調整封包大小。但是有些作業系統或、網路阻塞、缺乏對PMTUD支援等因素，會造成效能的下效或是連接錯誤。
 
-理想情況下，可以透過包含有租戶虛擬網路的物理網路上開啟jumbo frames來避免這些問題。Jumbo frames 支援最大接近9000bytes的MTU，它可以抵消虛擬網路上GRE開銷影響。但是，很多網絡設備缺乏對於Jumbo frames的支援，Openstack管理員也經常缺乏對網路架構的控制。考慮到後續的複雜性，也可以選擇降低GRE開銷的Instance MTU大小，來避免MTU的問題。要設定恰當的MTU需要經過實驗，在大多數環境下會採用```1454```bytes來運作。
+理想情況下，可以透過包含有租戶虛擬網路的物理網路上開啟 Jumbo frames 來避免這些問題。Jumbo frames 支援最大接近 9000 bytes 的 MTU，它可以抵消虛擬網路上 VXLAN 開銷影響。但是，很多網絡設備缺乏對於 Jumbo frames的支援，Openstack 管理員也經常缺乏對網路架構的控制。考慮到後續的複雜性，也可以選擇降低 VXLAN 開銷的 Instance MTU 大小，來避免 MTU 的問題。要設定恰當的 MTU 需要經過實驗，在大多數環境下會採用```1454```bytes來運作。
 
 編輯```/etc/neutron/dhcp_agent.ini```在```[DEFAULT]```部分啟用```dnsmasq```設定檔案：
 ```sh
@@ -327,16 +348,16 @@ dhcp_delete_namespaces = True
 ...
 dnsmasq_config_file = /etc/neutron/dnsmasq-neutron.conf
 ```
-建立並修改```/etc/neutron/dnsmasq-neutron.conf```啟用DHCP MTU選項(26) 並設定為1454 bytes：
+建立並修改```/etc/neutron/dnsmasq-neutron.conf```啟用 DHCP MTU 選項(26) 並設定為 1450 bytes：
 ```sh
-echo 'dhcp-option-force=26,1454' | sudo tee /etc/neutron/dnsmasq-neutron.conf
+echo 'dhcp-option-force=26,1450' | sudo tee /etc/neutron/dnsmasq-neutron.conf
 ```
 關閉所有存在的```dnsmasq```程式：
 ```sh
 pkill dnsmasq
 ```
 ### 設定 Metadata agent
-metadata agent 提供一些設定訊息，如Instance的的相關資訊。編輯```/etc/neutron/metadata_agent.ini```在```[DEFAULT]```部分設定服務存取與metadata主機，註解掉不必要設定：
+metadata agent 提供一些設定訊息，如 Instance 的的相關資訊。編輯```/etc/neutron/metadata_agent.ini```在```[DEFAULT]```部分加入以下內容：
 ```sh
 [DEFAULT]
 ...
@@ -357,8 +378,7 @@ metadata_proxy_shared_secret = METADATA_SECRET
 
 > 將其中的```METADATA_SECRET```替換為一個合適的 metadata 代理的 secret。
 
-
-到```Controller```上編輯```/etc/nova/nova.conf```，在```[neutron]```部分啟用metadata代理並設定secret：
+到```Controller```上編輯```/etc/nova/nova.conf```，在```[neutron]```部分啟用 metadata agent 並設定 secret：
 ```sh
 [neutron]
 ...
@@ -372,41 +392,20 @@ metadata_proxy_shared_secret = METADATA_SECRET
 sudo service nova-api restart
 ```
 
-### 設定Open vSwitch (OVS) 服務
-首先回到```Network```節點，重啟Open vSwitch服務：
-```sh
-sudo service openvswitch-switch restart
-```
-增加外部網路橋接：
-```sh
-sudo ovs-vsctl add-br br-ex
-```
-增加連接到實體外部網路介面的外部橋接埠口：
-```sh
-sudo ovs-vsctl add-port br-ex INTERFACE_NAME
-```
-> ```INTERFACE_NAME``` 為``` Public 網路```的網卡介面名稱，這邊範例為```eth2```。
-
-根據網路介面的驅動，可能需要禁用generic receive offload (GRO)來實現Instance和外部網路之間的合適的吞吐量。測試環境時，在外部網路介面上暫時關閉GRO：
-```sh
-sudo ethtool -K INTERFACE_NAME gro off
-```
-> ```INTERFACE_NAME``` 為``` Public 網路```的網卡介面名稱，這邊範例為```eth2```。
-
 ### 完成安装
 重新啟動Networking服務：
 ```sh
-sudo service neutron-plugin-openvswitch-agent restart
-sudo service neutron-l3-agent restart
+sudo service neutron-plugin-linuxbridge-agent restart
 sudo service neutron-dhcp-agent restart
 sudo service neutron-metadata-agent restart
+sudo service neutron-l3-agent restart
 ```
-### 驗證操作
-回到```Controller```節點，導入Keystone的```admin```帳號來驗證服務：
+
+回到```Controller```節點，導入 Keystone 的```admin```帳號來驗證服務：
 ```sh
 source admin-openrc.sh
 ```
-列出代理以驗證啟動neutron代理是否成功：
+列出 agent 以驗證啟動 neutron agents 是否成功：
 ```sh
 neutron agent-list
 ```
@@ -415,15 +414,15 @@ neutron agent-list
 +--------------------------------------+--------------------+---------+-------+----------------+---------------------------+
 | id                                   | agent_type         | host    | alive | admin_state_up | binary                    |
 +--------------------------------------+--------------------+---------+-------+----------------+---------------------------+
-| 11e817d4-e0b6-4026-8c88-3a92de2daf47 | DHCP agent         | network | :-)   | True           | neutron-dhcp-agent        |
-| 1bd2d179-f120-4de8-b3c3-777e2d57d61f | Open vSwitch agent | network | :-)   | True           | neutron-openvswitch-agent |
-| eea0aa74-211c-4dd2-969d-5830771426be | L3 agent           | network | :-)   | True           | neutron-l3-agent          |
-| faafcb0b-717c-47e4-a238-2b0699cdbc9e | Metadata agent     | network | :-)   | True           | neutron-metadata-agent    |
+| 54a6b2ff-5d02-4554-b3c8-9e29cd845195 | L3 agent           | network | :-)   | True           | neutron-l3-agent          |
+| 590e2749-7caa-4621-9cbc-75d892df1b6b | DHCP agent         | network | :-)   | True           | neutron-dhcp-agent        |
+| e7981fa5-af38-4da9-9ff7-de1f456ac720 | Linux bridge agent | network | :-)   | True           | neutron-linuxbridge-agent |
+| fffc4360-2507-4fb8-af9a-2d3c13f5942d | Metadata agent     | network | :-)   | True           | neutron-metadata-agent    |
 +--------------------------------------+--------------------+---------+-------+----------------+---------------------------+
 ```
 
-# Compute節點安裝與設置
-運算節點處理Instance的連接和安全群組。
+# Compute 節點安裝與設置
+運算節點處理 Instance 的連接和安全群組。
 
 ### 安裝前準備
 在安裝和設定OpenStack網路之前，必須設定某些核心網路參數，編輯```/etc/sysctl.conf```修改以下：
@@ -441,9 +440,9 @@ sudo sysctl -p
 ### 安裝與設定網路套件
 首先透過```apt-get```安裝套件：
 ```sh
-sudo apt-get install neutron-plugin-ml2 neutron-plugin-openvswitch-agent
+sudo apt-get install neutron-plugin-ml2 neutron-plugin-linuxbridge-agent
 ```
-Networking套件的設定會包含驗證機制、訊息佇列和插件，編輯```/etc/neutron/neutron.conf```，在```[DEFAULT]```設定RabbitMQ存取、Keystone存取、啟用Modular Layer 2插件、router服務、overlapping IP：
+Networking套件的設定會包含驗證機制、訊息佇列和插件，編輯```/etc/neutron/neutron.conf```，在```[DEFAULT]```部分加入以下內容：
 ```sh
 [DEFAULT]
 ...
@@ -487,44 +486,53 @@ password = NEUTRON_PASS
 
 
 ### 設定Modular Layer 2 (ML2) 插件
-ML2 插件使用Open vSwitch (OVS) 機制(代理) 來為Instance建立虛擬網路框架。編輯```/etc/neutron/plugins/ml2/ml2_conf.ini```在```[ml2]```啟用flat, VLAN, generic routing encapsulation (GRE), and virtual extensible LAN (VXLAN) 的網路類型驅動，GRE租戶網絡和OVS機制驅動：
+ML2 插件使用 Linux Bridge 機制(代理) 來為 Instance 建立虛擬網路框架。編輯```/etc/neutron/plugins/ml2/ml2_conf.ini```在```[ml2]```啟用 Flat, VLAN, GRE, VXLAN 的網路類型驅動，並設定 VXLAN 與 linuxbridge driver ：
 ```sh
 [ml2]
 type_drivers = flat,vlan,gre,vxlan
-tenant_network_types = gre
-mechanism_drivers = openvswitch
+tenant_network_types = vxlan
+mechanism_drivers = linuxbridge,l2population
+extension_drivers = port_security
 ```
-在```[ml2_type_gre]```設定通道ID：
+在```[ml2_type_vxlan]```設定 VNI：
 ```sh
-[ml2_type_gre]
-tunnel_id_ranges = 1:1000
+[ml2_type_vxlan]
+vni_ranges = 1:1000
 ```
-在```[securitygroup]```部分設定啟用安全群組、ipset並設置OVS iptables 防火牆驅動：
+在```[securitygroup]```部分加入以下內容：
 ```sh
 [securitygroup]
-enable_security_group = True
 enable_ipset = True
-firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
+enable_security_group = True
+firewall_driver = neutron.agent.linux.iptables_firewall.IptablesFirewallDriver
 ```
-在```[ovs]```部分，部分啟用tunnels，設定本地tunnel 端點：
-```sh
-[ovs]
-local_ip = TUNNELS_IP
-```
-> 將```TUNNELS_IP```改為Compute與Netwrok Instance溝通IP，這邊為```10.0.1.31```。
 
-在```[agent]```部分啟用GRE通道：
+接著編輯```/etc/neutron/plugins/ml2/linuxbridge_agent.ini```，在```[vxlan]```部分加入以下內容：
+```sh
+[vxlan]
+local_ip = OVERLAY_INTERFACE_IP_ADDRESS
+enable_vxlan = true
+l2_population = True
+```
+> 這邊```OVERLAY_INTERFACE_IP_ADDRESS```為```10.0.1.31```。
+
+在```[agent]```部分加入以下內容：
 ```sh
 [agent]
-tunnel_types = gre
+tunnel_types = vxlan
+prevent_arp_spoofing = True
 ```
-### 設定Open vSwitch (OVS) 服務
-重新開啟服務：
+
+在```[securitygroup]```部分加入以下內容：
 ```sh
-sudo service openvswitch-switch restart
+[securitygroup]
+enable_ipset = True
+enable_security_group = True
+firewall_driver = neutron.agent.linux.iptables_firewall.IptablesFirewallDriver
 ```
+
 ### 設定 Compute 使用 Networking
-預設情況下，Compute 會使用傳統網絡(nova-network)。您必需重新設定Compute 來透過Networking來管理網路。編輯```/etc/nova/nova.conf```在```[DEFAULT]```部分設定APIs和drivers：
+預設情況下，Compute 會使用傳統網絡（nova-network）。您必需重新設定 Compute 來透過 Networking 來管理網路。編輯```/etc/nova/nova.conf```在```[DEFAULT]```部分加入以下內容：
 ```sh
 [DEFAULT]
 ...
@@ -552,10 +560,11 @@ admin_password = NEUTRON_PASS
 ```sh
 sudo service nova-compute restart
 ```
-重啟Open vSwitch (OVS) agent：
+重啟 Linux Bridge Agent：
 ```sh
-sudo service neutron-plugin-openvswitch-agent restart
+sudo service neutron-plugin-linuxbridge-agent restart
 ```
+
 ### 驗證操作
 回到```Controller```節點，導入Keystone的```admin```帳號來驗證：
 ```sh
@@ -567,14 +576,14 @@ neutron agent-list
 ```
 成功的話，會看到以下資訊：
 ```
-+--------------------------------------+--------------------+----------+-------+----------------+---------------------------+
-| id                                   | agent_type         | host     | alive | admin_state_up | binary                    |
-+--------------------------------------+--------------------+----------+-------+----------------+---------------------------+
-| 11e817d4-e0b6-4026-8c88-3a92de2daf47 | DHCP agent         | network  | :-)   | True           | neutron-dhcp-agent        |
-| 1bd2d179-f120-4de8-b3c3-777e2d57d61f | Open vSwitch agent | network  | :-)   | True           | neutron-openvswitch-agent |
-| cc5d402f-e0df-420a-b95e-7dd5805cb199 | Open vSwitch agent | compute1 | :-)   | True           | neutron-openvswitch-agent |
-| eea0aa74-211c-4dd2-969d-5830771426be | L3 agent           | network  | :-)   | True           | neutron-l3-agent          |
-| faafcb0b-717c-47e4-a238-2b0699cdbc9e | Metadata agent     | network  | :-)   | True           | neutron-metadata-agent    |
-+--------------------------------------+--------------------+----------+-------+----------------+---------------------------+
++--------------------------------------+--------------------+---------+-------+----------------+---------------------------+
+| id                                   | agent_type         | host    | alive | admin_state_up | binary                    |
++--------------------------------------+--------------------+---------+-------+----------------+---------------------------+
+| 54a6b2ff-5d02-4554-b3c8-9e29cd845195 | L3 agent           | network | :-)   | True           | neutron-l3-agent          |
+| 590e2749-7caa-4621-9cbc-75d892df1b6b | DHCP agent         | network | :-)   | True           | neutron-dhcp-agent        |
+| 961f8c55-6ef6-4ea2-917b-148e82bc1720 | Linux bridge agent | compute | :-)   | True           | neutron-linuxbridge-agent |
+| e7981fa5-af38-4da9-9ff7-de1f456ac720 | Linux bridge agent | network | :-)   | True           | neutron-linuxbridge-agent |
+| fffc4360-2507-4fb8-af9a-2d3c13f5942d | Metadata agent     | network | :-)   | True           | neutron-metadata-agent    |
++--------------------------------------+--------------------+---------+-------+----------------+---------------------------+
 ```
 > 若正確的話，會輸出顯示```四個```agent運作在```網路節點```上，```一個```agent運作在```運算節點```上。

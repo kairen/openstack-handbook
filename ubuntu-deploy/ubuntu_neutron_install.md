@@ -1,4 +1,4 @@
-# Neutron 安裝與設定
+# Neutron OVS GRE 安裝與設定
 本章節會說明與操作如何安裝```Networking```服務到OpenStack Controller節點上，並設置相關參數與設定。若對於Neutron不瞭解的人，可以參考[Neutron 網路套件章節](http://kairen.gitbooks.io/openstack/content/neutron/index.html)
 
 # Controller 節點安裝與設置

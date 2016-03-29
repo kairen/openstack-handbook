@@ -221,7 +221,6 @@ glance_host = 10.0.0.11
 ```
 > ```MANAGEMENT_IP```為主機的管理網路IP位址，這邊為```10.0.0.41```
 
-
 在```[database]```部分設定以下內容：
 ```sh
 [database]

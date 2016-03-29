@@ -1,4 +1,4 @@
-# Ubuntu Neutron 安裝
+# Ubuntu OpenStack 安裝
 我們已經完成了單一節點的安裝，但是要將功能拆分成多台該如何實現呢？這次我們安裝包含了```neutron``` 的三個節點架構以及選擇性的```區塊儲存```和```物件儲存```服務節點：
 * **Controller Node** : 會運作```KeyStone```、```Glance```、管理運算的部分和網路服務，並運作```網路plugin```以及```Horizon儀表板```。還包括一些支援的服務，例如```SQL資料庫```、```訊息佇列(message queue)```和```網路時間協定(NTP)```。
 * **Network Node** : 運作Networking plugin和一些租戶(Tenant)網路提供的代理，並提供```switching```、```routing```、```NAT```和```DHCP```服務。這個節點也處理租戶虛擬機實例的```外部網路(Internet)```連接。
@@ -79,9 +79,3 @@
 | SWIFT_PASS | Password of Object Storage service user swift |
 | TROVE_DBPASS | Database password of Database service |
 | TROVE_PASS | Password of Database service user trove |
-
-
-#
-
-
-

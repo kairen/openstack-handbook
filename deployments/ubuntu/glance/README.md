@@ -7,13 +7,13 @@
 mysql -u root -p
 ```
 
-透過以下命令用來更新現有帳號資料或建立 Glance 新帳號：
+透過以下命令用來更新現有帳號資料或建立 Glance 資料庫：
 ```sql
 CREATE DATABASE glance;
 GRANT ALL PRIVILEGES ON glance.* TO 'glance'@'localhost'  IDENTIFIED BY 'GLANCE_DBPASS';
 GRANT ALL PRIVILEGES ON glance.* TO 'glance'@'%' IDENTIFIED BY 'GLANCE_DBPASS';
 ```
-> 這邊若```GLANCE_DBPASS```要更改的話，可以更改。
+> 這邊若```GLANCE_DBPASS```可以隨需求修改。
 
 完成後，透過```quit```指令離開資料庫。之後我們要導入 Keystone 的```admin```帳號，來建立服務：
 ```sh
@@ -45,7 +45,7 @@ image admin http://10.0.0.11:9292
 ```
 > 在 v3 版本中，可以加入```-f <json, shell, table, yaml>```來檢視 keystone 資訊。
 
-# 安裝與設置Glance套件
+### 安裝與設定套件
 首先要透過```apt-get```來安裝套件：
 ```sh
 sudo apt-get install -y glance python-glanceclient
@@ -54,9 +54,9 @@ sudo apt-get install -y glance python-glanceclient
 安裝完成後，編輯```/etc/glance/glance-api.conf```，在```[database]```部分修改使用以下方式：
 ```sh
 [database]
-connection = mysql+pymysql://glance:GLANCE_DBPASS@controller/glance
+connection = mysql+pymysql://glance:GLANCE_DBPASS@10.0.0.11/glance
 ```
-> 這邊若```GLANCE_DBPASS```有更改的話，請記得更改。
+> 這邊若```GLANCE_DBPASS```可以隨需求修改。
 
 接下來，在```[keystone_authtoken]```部分加入以下內容：
 ```sh
@@ -71,7 +71,7 @@ project_name = service
 username = glance
 password = GLANCE_PASS
 ```
-> 這邊若```GLANCE_PASS```有更改的話，請記得更改。
+> 這邊若```GLANCE_PASS```可以隨需求修改。
 
 在```[paste_deploy]```部分加入以下內容：
 ```sh
@@ -93,7 +93,7 @@ filesystem_store_datadir = /var/lib/glance/images/
 [database]
 connection = mysql+pymysql://glance:GLANCE_DBPASS@controller/glance
 ```
-> 這邊若```GLANCE_DBPASS```有更改的話，請記得更改。
+> 這邊若```GLANCE_DBPASS```可以隨需求修改。
 
 接下來，在```[keystone_authtoken]```部分加入以下內容：
 ```sh
@@ -108,7 +108,7 @@ project_name = service
 username = glance
 password = GLANCE_PASS
 ```
-> 這邊若```GLANCE_PASS```有更改的話，請記得更改。
+> 這邊若```GLANCE_PASS```可以隨需求修改。
 
 在```[paste_deploy]```部分加入以下內容：
 ```sh
@@ -128,7 +128,7 @@ sudo service glance-api restart
 sudo rm -f /var/lib/glance/glance.sqlite
 ```
 
-# 驗證操作
+### 驗證操作
 首先我們要在```admin-openrc```與```demo-openrc```加入 Glance API 使用版本的環境變數：
 ```sh
 echo "export OS_IMAGE_API_VERSION=2" \

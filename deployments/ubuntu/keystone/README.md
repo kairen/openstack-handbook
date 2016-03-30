@@ -7,13 +7,13 @@
 mysql -u root -p
 ```
 
-透過以下命令用來更新現有帳號資料或建立 Keystone 新帳號：
+透過以下命令用來更新現有帳號資料或建立 Keystone 資料庫：
 ```sql
 CREATE DATABASE keystone;
 GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'localhost' IDENTIFIED BY 'KEYSTONE_DBPASS';
 GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'%' IDENTIFIED BY 'KEYSTONE_DBPASS';
 ```
-> 這邊若```KEYSTONE_DBPASS```要更改的話，可以更改。
+> 這邊若```KEYSTONE_DBPASS```可以隨需求修改。
 
 完成後，透過 ```quit``` 指令離開資料庫，並透過 ```openssl``` 建立一個隨機的 admin token：
 ```sh

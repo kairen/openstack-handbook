@@ -3,9 +3,9 @@
 
 - [Controller Node](#controller-node)
     - [安裝前準備](#安裝前準備)
-    - [安裝與設定套件](#安裝與設定套件)
+    - [Controller 套件安裝與設定](#controller-套件安裝與設定)
 - [Compute Node](#compute-node)
-    - [安裝與設定套件](#安裝與設定套件)
+    - [Compute 套件安裝與設定](#compute-套件安裝與設定)
 - [驗證服務](#驗證服務)
 
 # Controller Node
@@ -58,7 +58,7 @@ openstack endpoint create --region RegionOne \
 compute admin http://10.0.0.11:8774/v2.1/%\(tenant_id\)s
 ```
 
-### 安裝與設定套件
+### Controller 套件安裝與設定
 首先要透過```apt-get```來安裝```nova```相關套件：
 ```sh
 sudo apt-get install nova-api nova-cert nova-conductor \
@@ -158,7 +158,7 @@ sudo rm -f /var/lib/nova/nova.sqlite
 # Compute Node
 安裝與設定完成 Controller 上的 Nova 所有服務後，接著要來設定實際執行 VM 實例的 Compute 節點。該節點只會安裝一些 Linux 相關套件與 nova-compute 服務。
 
-### 安裝與設定套件
+### Compute 套件安裝與設定
 首先在 Compute 節點透過```apt-get```安裝套件：
 ```sh
 sudo apt-get install -y nova-compute sysfsutils

@@ -138,17 +138,18 @@ password = NOVA_PASS
 ```sh
 [ml2]
 type_drivers = flat,vlan,gre,vxlan
-tenant_network_types = gre
+tenant_network_types = vxlan
 mechanism_drivers = openvswitch,l2population
 extension_drivers = port_security
 ```
 > 一旦您設定好了 ML2 插件，修改 type_drivers 選項的值會導致資料庫的不一致。所以建議一開始就設定多個。
 
-在```[ml2_type_gre]```部分加入以下設定：
+在```[ml2_type_vxlan]```部分加入以下設定：
 ```sh
-[ml2_type_gre]
-tunnel_id_ranges = 1:1000
+[ml2_type_vxlan]
+vni_ranges = 1:1000
 ```
+> VIN 支援 2 ^ 24 次方個數。
 
 在```[securitygroup]```部分加入以下設定：
 ```sh
@@ -304,7 +305,7 @@ password = NEUTRON_PASS
 ```sh
 [ml2]
 type_drivers = flat,vlan,gre,vxlan
-tenant_network_types = gre
+tenant_network_types = vxlan
 mechanism_drivers = openvswitch,l2population
 extension_drivers = port_security
 ```
@@ -315,11 +316,12 @@ extension_drivers = port_security
 flat_networks = external
 ```
 
-在```[ml2_type_gre]```部分加入以下設定：
+在```[ml2_type_vxlan]```部分加入以下設定：
 ```sh
-[ml2_type_gre]
-tunnel_id_ranges = 1:1000
+[ml2_type_vxlan]
+vni_ranges = 1:1000
 ```
+> VIN 支援 2 ^ 24 次方個數。
 
 在```[securitygroup]```部分加入以下設定：
 ```sh
@@ -340,7 +342,7 @@ bridge_mappings = external:br-ex
 在```[agent]```部分加入以下設定：
 ```sh
 [agent]
-tunnel_types = gre
+tunnel_types = vxlan
 l2_population = True
 prevent_arp_spoofing = True
 ```
@@ -367,9 +369,9 @@ dhcp_driver = neutron.agent.linux.dhcp.Dnsmasq
 enable_isolated_metadata = True
 ```
 
-完成上述後，下一步可以依需求設定，因為類似 GRE 的協定包含了額外的 Header 封包，這些封包增加了網路開銷，而減少了有效的封包可用空間。在不了解虛擬網路架構的情況下，Instance 會用預設的 ETH Maximum Transmission Unit（MTU）1500 bytes 來傳送封包。IP 網路利用 Path MTU discovery（PMTUD）機制來偵測與調整封包大小。但是有些作業系統、網路阻塞、缺乏對 PMTUD 支援等因素，會造成效能的損失與連接錯誤。
+完成上述後，下一步可以依需求設定，因為類似 VXLAN 的協定包含了額外的 Header 封包，這些封包增加了網路開銷，而減少了有效的封包可用空間。在不了解虛擬網路架構的情況下，Instance 會用預設的 ETH Maximum Transmission Unit（MTU）1500 bytes 來傳送封包。IP 網路利用 Path MTU discovery（PMTUD）機制來偵測與調整封包大小。但是有些作業系統、網路阻塞、缺乏對 PMTUD 支援等因素，會造成效能的損失與連接錯誤。
 
-最好情況下，可以在 Network 節點上開啟 Jumbo frames 來避免該問題。因為 Jumbo frames 支援最大 9000 bytes 的 MTU，這大大解決了覆蓋網路（Overlay Network）的封包開銷影響。但是很多網路設備不一定支援，且 OpenStack 管理人員也可能忽略對網路架構的控制，因此考慮到複雜性，這邊選擇降低 MTU 大小來避免該問題，使用 GRE 大多環境採用 ```1454``` Bytes 來執行。
+最好情況下，可以在 Network 節點上開啟 Jumbo frames 來避免該問題。因為 Jumbo frames 支援最大 9000 bytes 的 MTU，這大大解決了覆蓋網路（Overlay Network）的封包開銷影響。但是很多網路設備不一定支援，且 OpenStack 管理人員也可能忽略對網路架構的控制，因此考慮到複雜性，這邊選擇降低 MTU 大小來避免該問題，使用 VXLAN 大多環境採用 ```1450``` Bytes 來執行。
 
 設定 MTU 可以透過編輯```/etc/neutron/dhcp_agent.ini```在```[DEFAULT]```部分加入以下設定：
 ```sh
@@ -380,7 +382,7 @@ dnsmasq_config_file = /etc/neutron/dnsmasq-neutron.conf
 
 然後建立並編輯```/etc/neutron/dnsmasq-neutron.conf```來設定 MTU 大小：
 ```sh
-echo 'dhcp-option-force=26,1454' | sudo tee /etc/neutron/dnsmasq-neutron.conf
+echo 'dhcp-option-force=26,1450' | sudo tee /etc/neutron/dnsmasq-neutron.conf
 ```
 
 ### 設定 Metadata Agent
@@ -548,16 +550,17 @@ password = NEUTRON_PASS
 ```sh
 [ml2]
 type_drivers = flat,vlan,gre,vxlan
-tenant_network_types = gre
+tenant_network_types = vxlan
 mechanism_drivers = openvswitch,l2population
 extension_drivers = port_security
 ```
 
-在```[ml2_type_gre]```部分加入以下設定：
+在```[ml2_type_vxlan]```部分加入以下設定：
 ```sh
-[ml2_type_gre]
-tunnel_id_ranges = 1:1000
+[ml2_type_vxlan]
+vni_ranges = 1:1000
 ```
+> VIN 支援 2 ^ 24 次方個數。
 
 在```[securitygroup]```部分加入以下設定：
 ```sh
@@ -577,7 +580,7 @@ local_ip = TUNNELS_IP
 在```[agent]```部分加入以下設定：
 ```sh
 [agent]
-tunnel_types = gre
+tunnel_types = vxlan
 l2_population = True
 prevent_arp_spoofing = True
 ```

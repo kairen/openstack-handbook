@@ -108,14 +108,14 @@ sudo apt-get install -y mariadb-server python-pymysql
 ```
 > 記住Python MySQL 和 MariaDB 是相容的。
 
-安裝完成後，需要設定```root```密碼，這邊設定為```passwd```，再來需要建立與修改```/etc/mysql/conf.d/mysqld_openstack.cnf```來設定資料庫：
-* 在```[mysqld]```將```bind-address```改為 Controller host
+安裝完成後，需要設定```root```密碼，這邊設定為```passwd```，再來需要建立與修改```/etc/mysql/conf.d/mysqld_openstack.cnf```來設定資料庫。
+* 在```[mysqld]```將```bind-address```改為 Controller IP：
 ```sh
 [mysqld]
 bind-address = 10.0.0.11
 ```
 
-* 在```[mysqld]```通過修改下列參數項目，提供一些有用的設定，並使用UTF-8編碼
+* 在```[mysqld]```通過修改下列參數項目，提供一些有用的設定，並使用 UTF-8 編碼：
 ```sh
 [mysqld]
 ...

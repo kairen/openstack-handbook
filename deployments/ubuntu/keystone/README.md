@@ -68,7 +68,18 @@ sudo keystone-manage db_sync
 
 初始化 Fernet keys：
 ```sh
-keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
+sudo keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
+```
+
+成功會看到類似以下內容：
+```sh
+2016-03-30 13:08:39.452 9126 INFO keystone.token.providers.fernet.utils [-] [fernet_tokens] key_repository does not appear to exist; attempting to create it
+2016-03-30 13:08:39.453 9126 INFO keystone.token.providers.fernet.utils [-] Created a new key: /etc/keystone/fernet-keys/0
+2016-03-30 13:08:39.453 9126 INFO keystone.token.providers.fernet.utils [-] Starting key rotation with 1 key files: ['/etc/keystone/fernet-keys/0']
+2016-03-30 13:08:39.453 9126 INFO keystone.token.providers.fernet.utils [-] Current primary key is: 0
+2016-03-30 13:08:39.454 9126 INFO keystone.token.providers.fernet.utils [-] Next primary key will be: 1
+2016-03-30 13:08:39.454 9126 INFO keystone.token.providers.fernet.utils [-] Promoted key 0 to be the primary: 1
+2016-03-30 13:08:39.454 9126 INFO keystone.token.providers.fernet.utils [-] Created a new key: /etc/keystone/fernet-keys/0
 ```
 
 ### 設置 Apache HTTP 伺服器
@@ -134,22 +145,6 @@ Listen 35357
 sudo ln -s /etc/apache2/sites-available/wsgi-keystone.conf /etc/apache2/sites-enabled
 ```
 
-建立```WSGI```元件目錄結構：
-```sh
-sudo mkdir -p /var/www/cgi-bin/keystone
-```
-
-從網路上下載```WSGI```元件到該目錄底下：
-```sh
-sudo curl http://git.openstack.org/cgit/openstack/keystone/plain/httpd/keystone.py?h=stable/liberty | sudo tee /var/www/cgi-bin/keystone/main /var/www/cgi-bin/keystone/admin
-```
-
-透過```chown```與```chmod```調整目錄權限：
-```sh
-sudo chown -R keystone:keystone /var/www/cgi-bin/keystone
-sudo chmod 755 /var/www/cgi-bin/keystone/*
-```
-
 重新啟動 HTTP 服務：
 ```sh
 sudo service apache2 restart
@@ -188,9 +183,9 @@ openstack service create --name keystone \
 身份驗證服務管理了一個與環境相關的 API 端點的目錄。服務使用這個目錄來決定如何與環境中的其他服務進行溝通。透過以下建立一個 API 端點：
 ```sh
 openstack endpoint create \
---publicurl http://10.0.0.11:5000/v2.0 \
---internalurl http://10.0.0.11:5000/v2.0 \
---adminurl http://10.0.0.11:35357/v2.0 \
+--publicurl http://10.0.0.11:5000/v3 \
+--internalurl http://10.0.0.11:5000/v3 \
+--adminurl http://10.0.0.11:35357/v3 \
 --region RegionOne identity
 ```
 會看到產生類似以下資訊：
@@ -198,12 +193,12 @@ openstack endpoint create \
 +--------------+----------------------------------+
 | Field        | Value                            |
 +--------------+----------------------------------+
-| adminurl     | http://10.0.0.11:35357/v2.0     |
-| id           | dd69029787b04bb890d9e6ef6624f082 |
-| internalurl  | http://10.0.0.11:5000/v2.0      |
-| publicurl    | http://10.0.0.11:5000/v2.0      |
+| adminurl     | http://10.0.0.11:35357/v3        |
+| id           | 0af1316372844e579bc84cf71f66fff0 |
+| internalurl  | http://10.0.0.11:5000/v3         |
+| publicurl    | http://10.0.0.11:5000/v3         |
 | region       | RegionOne                        |
-| service_id   | 317ef3c6861d40a3b5a04b8d14b4b276 |
+| service_id   | 721282b3c5514bcab6147a29fbaf28e7 |
 | service_name | keystone                         |
 | service_type | identity                         |
 +--------------+----------------------------------+
@@ -390,7 +385,7 @@ ERROR: openstack You are not authorized to perform the requested action: admin_r
 若以上都正確，代表```keystone```應該是正常的被執行了。
 
 # 建立一個 Client 端腳本
-我們會分別為```admin```與```demo```建立腳本，來方便我們做操作與驗證，首先建立```admin```檔案為```admin-openrc.sh```，並加入以下參數：
+我們會分別為```admin```與```demo```建立腳本，來方便我們做操作與驗證，首先建立```admin```檔案為```admin-openrc```，並加入以下參數：
 ```sh
 export OS_PROJECT_DOMAIN_ID=default
 export OS_USER_DOMAIN_ID=default
@@ -403,7 +398,7 @@ export OS_IDENTITY_API_VERSION=3
 ```
 > 注意！```OS_PASSWORD```記得修改為設定密碼，這邊採用```passwd```。
 
-再來建立```demo```為```demo-openrc.sh```，並加入以下參數：
+再來建立```demo```為```demo-openrc```，並加入以下參數：
 ```sh
 export OS_PROJECT_DOMAIN_ID=default
 export OS_USER_DOMAIN_ID=default

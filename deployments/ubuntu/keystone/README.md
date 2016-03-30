@@ -41,11 +41,10 @@ sudo apt-get install keystone apache2 memcached libapache2-mod-wsgi python-opens
 admin_token = ADMIN_TOKEN
 ```
 
-在```[database]```部分修改如下：
+在```[database]```部分修改使用以下方式：
 ```sh
 [database]
-# connection = sqlite:////var/lib/keystone/keystone.db
-connection = mysql://keystone:KEYSTONE_DBPASS@10.0.0.11/keystone
+connection = mysql+pymysql://keystone:KEYSTONE_DBPASS@controller/keystone
 ```
 
 在```[memcache]```部分修改如下：
@@ -413,10 +412,11 @@ export OS_IDENTITY_API_VERSION=3
 ```
 > 注意！```OS_PASSWORD```記得修改為設定密碼，這邊採用```demo```。
 
-完成後，可以透過```source```來加入環境變數：
+完成後，可以透過```source```來執行加入環境變數：
 ```sh
-source admin-openrc.sh
+source admin-openrc
 ```
+> P.S. 也可以使用```. admin-openrc```來執行。
 
 試看看直接請求```keystone```指令：
 ```sh
@@ -425,12 +425,12 @@ openstack token issue
 
 成功的話，會看到以下資訊：
 ```sh
-+------------+----------------------------------+
-| Field      | Value                            |
-+------------+----------------------------------+
-| expires    | 2015-06-23T16:05:15.848947Z      |
-| id         | 241fe6e046df47d6bd1a8f15c7f4f9b5 |
-| project_id | cf8f9b8b009b429488049bb2332dc311 |
-| user_id    | a2cdc03624c04bb0bd7437f6e9f7913e |
-+------------+----------------------------------+
++------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| Field      | Value                                                                                                                                                                                   |
++------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| expires    | 2016-03-30T14:37:40.456954Z                                                                                                                                                             |
+| id         | gAAAAABW-9akQwoH0NSjDGlWYnsT904-MoQwlHlFohEJ3PlVOSKwj4ZO6-mVzklmYXNzVblfnuQbUA52-ITzEEnZckPXDUcufjJToIn1jvEDaVogj0Otrw6WXiR5JT6NXueLkVJEfXxLYVzfpnZE4eIQXAekc5WWVP7nXo1jSSbCPV534RTE3ek |
+| project_id | 136884a1934f4d4c950e1397797b7a68                                                                                                                                                        |
+| user_id    | 5625804d30a44e0a95a2bcea7292900e                                                                                                                                                        |
++------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 ```

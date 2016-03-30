@@ -1,12 +1,13 @@
 # Glance 安裝與設定
-本章節會說明與操作如何安裝```Image Service```到OpenStack Controller節點上，並設置相關參數與設定。若對於Glance不瞭解的人，可以參考[Glance 映像檔套件章節](http://kairen.gitbooks.io/openstack/content/glance/index.html)。
+本章節會說明與操作如何安裝映像檔服務到 Controller 節點上，並設置相關參數與設定。若對於 Glance 不瞭解的人，可以參考 [Glance 映像檔套件章節](../../../conceptions/glance/README.md)。
 
 ### 安裝前準備
-我們需要在Database底下建立儲存 Glance 資訊的資料庫，利用```mysql```指令進入：
+我們需要在 MySQL 建立儲存 Glance 資訊的資料庫，利用 ```mysql``` 指令進入：
 ```sh
 mysql -u root -p
 ```
-建立 Glance 資料庫與使用者：
+
+透過以下命令用來更新現有帳號資料或建立 Glance 新帳號：
 ```sql
 CREATE DATABASE glance;
 GRANT ALL PRIVILEGES ON glance.* TO 'glance'@'localhost'  IDENTIFIED BY 'GLANCE_DBPASS';
@@ -14,52 +15,53 @@ GRANT ALL PRIVILEGES ON glance.* TO 'glance'@'%' IDENTIFIED BY 'GLANCE_DBPASS';
 ```
 > 這邊若```GLANCE_DBPASS```要更改的話，可以更改。
 
-完成後，透過```quit```指令離開資料庫。之後我們要導入Keystone的```admin```帳號，來建立服務：
+完成後，透過```quit```指令離開資料庫。之後我們要導入 Keystone 的```admin```帳號，來建立服務：
 ```sh
-source admin-openrc.sh
+. admin-openrc
 ```
+
 透過以下指令建立服務驗證：
 ```sh
-# 建立 Glance User
+# 建立 Glance user
 openstack user create --password GLANCE_PASS --email glance@example.com glance
 
-# 建立 Glance Role
+# 建立 Glance role
 openstack role add --project service --user glance admin
 
 # 建立 Glance service
 openstack service create --name glance  --description "OpenStack Image service" image
 
-# 建立 Glance Endpoints
-openstack endpoint create \
---publicurl http://10.0.0.11:9292 \
---internalurl http://10.0.0.11:9292 \
---adminurl http://10.0.0.11:9292 \
---region RegionOne image
+# 建立 Glance public endpoints
+openstack endpoint create --region RegionOne \
+image public http://10.0.0.11:9292
+
+# 建立 Glance internal endpoints
+openstack endpoint create --region RegionOne \
+image internal http://10.0.0.11:9292
+
+# 建立 Glance admin endpoints
+openstack endpoint create --region RegionOne \
+image admin http://10.0.0.11:9292
 ```
+> 在 v3 版本中，可以加入```-f <json, shell, table, yaml>```來檢視 keystone 資訊。
 
 # 安裝與設置Glance套件
 首先要透過```apt-get```來安裝套件：
 ```sh
 sudo apt-get install -y glance python-glanceclient
 ```
-安裝完成後，編輯```/etc/glance/glance-api.conf```，在```[DEFAULT]```部分，設定noop 訊息驅動來禁用訊息與開啟詳細Logs：
-```sh
-[DEFAULT]
-...
-notification_driver = noop
-```
 
-在```[database]```，註解掉 sqlite，並加入以下：
+安裝完成後，編輯```/etc/glance/glance-api.conf```，在```[database]```部分修改使用以下方式：
 ```sh
 [database]
-# sqlite_db = /var/lib/glance/glance.sqlite
-connection = mysql://glance:GLANCE_DBPASS@10.0.0.11/glance
+connection = mysql+pymysql://glance:GLANCE_DBPASS@controller/glance
 ```
 > 這邊若```GLANCE_DBPASS```有更改的話，請記得更改。
 
-接下來，在```[keystone_authtoken]```和```[paste_deploy]```部分，加入以下：
+接下來，在```[keystone_authtoken]```部分加入以下內容：
 ```sh
 [keystone_authtoken]
+memcached_servers = 10.0.0.11:11211
 auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
 auth_plugin = password
@@ -68,32 +70,35 @@ user_domain_id = default
 project_name = service
 username = glance
 password = GLANCE_PASS
+```
+> 這邊若```GLANCE_PASS```有更改的話，請記得更改。
 
+在```[paste_deploy]```部分加入以下內容：
+```sh
 [paste_deploy]
 flavor = keystone
 ```
-在```[glance_store]```部分，加入以下：
+
+在```[glance_store]```部分加入以下內容：
 ```sh
 [glance_store]
+stores = file,http
 default_store = file
 filesystem_store_datadir = /var/lib/glance/images/
 ```
+> 其中```filesystem_store_datadir```是當映像檔上傳時，檔案放置的目錄。
 
-完成後，還要編輯```/etc/glance/glance-registry.conf```並完成以下設定，在```[DEFAULT]```部分設定noop 訊息驅動來禁用訊息與開啟詳細Logs：
-```sh
-[DEFAULT]
-notification_driver = noop
-```
-
-在```[database]```部分，如上個 conf 檔一樣設定以下：
+完成後，要接著編輯```/etc/glance/glance-registry.conf```並完成以下設定，在```[database]```部分修改使用以下方式：
 ```sh
 [database]
-# sqlite_db = /var/lib/glance/glance.sqlite
-connection = mysql://glance:GLANCE_DBPASS@10.0.0.11/glance
+connection = mysql+pymysql://glance:GLANCE_DBPASS@controller/glance
 ```
-接下來，在```[keystone_authtoken]```和```[paste_deploy]```部分，加入以下：
+> 這邊若```GLANCE_DBPASS```有更改的話，請記得更改。
+
+接下來，在```[keystone_authtoken]```部分加入以下內容：
 ```sh
 [keystone_authtoken]
+memcached_servers = 10.0.0.11:11211
 auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
 auth_plugin = password
@@ -102,38 +107,48 @@ user_domain_id = default
 project_name = service
 username = glance
 password = GLANCE_PASS
+```
+> 這邊若```GLANCE_PASS```有更改的話，請記得更改。
 
+在```[paste_deploy]```部分加入以下內容：
+```sh
 [paste_deploy]
 flavor = keystone
 ```
-完成以上兩個檔案```/etc/glance/glance-api.conf```與```/etc/glance/glance-registry.conf```後，即可同步資料庫：
+
+完成以上兩個檔案設定後，即可同步資料庫來建立資料表：
 ```sh
 sudo glance-manage db_sync
 ```
-完成後，重啟服務，並刪除SQLite檔案：
+
+完成後，重新啟動 Glance 的服務，並刪除 SQLite 檔案：
 ```sh
 sudo service glance-registry restart
 sudo service glance-api restart
 sudo rm -f /var/lib/glance/glance.sqlite
 ```
+
 # 驗證操作
-首先我們要在```admin-openrc.sh```與```demo-openrc.sh```加入Glance API環境變數：
+首先我們要在```admin-openrc```與```demo-openrc```加入 Glance API 使用版本的環境變數：
 ```sh
-echo "export OS_IMAGE_API_VERSION=2" | sudo  tee -a admin-openrc.sh demo-openrc.sh
+echo "export OS_IMAGE_API_VERSION=2" \
+| sudo  tee -a admin-openrc demo-openrc
 ```
+
 然後透過```source```來加入環境變數：
 ```sh
-source admin-openrc.sh
+. admin-openrc
 ```
-建立一個暫時用目錄，並下載測試用映像檔：
+
+從網路上下載一個測試用映像檔 ```cirros-0.3.4-x86_64```：
 ```sh
-mkdir /tmp/images
-wget -P /tmp/images http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img
+wget http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img
 ```
-利用```QCOW2```磁碟格式，與```空白的```容器格式，並且為公有映樣檔，來提供往後使用：
+
+這邊透過指令將映像檔上傳，採用 ```QCOW2``` 格式，並且設定為公開的映像檔，來提供給雲端租戶們使用：
 ```sh
 glance image-create --name "cirros-0.3.4-x86_64" \
---file /tmp/images/cirros-0.3.4-x86_64-disk.img \
+--file cirros-0.3.4-x86_64-disk.img \
 --disk-format qcow2 --container-format bare \
 --visibility public --progress
 ```
@@ -147,27 +162,33 @@ glance image-create --name "cirros-0.3.4-x86_64" \
 +------------------+--------------------------------------+
 | checksum         | ee1eca47dc88f4879d8a229cc70a07c6     |
 | container_format | bare                                 |
-| created_at       | 2015-06-24T07:13:45Z                 |
+| created_at       | 2016-03-30T16:04:32Z                 |
 | disk_format      | qcow2                                |
-| id               | 638a1646-bb2e-4f61-9bb9-d5280069b4a8 |
+| id               | 520bf946-436d-4fbd-a21b-62d5879c966e |
 | min_disk         | 0                                    |
 | min_ram          | 0                                    |
 | name             | cirros-0.3.4-x86_64                  |
-| owner            | cf8f9b8b009b429488049bb2332dc311     |
+| owner            | 136884a1934f4d4c950e1397797b7a68     |
 | protected        | False                                |
 | size             | 13287936                             |
 | status           | active                               |
 | tags             | []                                   |
-| updated_at       | 2015-06-24T07:13:45Z                 |
+| updated_at       | 2016-03-30T16:04:32Z                 |
 | virtual_size     | None                                 |
 | visibility       | public                               |
 +------------------+--------------------------------------+
 ```
-我們可以透過```glance image-list```來看所有的映像檔：
+
+完成後，可以透過 Glance client 程式來查看所有映像檔，指令如下：
 ```sh
 glance image-list
 ```
-最後刪除剛剛的映像檔：
-```sh
-rm -r /tmp/images
+
+成功的話會看到類似的節點：
+```
++--------------------------------------+---------------------+
+| ID                                   | Name                |
++--------------------------------------+---------------------+
+| 520bf946-436d-4fbd-a21b-62d5879c966e | cirros-0.3.4-x86_64 |
++--------------------------------------+---------------------+
 ```

@@ -24,7 +24,6 @@
 下圖包含OpenStack 網路(neutron) 服務層的最小架構範例：
 ![服務層](images/installguidearch-neutron-services.png)
 
-
 # Ubuntu Nova Network 安裝
 我們已經完成了單一節點的安裝，但是要將功能拆分成多台該如何實現呢？這次我們安裝包含了```nova-network``` 的兩個節點架構以及選擇性的```區塊儲存```和```物件儲存```服務節點：
 * **Controller Node** : 會運作```KeyStone```、```Glance```、管理運算的部分，並運作```Horizon儀表板```。還包括一些支援的服務，例如```SQL資料庫```、```訊息佇列(message queue)```和```網路時間協定(NTP)```。
@@ -50,32 +49,3 @@
 
 下圖包含OpenStack 傳統網路(nova-network) 服務層的最小架構範例：
 ![服務層](images/installguidearch-nova-services.png)
-
-
-## 安全設定
-| 密碼名稱 | 說明 |
-| -- | -- |
-| Database password (no variable used) | Root password for the database |
-| ADMIN_PASS | Password of user admin |
-| CEILOMETER_DBPASS | Database password for the Telemetry service |
-| CEILOMETER_PASS | Password of Telemetry service user ceilometer |
-| CINDER_DBPASS | Database password for the Block Storage service |
-| CINDER_PASS | Password of Block Storage service user cinder |
-| DASH_DBPASS | Database password for the dashboard |
-| DEMO_PASS | Password of user demo |
-| GLANCE_DBPASS | Database password for Image service |
-| GLANCE_PASS | Password of Image service user glance |
-| HEAT_DBPASS | Database password for the Orchestration service |
-| HEAT_DOMAIN_PASS | Password of Orchestration domain |
-| HEAT_PASS | Password of Orchestration service user heat |
-| KEYSTONE_DBPASS | Database password of Identity service |
-| NEUTRON_DBPASS | Database password for the Networking service |
-| NEUTRON_PASS | Password of Networking service user neutron |
-| NOVA_DBPASS | Database password for Compute service |
-| NOVA_PASS | Password of Compute service user nova |
-| RABBIT_PASS | Password of user guest of RabbitMQ |
-| SAHARA_PASS | Password of Data processing service |
-| SAHARA_DBPASS | Database password of Data processing service |
-| SWIFT_PASS | Password of Object Storage service user swift |
-| TROVE_DBPASS | Database password of Database service |
-| TROVE_PASS | Password of Database service user trove |

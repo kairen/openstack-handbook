@@ -1,5 +1,5 @@
 # Keystone 身份驗證套件
-Keystone套件作為OpenStack中的```身份驗證服務(Identity Service)```，Keystone執行了以下兩個功能：
+Keystone套件作為OpenStack中的```身份驗證服務（Identity Service)```，Keystone執行了以下兩個功能：
 * **認證**與**授權**。
 * 提供可用服務的 API 服務端點目錄資訊。
 
@@ -40,8 +40,7 @@ Keystone套件作為OpenStack中的```身份驗證服務(Identity Service)```，
 > Keystone 中已經有一個預設的 Role，名稱為 _member_
 
 ### Keystone Client
-OpenStack 身份驗證服務API提供了一套指令介面。例如，使用者可以執行```keystone service-create```與```keystone endpoint-create```指令，在OpenStack中註冊服務。
+OpenStack 身份驗證服務API提供了一套指令介面。例如，使用者可以執行```keystone service-create```與```keystone endpoint-create```指令，在OpenStack中註冊服務。 vc
 
 下面示意圖展示了OpenStack身份驗證的流程：
-![Keystone](images/SCH_5002_V00_NUAC-Keystone.png)
-
+![Keystone](images/keystone_basic_process.png)

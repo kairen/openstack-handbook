@@ -8,16 +8,16 @@
     - [Controller 設定 Nova 使用 Network](#controller-設定-nova-使用-network)
     - [Controller 完成安裝](#controller-完成安裝)
     - [Controller 驗證服務](#controller-驗證服務)
-- [Network Node](#netowrk-node)
-    - [Netowrk 安裝前準備](#netowrk-安裝前準備)
-    - [Netowrk 套件安裝與設定](#netowrk-套件安裝與設定)
-    - [Netowrk 設定 ML2](#netowrk-設定-ml2)
+- [Network Node](#network-node)
+    - [Network 安裝前準備](#network-安裝前準備)
+    - [Network 套件安裝與設定](#network-套件安裝與設定)
+    - [Network 設定 ML2](#network-設定-ml2)
     - [設定 Layer 3 Proxy](#設定-layer-3-proxy)
     - [設定 DHCP Proxy](#設定-dhcp-proxy)
     - [設定 Metadata Agent](#設定-metadata-agent)
     - [設定 Open vSwitch 服務](#設定-open-vswitch-服務)
-    - [Netowrk 完成安裝](#netowrk-完成安裝)
-    - [Netowrk 驗證服務](#netowrk-驗證服務)
+    - [Network 完成安裝](#network-完成安裝)
+    - [Network 驗證服務](#network-驗證服務)
 - [Compute Node](#compute-node)
     - [Compute 安裝前準備](#compute-安裝前準備)
     - [Compute 套件安裝與設定](#compute-套件安裝與設定)
@@ -40,7 +40,7 @@ CREATE DATABASE neutron;
 GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'localhost'  IDENTIFIED BY 'NEUTRON_DBPASS';
 GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'%'  IDENTIFIED BY 'NEUTRON_DBPASS';
 ```
-> 這邊若```NEUTRON_DBPASS```可以隨需求修改。
+> 這邊```NEUTRON_DBPASS```可以隨需求修改。
 
 完成後，透過```quit```指令離開資料庫。之後我們要導入 Keystone 的```admin```帳號，來建立服務：
 ```sh
@@ -50,7 +50,7 @@ GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'%'  IDENTIFIED BY 'NEUTRON_DBPAS
 透過以下指令建立服務驗證：
 ```sh
 # 建立 Neutron User
-openstack user create --password NEUTRON_PASS --email neutron@example.com neutron
+openstack user create --domain default --password NEUTRON_PASS --email neutron@example.com neutron
 
 # 建立 Neutron Role
 openstack role add --project service --user neutron admin
@@ -89,7 +89,7 @@ auth_strategy = keystone
 
 notify_nova_on_port_status_changes = True
 notify_nova_on_port_data_changes = True
-nova_url = http://10.0.0.11:8774/v2
+nova_url = http://10.0.0.11:8774/v2.1
 ```
 
 在```[database]```部分修改使用以下方式：
@@ -105,7 +105,7 @@ rabbit_host = 10.0.0.11
 rabbit_userid = openstack
 rabbit_password = RABBIT_PASS
 ```
-> 這邊若```RABBIT_PASS```可以隨需求修改。
+> 這邊```RABBIT_PASS```可以隨需求修改。
 
 在```[keystone_authtoken]```部分加入以下設定：
 ```sh
@@ -120,7 +120,7 @@ project_name = service
 username = neutron
 password = NEUTRON_PASS
 ```
-> 這邊若```NEUTRON_PASS```可以隨需求修改。
+> 這邊```NEUTRON_PASS```可以隨需求修改。
 
 在```[nova]```部分加入以下設定：
 ```sh
@@ -134,7 +134,7 @@ project_name = service
 username = nova
 password = NOVA_PASS
 ```
-> 這邊若```NOVA_PASS```可以隨需求修改。
+> 這邊```NOVA_PASS```可以隨需求修改。
 
 ### Controller 設定 ML2
 這邊 Neutron ML2 外掛使用 Open vSwitch agent 來提供給虛擬機建立虛擬網路。這邊 Controller 節點不需要 Open vSwitch agent，因為 Controller 不處理網路傳輸。要設定 ML2 可以編輯```/etc/neutron/plugins/ml2/ml2_conf.ini```並在```[ml2]```部分加入以下設定：
@@ -157,8 +157,6 @@ tunnel_id_ranges = 1:1000
 ```sh
 [securitygroup]
 enable_ipset = True
-enable_security_group = True
-firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
 ```
 
 ### Controller 設定 Nova 使用 Network
@@ -174,7 +172,7 @@ project_name = service
 username = neutron
 password = NEUTRON_PASS
 ```
-> 這邊若```NEUTRON_PASS```可以隨需求修改。
+> 這邊```NEUTRON_PASS```可以隨需求修改。
 
 ### Controller 完成安裝
 完成所有設定後，即可同步資料庫來建立 Neutron 資料表：
@@ -285,7 +283,7 @@ rabbit_host = 10.0.0.11
 rabbit_userid = openstack
 rabbit_password = RABBIT_PASS
 ```
-> 這邊若```RABBIT_PASS```可以隨需求修改。
+> 這邊```RABBIT_PASS```可以隨需求修改。
 
 在```[keystone_authtoken]```部分加入以下設定：
 ```sh
@@ -300,7 +298,7 @@ project_name = service
 username = neutron
 password = NEUTRON_PASS
 ```
-> 這邊若```NEUTRON_PASS```可以隨需求修改。
+> 這邊```NEUTRON_PASS```可以隨需求修改。
 
 ### Network 設定 ML2
 這邊 Neutron ML2 外掛使用 Open vSwitch agent 來提供給虛擬機建立虛擬網路。這邊 Network 需要設定 Open vSwitch agent，因為 Network 是主要處理網路傳輸的節點。要設定 ML2 可以編輯```/etc/neutron/plugins/ml2/ml2_conf.ini```並在```[ml2]```部分加入以下設定：
@@ -409,7 +407,7 @@ password = NEUTRON_PASS
 nova_metadata_ip = 10.0.0.11
 metadata_proxy_shared_secret = METADATA_SECRET
 ```
-> 這邊若```NEUTRON_PASS```可以隨需求修改。
+> 這邊```NEUTRON_PASS```可以隨需求修改。
 
 > 將其中的```METADATA_SECRET```替換為一個合適的 metadata 代理的 secret。
 
@@ -533,7 +531,7 @@ rabbit_host = 10.0.0.11
 rabbit_userid = openstack
 rabbit_password = RABBIT_PASS
 ```
-> 這邊若```RABBIT_PASS```可以隨需求修改。
+> 這邊```RABBIT_PASS```可以隨需求修改。
 
 在```[keystone_authtoken]```部分加入以下設定：
 ```sh
@@ -548,7 +546,7 @@ project_name = service
 username = neutron
 password = NEUTRON_PASS
 ```
-> 這邊若```NEUTRON_PASS```可以隨需求修改。
+> 這邊```NEUTRON_PASS```可以隨需求修改。
 
 
 ### Compute 設定 ML2
@@ -609,7 +607,7 @@ project_name = service
 username = neutron
 password = NEUTRON_PASS
 ```
-> 這邊若```NEUTRON_PASS```可以隨需求修改。
+> 這邊```NEUTRON_PASS```可以隨需求修改。
 
 當完成上述安裝與設定後，在```Compute```節點重新啟動 Nova compute：
 ```sh

@@ -13,7 +13,7 @@ CREATE DATABASE glance;
 GRANT ALL PRIVILEGES ON glance.* TO 'glance'@'localhost'  IDENTIFIED BY 'GLANCE_DBPASS';
 GRANT ALL PRIVILEGES ON glance.* TO 'glance'@'%' IDENTIFIED BY 'GLANCE_DBPASS';
 ```
-> 這邊若```GLANCE_DBPASS```可以隨需求修改。
+> 這邊```GLANCE_DBPASS```可以隨需求修改。
 
 完成後，透過```quit```指令離開資料庫。之後我們要導入 Keystone 的```admin```帳號，來建立服務：
 ```sh
@@ -23,7 +23,7 @@ GRANT ALL PRIVILEGES ON glance.* TO 'glance'@'%' IDENTIFIED BY 'GLANCE_DBPASS';
 透過以下指令建立服務驗證：
 ```sh
 # 建立 Glance user
-openstack user create --password GLANCE_PASS --email glance@example.com glance
+openstack user create --domain default --password GLANCE_PASS --email glance@example.com glance
 
 # 建立 Glance role
 openstack role add --project service --user glance admin
@@ -56,7 +56,7 @@ sudo apt-get install -y glance python-glanceclient
 [database]
 connection = mysql+pymysql://glance:GLANCE_DBPASS@10.0.0.11/glance
 ```
-> 這邊若```GLANCE_DBPASS```可以隨需求修改。
+> 這邊```GLANCE_DBPASS```可以隨需求修改。
 
 接下來，在```[keystone_authtoken]```部分加入以下內容：
 ```sh
@@ -71,7 +71,7 @@ project_name = service
 username = glance
 password = GLANCE_PASS
 ```
-> 這邊若```GLANCE_PASS```可以隨需求修改。
+> 這邊```GLANCE_PASS```可以隨需求修改。
 
 在```[paste_deploy]```部分加入以下內容：
 ```sh
@@ -91,9 +91,9 @@ filesystem_store_datadir = /var/lib/glance/images/
 完成後，要接著編輯```/etc/glance/glance-registry.conf```並完成以下設定，在```[database]```部分修改使用以下方式：
 ```sh
 [database]
-connection = mysql+pymysql://glance:GLANCE_DBPASS@controller/glance
+connection = mysql+pymysql://glance:GLANCE_DBPASS@10.0.0.11/glance
 ```
-> 這邊若```GLANCE_DBPASS```可以隨需求修改。
+> 這邊```GLANCE_DBPASS```可以隨需求修改。
 
 接下來，在```[keystone_authtoken]```部分加入以下內容：
 ```sh
@@ -108,7 +108,7 @@ project_name = service
 username = glance
 password = GLANCE_PASS
 ```
-> 這邊若```GLANCE_PASS```可以隨需求修改。
+> 這邊```GLANCE_PASS```可以隨需求修改。
 
 在```[paste_deploy]```部分加入以下內容：
 ```sh

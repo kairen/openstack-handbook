@@ -48,7 +48,7 @@ sudo service apache2 restart
 
 # 驗證服務
 這個部分將描述如何進行儀表板的驗證操作，依照以下兩個簡單步驟：
-1. 開啟 Web 瀏覽器進入儀表板: http://controller/horizon。
-2. 使用 admin 或 demo 的使用者登入。
+* 開啟 Web 瀏覽器進入儀表板: http://controller/horizon。
+* 使用 admin 或 demo 的使用者登入。
 
 ![horizon](images/horizon.png)

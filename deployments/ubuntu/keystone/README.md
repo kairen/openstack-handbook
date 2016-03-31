@@ -13,7 +13,7 @@ CREATE DATABASE keystone;
 GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'localhost' IDENTIFIED BY 'KEYSTONE_DBPASS';
 GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'%' IDENTIFIED BY 'KEYSTONE_DBPASS';
 ```
-> 這邊若```KEYSTONE_DBPASS```可以隨需求修改。
+> 這邊```KEYSTONE_DBPASS```可以隨需求修改。
 
 完成後，透過 ```quit``` 指令離開資料庫，並透過 ```openssl``` 建立一個隨機的 admin token：
 ```sh
@@ -44,7 +44,7 @@ admin_token = ADMIN_TOKEN
 在```[database]```部分修改使用以下方式：
 ```sh
 [database]
-connection = mysql+pymysql://keystone:KEYSTONE_DBPASS@controller/keystone
+connection = mysql+pymysql://keystone:KEYSTONE_DBPASS@10.0.0.11/keystone
 ```
 
 在```[memcache]```部分修改如下：

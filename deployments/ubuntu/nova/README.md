@@ -27,7 +27,7 @@ CREATE DATABASE nova_api;
 GRANT ALL PRIVILEGES ON nova_api.* TO 'nova'@'localhost' IDENTIFIED BY 'NOVA_DBPASS';
 GRANT ALL PRIVILEGES ON nova_api.* TO 'nova'@'%' IDENTIFIED BY 'NOVA_DBPASS';
 ```
-> 這邊若```NOVA_DBPASS```可以隨需求修改。
+> 這邊```NOVA_DBPASS```可以隨需求修改。
 
 完成後，透過```quit```指令離開資料庫。之後我們要導入 Keystone 的```admin```帳號，來建立服務：
 ```sh
@@ -37,7 +37,7 @@ GRANT ALL PRIVILEGES ON nova_api.* TO 'nova'@'%' IDENTIFIED BY 'NOVA_DBPASS';
 透過以下指令建立服務驗證：
 ```sh
 # 建立 Nova user
-openstack user create --password NOVA_PASS --email nova@example.com nova
+openstack user create --domain default --password NOVA_PASS --email nova@example.com nova
 
 # 建立 Nova role
 openstack role add --project service --user nova admin
@@ -77,7 +77,7 @@ firewall_driver = nova.virt.firewall.NoopFirewallDriver
 
 my_ip = MANAGEMENT_IP
 ```
-> ```MANAGEMENT_IP```這邊為```10.0.0.11```。
+> P.S. ```MANAGEMENT_IP```這邊為```10.0.0.11```。
 
 在```[vnc]```部分加入以下內容：
 ```sh
@@ -97,7 +97,7 @@ connection = mysql+pymysql://nova:NOVA_DBPASS@10.0.0.11/nova_api
 [database]
 connection = mysql+pymysql://nova:NOVA_DBPASS@10.0.0.11/nova
 ```
-> 這邊若```NOVA_DBPASS```可以隨需求修改。
+> 這邊```NOVA_DBPASS```可以隨需求修改。
 
 在```[oslo_messaging_rabbit]```部分加入以下內容：
 ```sh
@@ -106,7 +106,7 @@ rabbit_host = 10.0.0.11
 rabbit_userid = openstack
 rabbit_password = RABBIT_PASS
 ```
-> 這邊若```RABBIT_PASS```可以隨需求修改。
+> 這邊```RABBIT_PASS```可以隨需求修改。
 
 在```[keystone_authtoken]```部分加入以下內容：
 ```sh
@@ -121,7 +121,7 @@ project_name = service
 username = nova
 password = NOVA_PASS
 ```
-> 這邊若```NOVA_PASS```可以隨需求修改。
+> 這邊```NOVA_PASS```可以隨需求修改。
 
 在```[glance]```部分加入以下內容：
 ```sh
@@ -176,7 +176,7 @@ resume_guests_state_on_host_boot = true
 
 my_ip = MANAGEMENT_IP
 ```
-> ```MANAGEMENT_IP```這邊為```10.0.0.31```。
+> P.S. ```MANAGEMENT_IP```這邊為```10.0.0.31```。
 
 在```[vnc]```部分加入以下內容：
 ```sh
@@ -195,7 +195,7 @@ rabbit_host = 10.0.0.11
 rabbit_userid = openstack
 rabbit_password = RABBIT_PASS
 ```
-> 這邊若```RABBIT_PASS```可以隨需求修改。
+> 這邊```RABBIT_PASS```可以隨需求修改。
 
 在```[keystone_authtoken]```設部分加入以下內容：
 ```sh
@@ -210,7 +210,7 @@ project_name = service
 username = nova
 password = NOVA_PASS
 ```
-> 這邊若```NOVA_PASS```可以隨需求修改。
+> 這邊```NOVA_PASS```可以隨需求修改。
 
 在```[glance]```部分加入以下內容：
 ```sh

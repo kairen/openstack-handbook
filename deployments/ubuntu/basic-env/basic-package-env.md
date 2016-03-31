@@ -4,11 +4,11 @@
 ### Controller 節點設定
 在 Controller 節點上，我們可以透過```apt-get```來安裝相關套件：
 ```sh
-sudo apt-get install -y ntp
+$ sudo apt-get install -y ntp
 ```
 > P.S NTP Server 也可以考慮使用 chrony，透過以下方式安裝：
 ```sh
-sudo apt-get install chrony
+$ sudo apt-get install chrony
 ```
 > 若要修改設定檔則編輯```/etc/chrony/chrony.conf```。基本設定上與 ntp 雷同。
 
@@ -25,13 +25,13 @@ server 0.asia.pool.ntp.org
 
 完成後，重啟服務：
 ```sh
-sudo service ntp restart
+$ sudo service ntp restart
 ```
 
 ### 其他節點設定
 透過```apt-get```安裝 ntp:
 ```sh
-sudo apt-get install -y ntp
+$ sudo apt-get install -y ntp
 ```
 完成安裝後，修改```/etc/ntp.conf```檔案，註解掉所有```server```的參數，並將其設定為 Controller IP：
 ```sh
@@ -41,7 +41,7 @@ server 10.0.0.11 iburst
 
 完成後，重啟服務：
 ```sh
-sudo service ntp restart
+$ sudo service ntp restart
 ```
 
 ### 驗證設定
@@ -104,7 +104,7 @@ sudo apt-get update && sudo apt-get -y  dist-upgrade
 # SQL database 安裝
 大部份的 OpenStack 套件服務都是只用 SQL 資料庫來儲存訊息，該資料庫一般運作於```Controller```上。以下我們使用了 MariaDB 或 MySQL 來當作各套件的資訊儲存。OpenStack 也支援了其他資料庫，諸如：PostgreSQL。這邊透過```apt-get```來安裝 MariaDB 套件：
 ```sh
-sudo apt-get install -y mariadb-server python-pymysql
+$ sudo apt-get install -y mariadb-server python-pymysql
 ```
 > 記住Python MySQL 和 MariaDB 是相容的。
 
@@ -128,20 +128,20 @@ character-set-server = utf8
 
 完成後，重新啟動 MySQL 服務：
 ```sh
-sudo service mysql restart
+$ sudo service mysql restart
 ```
 
 並對資料庫進行安全設定：
 ```sh
-sudo mysql_secure_installation
+$ sudo mysql_secure_installation
 ```
 > 若要備份資料庫可以用以下指令：
 ```sh
-mysqldump --user=root -p --all-databases > mysql.sql
+$ mysqldump --user=root -p --all-databases > mysql.sql
 ```
 > 若要恢復資料庫可以用以下指令：
 ```sh
-mysql -u root -p < mysql.sql
+$ mysql -u root -p < mysql.sql
 ```
 
 除了更換密碼外，其餘每個項目都輸入```yes```，並設置對應資訊。
@@ -149,12 +149,11 @@ mysql -u root -p < mysql.sql
 # Message queue 安裝
 OpenStack 使用 Message Queue 來對整個叢集提供協調與狀態訊息服務。Openstack 支援的 Message Queue 包含以下[RabbitMQ](http://www.rabbitmq.com/)、[Qpid](http://qpid.apache.org/)、[ZeroMQ](http://zeromq.org/)。但是大多數的發行版本支援特殊的 Message Queue 服務，這邊我們使用了```RabbitMQ```來實現，並安裝於```Controller```上，透過```apt-get```安裝套件：
 ```sh
-sudo apt-get install -y rabbitmq-server
+$ sudo apt-get install -y rabbitmq-server
 ```
 安裝完成後，新增一個名稱為 ```openstack``` 的 User:
 ```sh
-sudo rabbitmqctl add_user openstack RABBIT_PASS
-# 成功會看到以下資訊
+$ sudo rabbitmqctl add_user openstack RABBIT_PASS
 Creating user "openstack" ...
 ...done.
 ```
@@ -162,8 +161,7 @@ Creating user "openstack" ...
 
 為剛建立的 User 設定存取權限：
 ```sh
-sudo rabbitmqctl set_permissions openstack ".*" ".*" ".*"
-# 成功會看到以下資訊
+$ sudo rabbitmqctl set_permissions openstack ".*" ".*" ".*"
 Setting permissions for user "openstack" in vhost "/" ...
 ...done.
 ```

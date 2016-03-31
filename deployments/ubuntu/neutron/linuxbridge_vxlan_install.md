@@ -8,15 +8,15 @@
     - [Controller 設定 Nova 使用 Network](#controller-設定-nova-使用-network)
     - [Controller 完成安裝](#controller-完成安裝)
     - [Controller 驗證服務](#controller-驗證服務)
-- [Network Node](#netowrk-node)
-    - [Netowrk 安裝前準備](#netowrk-安裝前準備)
-    - [Netowrk 套件安裝與設定](#netowrk-套件安裝與設定)
-    - [Netowrk 設定 ML2](#netowrk-設定-ml2)
+- [Network Node](#network-node)
+    - [Network 安裝前準備](#network-安裝前準備)
+    - [Network 套件安裝與設定](#network-套件安裝與設定)
+    - [Network 設定 ML2](#network-設定-ml2)
     - [設定 Layer 3 Proxy](#設定-layer-3-proxy)
     - [設定 DHCP Proxy](#設定-dhcp-proxy)
     - [設定 Metadata Agent](#設定-metadata-agent)
-    - [Netowrk 完成安裝](#netowrk-完成安裝)
-    - [Netowrk 驗證服務](#netowrk-驗證服務)
+    - [Network 完成安裝](#network-完成安裝)
+    - [Network 驗證服務](#network-驗證服務)
 - [Compute Node](#compute-node)
     - [Compute 安裝前準備](#compute-安裝前準備)
     - [Compute 套件安裝與設定](#compute-套件安裝與設定)
@@ -27,7 +27,7 @@
 # Controller Node
 在 Controller 節點上，只需要安裝 Neutron API Server 與 ML2 Plugins 即可。
 
-### 安裝前準備
+### Controller 安裝前準備
 我們需要在 MySQL 建立儲存 Neutron 資訊的資料庫，利用 ```mysql``` 指令進入：
 ```sh
 mysql -u root -p
@@ -39,7 +39,7 @@ CREATE DATABASE neutron;
 GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'localhost'  IDENTIFIED BY 'NEUTRON_DBPASS';
 GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'%'  IDENTIFIED BY 'NEUTRON_DBPASS';
 ```
-> 這邊若```NEUTRON_DBPASS```可以隨需求修改。
+> 這邊```NEUTRON_DBPASS```可以隨需求修改。
 
 完成後，透過```quit```指令離開資料庫。之後我們要導入 Keystone 的```admin```帳號，來建立服務：
 ```sh
@@ -49,7 +49,7 @@ GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'%'  IDENTIFIED BY 'NEUTRON_DBPAS
 透過以下指令建立服務驗證：
 ```sh
 # 建立 Neutron User
-openstack user create --password NEUTRON_PASS --email neutron@example.com neutron
+openstack user --domain default create --password NEUTRON_PASS --email neutron@example.com neutron
 
 # 建立 Neutron Role
 openstack role add --project service --user neutron admin
@@ -88,7 +88,7 @@ auth_strategy = keystone
 
 notify_nova_on_port_status_changes = True
 notify_nova_on_port_data_changes = True
-nova_url = http://10.0.0.11:8774/v2
+nova_url = http://10.0.0.11:8774/v2.1
 ```
 
 在```[database]```部分修改使用以下方式：
@@ -104,7 +104,7 @@ rabbit_host = 10.0.0.11
 rabbit_userid = openstack
 rabbit_password = RABBIT_PASS
 ```
-> 這邊若```RABBIT_PASS```可以隨需求修改。
+> 這邊```RABBIT_PASS```可以隨需求修改。
 
 在```[keystone_authtoken]```部分加入以下設定：
 ```sh
@@ -119,7 +119,7 @@ project_name = service
 username = neutron
 password = NEUTRON_PASS
 ```
-> 這邊若```NEUTRON_PASS```可以隨需求修改。
+> 這邊```NEUTRON_PASS```可以隨需求修改。
 
 在```[nova]```部分加入以下設定：
 ```sh
@@ -133,7 +133,7 @@ project_name = service
 username = nova
 password = NOVA_PASS
 ```
-> 這邊若```NOVA_PASS```可以隨需求修改。
+> 這邊```NOVA_PASS```可以隨需求修改。
 
 ### Controller 設定 ML2
 這邊 Neutron ML2 外掛使用 Linux bridge agent 來提供給虛擬機建立虛擬網路。這邊 Controller 節點不需要 Linux bridge agent，因為 Controller 不處理網路傳輸。要設定 ML2 可以編輯```/etc/neutron/plugins/ml2/ml2_conf.ini```並在```[ml2]```部分加入以下設定：
@@ -175,7 +175,7 @@ project_name = service
 username = neutron
 password = NEUTRON_PASS
 ```
-> 這邊若```NEUTRON_PASS```可以隨需求修改。
+> 這邊```NEUTRON_PASS```可以隨需求修改。
 
 ### Controller 完成安裝
 完成所有設定後，即可同步資料庫來建立 Neutron 資料表：
@@ -283,7 +283,7 @@ rabbit_host = 10.0.0.11
 rabbit_userid = openstack
 rabbit_password = RABBIT_PASS
 ```
-> 這邊若```RABBIT_PASS```可以隨需求修改。
+> 這邊```RABBIT_PASS```可以隨需求修改。
 
 在```[keystone_authtoken]```部分加入以下設定：
 ```sh
@@ -298,7 +298,7 @@ project_name = service
 username = neutron
 password = NEUTRON_PASS
 ```
-> 這邊若```NEUTRON_PASS```可以隨需求修改。
+> 這邊```NEUTRON_PASS```可以隨需求修改。
 
 ### Network 設定 ML2
 這邊 Neutron ML2 外掛使用 Linux bridge agent 來提供給虛擬機建立虛擬網路。這邊 Network 需要設定 Linux bridge agent，因為 Network 是主要處理網路傳輸的節點。要設定 ML2 可以編輯```/etc/neutron/plugins/ml2/ml2_conf.ini```並在```[ml2]```部分加入以下設定：
@@ -327,8 +327,6 @@ vni_ranges = 1:1000
 ```sh
 [securitygroup]
 enable_ipset = True
-enable_security_group = True
-firewall_driver = neutron.agent.linux.iptables_firewall.IptablesFirewallDriver
 ```
 
 接著編輯```/etc/neutron/plugins/ml2/linuxbridge_agent.ini```，在```[linux_bridge]```部分加入以下設定：
@@ -341,11 +339,11 @@ physical_interface_mappings = external:<physical_interface>
 在```[vxlan]```部分加入以下設定：
 ```sh
 [vxlan]
-local_ip = OVERLAY_INTERFACE_IP_ADDRESS
+local_ip = OVERLAY__IP
 enable_vxlan = true
 l2_population = True
 ```
-> 這邊```OVERLAY_INTERFACE_IP_ADDRESS```為```10.0.1.21```。
+> 這邊```OVERLAY__IP```為```10.0.1.21```。
 
 在```[agent]```部分加入以下設定：
 ```sh
@@ -357,7 +355,6 @@ prevent_arp_spoofing = True
 在```[securitygroup]```部分加入以下設定：
 ```sh
 [securitygroup]
-enable_ipset = True
 enable_security_group = True
 firewall_driver = neutron.agent.linux.iptables_firewall.IptablesFirewallDriver
 ```
@@ -382,7 +379,6 @@ interface_driver = neutron.agent.linux.interface.BridgeInterfaceDriver
 dhcp_driver = neutron.agent.linux.dhcp.Dnsmasq
 enable_isolated_metadata = True
 verbose = True
-dnsmasq_config_file = /etc/neutron/dnsmasq-neutron.conf
 ```
 
 完成上述後，下一步可以依需求設定，因為類似 VXLAN 的協定包含了額外的 Header 封包，這些封包增加了網路開銷，而減少了有效的封包可用空間。在不了解虛擬網路架構的情況下，Instance 會用預設的 eth maximum transmission unit（MTU） 1500 bytes 來傳送封包。IP 網路利用 Path MTU discovery（PMTUD）機制來偵測與調整封包大小。但是有些作業系統、網路阻塞、缺乏對 PMTUD 支援等因素，會造成效能的損失與連接錯誤。
@@ -406,20 +402,10 @@ OpenStack Metadata 提供了一些主機客製化的設定訊息，諸如 Hostna
 ```sh
 [DEFAULT]
 ...
-verbose = True
-auth_uri = http://10.0.0.11:5000
-auth_url = http://10.0.0.11:35357
-auth_region = RegionOne
-auth_plugin = password
-project_domain_id = default
-user_domain_id = default
-project_name = service
-username = neutron
-password = NEUTRON_PASS
 nova_metadata_ip = 10.0.0.11
 metadata_proxy_shared_secret = METADATA_SECRET
 ```
-> 這邊若```NEUTRON_PASS```可以隨需求修改。
+> 這邊```NEUTRON_PASS```可以隨需求修改。
 
 > 將其中的```METADATA_SECRET```替換為一個合適的 metadata 代理的 secret。
 
@@ -459,14 +445,14 @@ neutron agent-list
 
 成功的話，會看到類似以下資訊：
 ```
-+--------------------------------------+--------------------+---------+-------+----------------+---------------------------+
-| id                                   | agent_type         | host    | alive | admin_state_up | binary                    |
-+--------------------------------------+--------------------+---------+-------+----------------+---------------------------+
-| 54a6b2ff-5d02-4554-b3c8-9e29cd845195 | L3 agent           | network | :-)   | True           | neutron-l3-agent          |
-| 590e2749-7caa-4621-9cbc-75d892df1b6b | DHCP agent         | network | :-)   | True           | neutron-dhcp-agent        |
-| e7981fa5-af38-4da9-9ff7-de1f456ac720 | Linux bridge agent | network | :-)   | True           | neutron-linuxbridge-agent |
-| fffc4360-2507-4fb8-af9a-2d3c13f5942d | Metadata agent     | network | :-)   | True           | neutron-metadata-agent    |
-+--------------------------------------+--------------------+---------+-------+----------------+---------------------------+
++--------------------------------------+--------------------+----------+-------------------+-------+----------------+---------------------------+
+| id                                   | agent_type         | host     | availability_zone | alive | admin_state_up | binary                    |
++--------------------------------------+--------------------+----------+-------------------+-------+----------------+---------------------------+
+| 47e05144-8084-464b-bfd5-2e59bbb158e0 | Metadata agent     | network  |                   | :-)   | True           | neutron-metadata-agent    |
+| 9947deb7-7e59-42ab-9e91-3f892a4f9d7e | Linux bridge agent | network  |                   | :-)   | True           | neutron-linuxbridge-agent |
+| c262eafe-415f-4eb3-a686-de1363ff8a01 | DHCP agent         | network  | nova              | :-)   | True           | neutron-dhcp-agent        |
+| e64cf4f9-02b0-41fa-b9a8-def19f0e2813 | L3 agent           | network  | nova              | :-)   | True           | neutron-l3-agent          |
++--------------------------------------+--------------------+----------+-------------------+-------+----------------+---------------------------+
 ```
 
 # Compute Node
@@ -518,7 +504,7 @@ rabbit_host = 10.0.0.11
 rabbit_userid = openstack
 rabbit_password = RABBIT_PASS
 ```
-> 這邊若```RABBIT_PASS```可以隨需求修改。
+> 這邊```RABBIT_PASS```可以隨需求修改。
 
 在```[keystone_authtoken]```部分加入以下設定：
 ```sh
@@ -533,7 +519,7 @@ project_name = service
 username = neutron
 password = NEUTRON_PASS
 ```
-> 這邊若```NEUTRON_PASS```可以隨需求修改。
+> 這邊```NEUTRON_PASS```可以隨需求修改。
 
 
 ### Compute 設定 ML2
@@ -557,8 +543,6 @@ vni_ranges = 1:1000
 ```sh
 [securitygroup]
 enable_ipset = True
-enable_security_group = True
-firewall_driver = neutron.agent.linux.iptables_firewall.IptablesFirewallDriver
 ```
 
 接著編輯```/etc/neutron/plugins/ml2/linuxbridge_agent.ini```，在```[vxlan]```部分加入以下設定：
@@ -580,7 +564,6 @@ prevent_arp_spoofing = True
 在```[securitygroup]```部分加入以下設定：
 ```sh
 [securitygroup]
-enable_ipset = True
 enable_security_group = True
 firewall_driver = neutron.agent.linux.iptables_firewall.IptablesFirewallDriver
 ```
@@ -599,7 +582,7 @@ project_name = service
 username = neutron
 password = NEUTRON_PASS
 ```
-> 這邊若```NEUTRON_PASS```可以隨需求修改。
+> 這邊```NEUTRON_PASS```可以隨需求修改。
 
 當完成上述安裝與設定後，在```Compute```節點重新啟動 Nova compute：
 ```sh

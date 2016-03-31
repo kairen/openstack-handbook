@@ -1,3 +1,6 @@
+# Neutron Linux bridge VXLAN 部署
+本節將說明如何部署基於 Neutron Linux bridge VXLAN 來提供多租戶網路。
+
 - [Controller Node](#controller-node)
     - [Controller 安裝前準備](#controller-安裝前準備)
     - [Controller 套件安裝與設定](#controller-套件安裝與設定)
@@ -162,11 +165,12 @@ enable_ipset = True
 當完成 ML2 設定後，接著編輯```/etc/nova/nova.conf```，在```[neutron]```部分加入以下設定：
 ```sh
 [neutron]
-auth_uri = http://10.0.0.11:5000
+url = http://10.0.0.11:9696
 auth_url = http://10.0.0.11:35357
-auth_plugin = password
-project_domain_id = default
-user_domain_id = default
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+region_name = RegionOne
 project_name = service
 username = neutron
 password = NEUTRON_PASS
@@ -586,11 +590,14 @@ firewall_driver = neutron.agent.linux.iptables_firewall.IptablesFirewallDriver
 ```sh
 [neutron]
 url = http://10.0.0.11:9696
-auth_strategy = keystone
-admin_auth_url = http://10.0.0.11:35357/v2.0
-admin_tenant_name = service
-admin_username = neutron
-admin_password = NEUTRON_PASS
+auth_url = http://10.0.0.11:35357
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+region_name = RegionOne
+project_name = service
+username = neutron
+password = NEUTRON_PASS
 ```
 > 這邊若```NEUTRON_PASS```可以隨需求修改。
 

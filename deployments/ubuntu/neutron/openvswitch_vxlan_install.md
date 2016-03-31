@@ -1,3 +1,6 @@
+# Neutron Open vSwitch VXLAN 部署
+本節將說明如何部署基於 Neutron Open vSwitch VXLAN 來提供多租戶網路。
+
 - [Controller Node](#controller-node)
     - [Controller 安裝前準備](#controller-安裝前準備)
     - [Controller 套件安裝與設定](#controller-套件安裝與設定)
@@ -122,11 +125,11 @@ password = NEUTRON_PASS
 在```[nova]```部分加入以下設定：
 ```sh
 [nova]
+auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
-auth_type = password
-project_domain_name = default
-user_domain_name = default
-region_name = RegionOne
+auth_plugin = password
+project_domain_id = default
+user_domain_id = default
 project_name = service
 username = nova
 password = NOVA_PASS
@@ -331,7 +334,7 @@ enable_security_group = True
 firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
 ```
 
-在```[ovs]```部分加入以下設定：
+接著要設定 Open vSwitch agent，編輯```/etc/neutron/plugins/ml2/openvswitch_agent.ini```在```[ovs]```部分加入以下設定：
 ```sh
 [ovs]
 local_ip = TUNNELS_IP
@@ -345,6 +348,13 @@ bridge_mappings = external:br-ex
 tunnel_types = vxlan
 l2_population = True
 prevent_arp_spoofing = True
+```
+
+在```[securitygroup]```部分加入以下設定：
+```sh
+[securitygroup]
+enable_security_group = True
+firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
 ```
 
 ### 設定 Layer 3 Proxy
@@ -570,12 +580,12 @@ enable_security_group = True
 firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
 ```
 
-在```[ovs]```部分加入以下設定：
+接著要設定 Open vSwitch agent，編輯```/etc/neutron/plugins/ml2/openvswitch_agent.ini```在```[ovs]```部分加入以下設定：
 ```sh
 [ovs]
 local_ip = TUNNELS_IP
 ```
-> 將```TUNNELS_IP```取代成與 Compute 節點溝通的 IP，這邊為```10.0.1.31```。
+> 將```TUNNELS_IP```取代成與 Network 節點溝通的 IP，這邊為```10.0.1.31```。
 
 在```[agent]```部分加入以下設定：
 ```sh
@@ -585,16 +595,26 @@ l2_population = True
 prevent_arp_spoofing = True
 ```
 
+在```[securitygroup]```部分加入以下設定：
+```sh
+[securitygroup]
+enable_security_group = True
+firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewallDriver
+```
+
 ### 設定 Compute 使用 Network
 當完成 ML2 設定後，接著編輯```/etc/nova/nova.conf```，在```[neutron]```部分加入以下設定：：
 ```sh
 [neutron]
 url = http://10.0.0.11:9696
-auth_strategy = keystone
-admin_auth_url = http://10.0.0.11:35357/v2.0
-admin_tenant_name = service
-admin_username = neutron
-admin_password = NEUTRON_PASS
+auth_url = http://10.0.0.11:35357
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+region_name = RegionOne
+project_name = service
+username = neutron
+password = NEUTRON_PASS
 ```
 > 這邊若```NEUTRON_PASS```可以隨需求修改。
 

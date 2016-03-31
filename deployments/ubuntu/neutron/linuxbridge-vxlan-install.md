@@ -49,7 +49,7 @@ GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'%'  IDENTIFIED BY 'NEUTRON_DBPAS
 透過以下指令建立服務驗證：
 ```sh
 # 建立 Neutron User
-openstack user --domain default create --password NEUTRON_PASS --email neutron@example.com neutron
+openstack user create --domain default --password NEUTRON_PASS --email neutron@example.com neutron
 
 # 建立 Neutron Role
 openstack role add --project service --user neutron admin

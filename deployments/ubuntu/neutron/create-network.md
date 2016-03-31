@@ -43,6 +43,15 @@ neutron net-create ext-net --router:external \
 
 外部網路如同一個實體的網路，而一般一個虛擬網路都必須被分配子網路。外部網路透過```Netwrok```節點上的 Public 網卡介面來分享，以及連接實體網路的相關子網路、Gateway。然而我們需要替路由器以及 Floating IP 指定一個獨有的網段，來避免與外部網路的其他裝置衝突。
 
+若要其他的外部網路類型可以參考以下列表：
+
+| network_type |  physical_network | segmentation_id |
+|:------------:|:-----------------:|:---------------:|
+|     flat     | physical networks |       None      |
+|     vlan     | physical networks |     vlan id     |
+|   gre/vxlan  |        NULL       |    tunnel id    |
+|     local    |        NULL       |       NULL      |
+
 ### 建立 External network 子網路
 這邊可以透過 Neutron client 來查看建立外部網路子網路，如以下方式：
 ```sh

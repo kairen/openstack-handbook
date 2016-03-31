@@ -86,18 +86,16 @@ ind assid status  conf reach auth condition  last_event cnt
 接下來我們需在每個節點安裝 Openstack 相關套件，但由於 Ubuntu 的版本差異，會影響 OpenStack 支援的版本，在安裝時要特別注意是否支援，才會有對應的 Repository 可以使用，支援狀況如下圖：
 ![Ubuntu](images/openstack_support.png)
 
-若是 Ubuntu ```15.04 以下```的版本，需加入 Repository 來獲取套件：
+若是 Ubuntu ```15.04 ``` 以下的版本，需加入 Repository 來獲取套件：
 ```sh
 sudo apt-get install -y software-properties-common
-sudo add-apt-repository -y cloud-archive:mitaka
+sudo add-apt-repository -y cloud-archive:liberty
 ```
-> 若要安裝 ```pre-release testing``` 版本，修改為```cloud-archive:mitaka-proposed```。
-
-> 若要安裝 ```liberty```，修改為```cloud-archive:liberty```。
+> 若要安裝 ```kilo```，修改為```cloud-archive:kilo```。
 
 更新 Repository 與套件：
 ```sh
-sudo apt-get update && sudo apt-get -y  dist-upgrade
+sudo apt-get update && sudo apt-get -y dist-upgrade
 ```
 > 如果 Upgrade 包含了新的核心套件的話，請重新開機。
 
@@ -106,16 +104,18 @@ sudo apt-get update && sudo apt-get -y  dist-upgrade
 ```sh
 $ sudo apt-get install -y mariadb-server python-pymysql
 ```
-> 記住Python MySQL 和 MariaDB 是相容的。
+> 記住 Python MySQL 和 MariaDB 是相容的。
 
-安裝完成後，需要設定```root```密碼，這邊設定為```passwd```，再來需要建立與修改```/etc/mysql/conf.d/mysqld_openstack.cnf```來設定資料庫。
-* 在```[mysqld]```將```bind-address```改為 Controller IP：
+安裝過程中需要設定```root```帳號的密碼，這邊設定為```passwd```，。
+
+完成安裝後，需要建立並編輯```/etc/mysql/conf.d/mysqld_openstack.cnf```來設定資料庫。在```[mysqld]```部分加入以下修改：
 ```sh
 [mysqld]
 bind-address = 10.0.0.11
 ```
+> 這邊的檔案 ```mysqld_openstack.cnf``` 是可以修改名稱的。
 
-* 在```[mysqld]```通過修改下列參數項目，提供一些有用的設定，並使用 UTF-8 編碼：
+一樣在```[mysqld]```部分透過修改以下參數，來提供一些基本設定：
 ```sh
 [mysqld]
 ...
@@ -147,10 +147,11 @@ $ mysql -u root -p < mysql.sql
 除了更換密碼外，其餘每個項目都輸入```yes```，並設置對應資訊。
 
 # Message queue 安裝
-OpenStack 使用 Message Queue 來對整個叢集提供協調與狀態訊息服務。Openstack 支援的 Message Queue 包含以下[RabbitMQ](http://www.rabbitmq.com/)、[Qpid](http://qpid.apache.org/)、[ZeroMQ](http://zeromq.org/)。但是大多數的發行版本支援特殊的 Message Queue 服務，這邊我們使用了```RabbitMQ```來實現，並安裝於```Controller```上，透過```apt-get```安裝套件：
+OpenStack 使用 Message Queue 來對整個叢集提供協調與狀態訊息收集。Openstack 支援的 Message Queue 包含以下[RabbitMQ](http://www.rabbitmq.com/)、[Qpid](http://qpid.apache.org/)、[ZeroMQ](http://zeromq.org/)。但是大多數的釋出版本支援特殊的 Message Queue 服務，這邊我們使用了```RabbitMQ```來實現，並安裝於```Controller```節點上，透過```apt-get```安裝套件：
 ```sh
 $ sudo apt-get install -y rabbitmq-server
 ```
+
 安裝完成後，新增一個名稱為 ```openstack``` 的 User:
 ```sh
 $ sudo rabbitmqctl add_user openstack RABBIT_PASS
@@ -167,10 +168,10 @@ Setting permissions for user "openstack" in vhost "/" ...
 ```
 
 # 提醒
-接下來會依序針對 OpenStack 的基礎套件安裝與設定，若發現有以下格式設定，裡面的```...```代表預設設定參數，若沒提示```要註解掉```，請不要更改：
+接下來會依序針對 OpenStack 的基礎套件進行安裝與設定教學，若發現有設定格式中有 ```...``` 代表上面有預設設定的其他參數，若沒提示```要註解掉```，請不要修改：
 ```
 [DEFAULT]
 ...
 admin_token = 74e00617afa2008fcf25
 ```
-> 若在設定時，找不到對應的```[section]```部分，請自行新增。
+> P.S. 若在設定時，找不到對應的```[section]```部分，請自行新增。

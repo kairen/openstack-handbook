@@ -73,10 +73,12 @@ net.ipv4.conf.all.rp_filter=0
 net.bridge.bridge-nf-call-iptables=1
 net.bridge.bridge-nf-call-ip6tables=1
 ```
+
 修改後，透過```sysctl -p```來載入：
 ```sh
 sudo sysctl -p
 ```
+
 透過```apt-get```安裝 L3 agent、Metadata agent：
 ```sh
 sudo apt-get install -y neutron-l3-agent  neutron-metadata-agent
@@ -87,12 +89,14 @@ sudo apt-get install -y neutron-l3-agent  neutron-metadata-agent
 [ml2]
 mechanism_drivers = openvswitch,l2population
 ```
+
 在```[ovs]```加入以下：
 ```sh
 [ovs]
 local_ip = TUNNEL_INTERFACE_IP_ADDRESS
 bridge_mappings = external:br-ex
 ```
+
 在```[agent]```加入以下：
 ```sh
 [agent]
@@ -101,16 +105,18 @@ tunnel_types = gre
 enable_distributed_routing = True
 arp_responder = True
 ```
+
 編輯 L3 Plugins 配置檔```/etc/neutron/l3_agent.ini```，並加入以下：
 ```sh
 [DEFAULT]
 ...
 verbose = True
 interface_driver = neutron.agent.linux.interface.OVSInterfaceDriver
-external_network_bridge = 
+external_network_bridge =
 router_delete_namespaces = True
 agent_mode = dvr
 ```
+
 metadata agent 提供一些設定訊息，如Instance的的相關資訊。編輯```/etc/neutron/metadata_agent.ini```在```[DEFAULT]```部分設定服務存取與metadata主機，註解掉不必要設定：
 ```sh
 [DEFAULT]
@@ -169,5 +175,3 @@ sudo service neutron-l3-agent restart
 * http://docs.openstack.org/networking-guide/scenario_dvr_ovs.html
 * http://www.slideshare.net/janghoonsim/open-stack-networking-juno-l3-ha-dvr
 * http://www.slideshare.net/emaganap/neutron-dvr
-
-

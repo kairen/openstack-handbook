@@ -20,14 +20,12 @@
 * [Openstack 的初步探索](http://perrywu0606.pixnet.net/blog/post/27646684-%5B%E7%AD%86%E8%A8%98%5D-openstack%E7%9A%84%E5%88%9D%E6%AD%A5%E6%8E%A2%E7%B4%A2)
 * [北半球的天空](http://blog.dreamshare.in/openstack-network-nova-network-1091.html)
 
-
 ## 社群網站
 * [Facebook OpenStack Taiwan User Group](https://www.facebook.com/groups/openstack.tw/ )
 * [MeetUp OpenStack Taiwan User Group](http://www.meetup.com/OpenStack-Taiwan-User-Group/)
 * [Openstack India User Group](https://www.facebook.com/groups/328814400511881/)
 * [OpenStack Singapore User Group](https://www.facebook.com/groups/SGOpenStack/?ref=browser)
 * [Hong Kong OpenStack User Group](https://www.facebook.com/groups/HKOSUG/?ref=browser)
-
 
 ## 相關套件指令
 * [Linux CLI](http://www.computerworld.com/article/2598082/linux/linux-linux-command-line-cheat-sheet.html)
@@ -38,7 +36,6 @@
 * [MySQL CLI](http://dev.mysql.com/doc/refman/5.6/en/mysql.html)
 * [LVM CLI](https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/4/html/Cluster_Logical_Volume_Manager/LVM_CLI.html)
 * [Libvirt CLI](http://libvirt.org/virshcmdref.html)
-
 
 ## OpenStack 安裝與部署相關資源
 * [OpenStack Kilo Install Guide](http://docs.openstack.org/kilo/install-guide/install/apt/content/)
@@ -62,5 +59,3 @@
 * [Single Node OpenStack (Liberty) Installation Steps on CentOS 7](http://www.linuxtechi.com/single-node-openstack-liberty-installation-centos-7/)
 * [Install OpenStack Liberty on Ubuntu 14.04 LTS](http://www.itzgeek.com/how-tos/linux/ubuntu-how-tos/install-openstack-liberty-on-ubuntu-14-04-lts.html)
 * [Openstack部署工具总结](http://www.openstack.cn/?p=189)
-
-

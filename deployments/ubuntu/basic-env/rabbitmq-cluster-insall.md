@@ -14,7 +14,7 @@ RabbitMQ主要是為了實現系統之間的雙向解耦而實現的。當生產
 $ sudo apt-get -y install rabbitmq-server
 ```
 > 然後可選擇是否要在主節點啟用 RabbitMQ Management Web Console：
-> 
+>
 ```sh
 $ sudo rabbitmq-plugins enable rabbitmq_management
 ```
@@ -45,16 +45,16 @@ $ sudo cat /var/lib/rabbitmq/.erlang.cookie | ssh controller2 sudo tee /var/lib/
 $ sudo service rabbitmq-server start
 ```
 
-設定 RabbitMQ Cluster，重設 RabbitMQ service @ master：
+設定 RabbitMQ Cluster，在 Master 上重新設定 RabbitMQ Service：
 ```sh
 $ sudo rabbitmqctl stop_app
 $ sudo rabbitmqctl start_app
 ```
 
-將 slave nodes 加入 cluster 中：
+將 Slave nodes 加入 cluster 中：
 ```sh
 $ sudo rabbitmqctl stop_app
-$ sudo rabbitmqctl join_cluster --ram rabbit@controller1
+$ sudo rabbitmqctl join_cluster --ram rabbit@controller2
 $ sudo rabbitmqctl start_app
 ```
 > 改變 node 的型態可以使用以下指令：
@@ -77,4 +77,11 @@ $ sudo rabbitmqctl cluster_status
 設定 queue HA policy，我們可以在任一個 node 上輸入以下命令：：
 ```sh
 $ sudo rabbitmqctl set_policy ha-all '^(?!amq\.).*' '{"ha-mode": "all"}'
+```
+
+若要重新設定 RabbitMQ，可以使用以下指令：
+```sh
+$ sudo rabbitmqctl stop_app
+$ sudo rabbitmqctl reset
+$ sudo rabbitmqctl start_app
 ```

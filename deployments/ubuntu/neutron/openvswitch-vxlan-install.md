@@ -240,7 +240,7 @@ neutron ext-list
 # Network Node
 Neutron 在 Network 節點會安裝提供虛擬機的 L2 與 L3 網路虛擬化，來處理內部與外部網路的路由，還有包含 DHCP 服務、Metadata 服務。
 
-### Netowrk 安裝前準備
+### Network 安裝前準備
 在進行安裝 Neutron 相關套件之前，必須先讓 Network 節點主機設定一些 Kernel 網路參數，透過編輯```/etc/sysctl.conf```加入以下參數：
 ```sh
 net.ipv4.ip_forward=1
@@ -253,7 +253,7 @@ net.ipv4.conf.default.rp_filter=0
 sudo sysctl -p
 ```
 
-### Netowrk 套件安裝與設定
+### Network 套件安裝與設定
 首先透過```apt-get```來安裝 Neutron 套件相關套件：
 ```sh
 sudo apt-get install -y neutron-plugin-ml2 neutron-plugin-openvswitch-agent neutron-l3-agent neutron-dhcp-agent neutron-metadata-agent
@@ -451,7 +451,7 @@ sudo ethtool -K INTERFACE_NAME gro off
 ```
 > ```INTERFACE_NAME``` 為``` Public ```網路的網卡介面名稱，這邊範例為```eth1```。
 
-### Netowrk 完成安裝
+### Network 完成安裝
 當完成上述所有安裝與設定後，回到```Network```節點重新啟動所有 Neutron agents 與 openvswitch-switch：
 ```sh
 sudo service openvswitch-switch restart
@@ -461,7 +461,7 @@ sudo service neutron-metadata-agent restart
 sudo service neutron-l3-agent restart
 ```
 
-### Netowrk 驗證服務
+### Network 驗證服務
 接著回到```Controller```節點，導入 Keystone 的```admin```帳號來驗證服務：
 ```sh
 . admin-openrc

@@ -1,5 +1,5 @@
 # OpenStack 部署與安裝
-本章節將部署過程進行整理，其部署包含 Devstack、PackStack、Manual 等。
+本節將說明如何部署一個 OpenStack，其中包含官方手動安裝、DevStack、PackStack 與 Fuel 等等。一些部署相關參考可以閱讀以下內容：
 
 * [PackStack - OpenStack](https://wiki.openstack.org/wiki/Packstack)
 * [RDO Project](https://www.rdoproject.org/install/quickstart/)

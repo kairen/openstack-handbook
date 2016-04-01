@@ -49,34 +49,33 @@ $ sudo service ntp restart
 
 可以在 Controller 節點，下該指令：
 ```sh
-ntpq -c peers
-# 會看到類似以下資訊
+$ ntpq -c peers
      remote           refid      st t when poll reach   delay   offset  jitter
 ==============================================================================
 *ntp-server1     192.0.2.11       2 u  169 1024  377    1.901   -0.611   5.483
 +ntp-server2     192.0.2.12       2 u  887 1024  377    0.922   -0.246   2.864
 ```
+
 也可以透過以下指令，進一步對 Controller 做驗證：
 ```sh
-ntpq -c assoc
-# 會看到類似以下資訊
+$ ntpq -c assoc
 ind assid status  conf reach auth condition  last_event cnt
 ===========================================================
   1 20487  961a   yes   yes  none  sys.peer    sys_peer  1
   2 20488  941a   yes   yes  none candidate    sys_peer  1
 ```
+
 當都沒問題後，可以在其他節點下達該指令：
 ```sh
-ntpq -c peers
-# 會看到類似以下資訊
+$ ntpq -c peers
      remote           refid      st t when poll reach   delay   offset  jitter
 ==============================================================================
 *controller      192.0.2.21       3 u   47   64   37    0.308   -0.251   0.079
 ```
+
 一樣進一步對其他節點做驗證，可下達該指令：
 ```sh
-ntpq -c assoc
-# 會看到類似以下資訊
+$ ntpq -c assoc
 ind assid status  conf reach auth condition  last_event cnt
 ===========================================================
   1 21181  963a   yes   yes  none  sys.peer    sys_peer  3
@@ -88,14 +87,14 @@ ind assid status  conf reach auth condition  last_event cnt
 
 若是 Ubuntu ```15.04 ``` 以下的版本，需加入 Repository 來獲取套件：
 ```sh
-sudo apt-get install -y software-properties-common
-sudo add-apt-repository -y cloud-archive:liberty
+$ sudo apt-get install -y software-properties-common
+$ sudo add-apt-repository -y cloud-archive:liberty
 ```
 > 若要安裝 ```kilo```，修改為```cloud-archive:kilo```。
 
 更新 Repository 與套件：
 ```sh
-sudo apt-get update && sudo apt-get -y dist-upgrade
+$ sudo apt-get update && sudo apt-get -y dist-upgrade
 ```
 > 如果 Upgrade 包含了新的核心套件的話，請重新開機。
 

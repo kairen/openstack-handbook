@@ -1,28 +1,28 @@
 # Horizon 安裝與設定
-本章節會說明與操作如何安裝```Dashboard```服務到OpenStack Controller節點上，並設置相關參數與設定。若對於Horizon不瞭解的人，可以參考[Horizon 儀表板套件章節](http://kairen.gitbooks.io/openstack/content/horizon/index.html)
+本章節會說明與操作如何安裝 Web 儀表板到 Controller 節點上，並設定安裝相關參數與套件。若對於 Horizon 不瞭解的人，可以參考 [Horizon 儀表板套件章節](../../../conceptions/horizon/README.md)
 
-#### 系統需求
-在安裝OpenStack Dashborad前，須滿足以下幾點：
-* OpenStack Compute安裝。並啟動了 Identity service 用於使用者與專案管理。
-> 需注意 Identity service 與 Compute 的 endpoints
+#### 系統基本需求
+在安裝 Horizon 前，叢集需要滿足以下幾點：
+* OpenStack Nova Compute 已被安裝。並啟動了 Keystone 身份認證服務。
+> P.S. 需注意```身份認證服務```與 ```Nova Compute``` 的 endpoints
 
-* Identity service的使用者可以使用 sudo 權限。因為 Apache 不提供從 Root 使用者獲取內容，使用者若必須運行 dashboard ，要為 Identity service 的使用者擁有 sudo 特權。
-* Python 需為 2.7 以上版本。Python 的版本必須支援 Django。Python 的版本應該可以運作在任何系統上，包括Mac OS X的安裝....等。
+* ```身份認證服務```的主機使用者可以利用 sudo 權限。因為 Apache 不提供從 Root 使用者來取得相關內容，管理者若要執行 Horizon  的話，必須讓 Keystone 擁有 ```sudo``` 使用權。
+* Python 必須在 2.7 以上版本。Python 的版本能夠支援 Django。該 Python 的版本應該可以執行於任何作業系統，諸如：Linux、Mac OS X 等。
 
-#### 安裝套件
-假設我們的基本OpenStack環境都確認完成後，回到```Controller```節點上透過```apt-get```安裝```dashboard```套件：
+#### Horizon 安裝套件
+假設基本的 OpenStack 環境都已經完成後，就可以到```Controller```節點上透過```apt-get```安裝```dashboard```套件：
 ```sh
 sudo apt-get install openstack-dashboard
 ```
-> Ubuntu 安裝 openstack-dashboard 時，會有```ubuntu-theme```套件，若發生問題或者不需要，可以直接刪除該套件。
+> Ubuntu 安裝 openstack-dashboard 時，會自動安裝` ``ubuntu-theme``` 樣板套件，若發生問題或者不需要，可以直接刪除該套件。
 ```sh
 sudo apt-get remove --purge openstack-dashboard-ubuntu-theme
 ```
 
-#### 設定儀表板
-編輯```/etc/openstack-dashboard/local_settings.py ```修改以下：
+#### Horizon 套件設定
+編輯```/etc/openstack-dashboard/local_settings.py```修改以下：
 ```py
-OPENSTACK_HOST = "controller"
+OPENSTACK_HOST = "10.0.0.11"
 ALLOWED_HOSTS = '*'
 
 CACHES = {
@@ -33,18 +33,22 @@ CACHES = {
 }
 
 OPENSTACK_KEYSTONE_DEFAULT_ROLE = "user"
-```
-> Replace TIME_ZONE with an appropriate time zone identifier. For more information, see the [list of time zones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).
 
-重新讀取服務：
+OPENSTACK_KEYSTONE_URL = "http://%s:5000/v3" % OPENSTACK_HOST
+OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT = True
+OPENSTACK_KEYSTONE_DEFAULT_DOMAIN = 'default'
+```
+> 其中```TIME_ZONE```可以依需與地區更改，可參考 [list of time zones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones) 來正確設定。
+
+完成後，重新載入與啟動 Apache2：
 ```sh
 sudo service apache2 reload
 sudo service apache2 restart
 ```
 
-# 驗證操作
+# 驗證服務
 這個部分將描述如何進行儀表板的驗證操作，依照以下兩個簡單步驟：
-1. 開啟web瀏覽器進入儀表板: http://controller/horizon。
-2. 使用admin或demo的使用者登入。
+* 開啟 Web 瀏覽器進入儀表板: http://controller/horizon。
+* 使用 admin 或 demo 的使用者登入。
 
 ![horizon](images/horizon.png)

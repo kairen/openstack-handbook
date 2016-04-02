@@ -3,9 +3,9 @@
 
 - [Keystone 安裝前準備](#安裝前準備)
 - [套件安裝與設定](#套件安裝與設定)
-- [設定 Apache HTTP 伺服器](#設定-Apache-HTTP-伺服器)
-- [建立 Service 與 API Endpoint](#建立-Service-與-API-Endpoint)
-- [建立 Keystone admin 與 user](#建立-Keystone-admin-與-user)
+- [設定 Apache HTTP 伺服器](#設定-apache-http-伺服器)
+- [建立 Service 與 API Endpoint](#建立-service-與-api-endpoint)
+- [建立 Keystone admin 與 user](#建立-keystone-admin-與-user)
 - [驗證服務](#驗證服務)
 
 ### 安裝前準備
@@ -383,7 +383,7 @@ export OS_IDENTITY_API_VERSION=3
 
 完成後，可以透過 Linux 指令來執行檔案導入環境變數，如以下指令：
 ```sh
-source admin-openrc
+$ source admin-openrc
 ```
 > 也可以使用以下方式來執行檔案：
 ```sh

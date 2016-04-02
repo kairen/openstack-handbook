@@ -6,7 +6,6 @@
     - [Controller 套件安裝與設定](#controller-套件安裝與設定)
     - [Controller 設定 ML2](#controller-設定-ml2)
     - [Controller 設定 Nova 使用 Network](#controller-設定-nova-使用-network)
-    - [Controller 完成安裝](#controller-完成安裝)
     - [Controller 驗證服務](#controller-驗證服務)
 - [Network Node](#network-node)
     - [Network 安裝前準備](#network-安裝前準備)
@@ -16,7 +15,6 @@
     - [設定 DHCP Proxy](#設定-dhcp-proxy)
     - [設定 Metadata Agent](#設定-metadata-agent)
     - [設定 Open vSwitch 服務](#設定-open-vswitch-服務)
-    - [Network 完成安裝](#network-完成安裝)
     - [Network 驗證服務](#network-驗證服務)
 - [Compute Node](#compute-node)
     - [Compute 安裝前準備](#compute-安裝前準備)
@@ -29,12 +27,12 @@
 在 Controller 節點上，只需要安裝 Neutron API Server 與 ML2 Plugins 即可。
 
 ### Controller 安裝前準備
-我們需要在 MySQL 建立儲存 Neutron 資訊的資料庫，利用 ```mysql``` 指令進入：
+在開始安裝前，要預先建立一個資料庫給 Neutron 儲存相關資訊，使用以下指令建立資料庫：
 ```sh
-mysql -u root -p
+$ mysql -u root -p
 ```
 
-透過以下命令用來更新現有帳號資料或建立 Neutron 與 Neutron API 資料庫：
+透過以下命令用來更新現有帳號資料或建立 Neutron 資料庫：
 ```sql
 CREATE DATABASE neutron;
 GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'localhost'  IDENTIFIED BY 'NEUTRON_DBPASS';
@@ -42,42 +40,42 @@ GRANT ALL PRIVILEGES ON neutron.* TO 'neutron'@'%'  IDENTIFIED BY 'NEUTRON_DBPAS
 ```
 > 這邊```NEUTRON_DBPASS```可以隨需求修改。
 
-完成後，透過```quit```指令離開資料庫。之後我們要導入 Keystone 的```admin```帳號，來建立服務：
+完成後離開資料庫，接著要建立 Service 與 API Endpoint，首先導入 ```admin``` 環境變數：
 ```sh
-. admin-openrc
+$ . admin-openrc
 ```
 
-透過以下指令建立服務驗證：
+接著透過以下流程來建立 Glance 的使用者、Service 以及 API Endpoint：
 ```sh
 # 建立 Neutron User
-openstack user create --domain default --password NEUTRON_PASS --email neutron@example.com neutron
+$ openstack user create --domain default --password NEUTRON_PASS --email neutron@example.com neutron
 
 # 建立 Neutron Role
-openstack role add --project service --user neutron admin
+$ openstack role add --project service --user neutron admin
 
 # 建立 Neutron Service
-openstack service create --name neutron --description "OpenStack Networking" network
+$ openstack service create --name neutron --description "OpenStack Networking" network
 
 # 建立 Neutron public endpoints
-openstack endpoint create --region RegionOne \
+$ openstack endpoint create --region RegionOne \
 network public http://10.0.0.11:9696
 
 # 建立 Neutron internal endpoints
-openstack endpoint create --region RegionOne \
+$ openstack endpoint create --region RegionOne \
 network internal http://10.0.0.11:9696
 
 # 建立 Neutron admin endpoints
-openstack endpoint create --region RegionOne \
+$ openstack endpoint create --region RegionOne \
 network admin http://10.0.0.11:9696
 ```
 
 ### Controller 套件安裝與設定
-首先透過```apt-get```來安裝 Neutron 套件：
+在開始設定之前，首先要安裝相關套件與 OpenStack 服務套件，可以透過以下指令進行安裝：
 ```sh
 sudo apt-get install neutron-server neutron-plugin-ml2 python-neutronclient
 ```
 
-安裝完成後，編輯```/etc/neutron/neutron.conf```，在```[DEFAULT]```部分加入以下設定：
+安裝完成後，編輯 ```/etc/neutron/neutron.conf``` 設定檔，在```[DEFAULT]```部分加入以下設定：
 ```sh
 [DEFAULT]
 ...
@@ -89,7 +87,7 @@ auth_strategy = keystone
 
 notify_nova_on_port_status_changes = True
 notify_nova_on_port_data_changes = True
-nova_url = http://10.0.0.11:8774/v2.1
+nova_url = http://10.0.0.11:8774/v2
 ```
 
 在```[database]```部分修改使用以下方式：
@@ -125,11 +123,11 @@ password = NEUTRON_PASS
 在```[nova]```部分加入以下設定：
 ```sh
 [nova]
-auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
 auth_plugin = password
 project_domain_id = default
 user_domain_id = default
+region_name = RegionOne
 project_name = service
 username = nova
 password = NOVA_PASS
@@ -161,7 +159,7 @@ enable_ipset = True
 ```
 
 ### Controller 設定 Nova 使用 Network
-當完成 ML2 設定後，接著編輯```/etc/nova/nova.conf```，在```[neutron]```部分加入以下設定：
+當完成 ML2 設定後，接著編輯```/etc/nova/nova.conf```設定檔，在```[neutron]```部分加入以下設定：
 ```sh
 [neutron]
 auth_uri = http://10.0.0.11:5000
@@ -175,33 +173,32 @@ password = NEUTRON_PASS
 ```
 > 這邊```NEUTRON_PASS```可以隨需求修改。
 
-### Controller 完成安裝
 完成所有設定後，即可同步資料庫來建立 Neutron 資料表：
 ```sh
-sudo neutron-db-manage --config-file /etc/neutron/neutron.conf \
+$ sudo neutron-db-manage --config-file /etc/neutron/neutron.conf \
 --config-file /etc/neutron/plugins/ml2/ml2_conf.ini \
 upgrade head
 ```
 
 之後重新啟動 Nova API Server：
 ```sh
-sudo service nova-api restart
+$ sudo service nova-api restart
 ```
 
 再接著重新啟動 Neutron Server：
 ```sh
-sudo service neutron-server restart
+$ sudo service neutron-server restart
 ```
 
 ### Controller 驗證服務
-導入 Keystone 的```admin```帳號，來透過 Neutron client 查看服務目錄：
+導入 Keystone 的 ```admin``` 帳號，來透過 Neutron client 查看服務目錄：
 ```sh
-. admin-openrc
+$ . admin-openrc
 ```
 
 這邊可以透過 Neutron client 來查看外部網路列表，如以下方式：
 ```sh
-neutron ext-list
+$ neutron ext-list
 ```
 
 成功的話會看到類似以下結果：
@@ -250,16 +247,17 @@ net.ipv4.conf.default.rp_filter=0
 
 完成後，可以透過 sysctl 指令來將參數載入：
 ```sh
-sudo sysctl -p
+$ sudo sysctl -p
 ```
 
 ### Network 套件安裝與設定
-首先透過```apt-get```來安裝 Neutron 套件相關套件：
+在開始設定之前，首先要安裝相關套件與 OpenStack 服務套件，可以透過以下指令進行安裝：
 ```sh
-sudo apt-get install -y neutron-plugin-ml2 neutron-plugin-openvswitch-agent neutron-l3-agent neutron-dhcp-agent neutron-metadata-agent
+$ sudo apt-get install -y neutron-plugin-ml2 neutron-plugin-openvswitch-agent \
+neutron-l3-agent neutron-dhcp-agent neutron-metadata-agent
 ```
 
-安裝完成後，編輯```/etc/neutron/neutron.conf```，在```[DEFAULT]```部分加入以下設定：
+安裝完成後，編輯```/etc/neutron/neutron.conf```設定檔，在```[DEFAULT]```部分加入以下設定：
 ```sh
 [DEFAULT]
 ...
@@ -388,14 +386,13 @@ dnsmasq_config_file = /etc/neutron/dnsmasq-neutron.conf
 
 然後建立並編輯```/etc/neutron/dnsmasq-neutron.conf```來設定 MTU 大小：
 ```sh
-echo 'dhcp-option-force=26,1450' | sudo tee /etc/neutron/dnsmasq-neutron.conf
+＄ echo 'dhcp-option-force=26,1450' | sudo tee /etc/neutron/dnsmasq-neutron.conf
 ```
 
 ### 設定 Metadata Agent
 OpenStack Metadata 提供了一些主機客製化的設定訊息，諸如 Hostname、網路配置資訊等等。編輯```/etc/neutron/metadata_agent.ini```在```[DEFAULT]```部分加入以下設定：
 ```sh
 [DEFAULT]
-...
 verbose = True
 auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
@@ -406,6 +403,7 @@ user_domain_id = default
 project_name = service
 username = neutron
 password = NEUTRON_PASS
+
 nova_metadata_ip = 10.0.0.11
 metadata_proxy_shared_secret = METADATA_SECRET
 ```
@@ -424,30 +422,30 @@ metadata_proxy_shared_secret = METADATA_SECRET
 
 然後在```Controller```節點上重新啟動 Nova API Server：
 ```sh
-sudo service nova-api restart
+$ sudo service nova-api restart
 ```
 
 ### 設定 Open vSwitch 服務
 回到```Network```節點上，由於外部網路透過 ovs bridge 來提供，首先重新啟動 openvswitch-switch：
 ```sh
-sudo service openvswitch-switch restart
+$ sudo service openvswitch-switch restart
 ```
 
 然後新增一個外部網路橋接：
 ```sh
-sudo ovs-vsctl add-br br-ex
+$ sudo ovs-vsctl add-br br-ex
 ```
 > 這邊```br-ex```可自行定義。
 
 新增外部網路橋接映射到實體網卡埠口：
 ```sh
-sudo ovs-vsctl add-port br-ex INTERFACE_NAME
+$ sudo ovs-vsctl add-port br-ex INTERFACE_NAME
 ```
 > ```INTERFACE_NAME``` 為``` Public```網路的網卡介面名稱，這邊範例為```eth1```。
 
 根據網卡介面驅動差異，可能需要關閉 GRO（Generic Receive Offload）來實現虛擬機與外部網路的合適頻寬。在測試環境上，我們在外部網卡介面上暫時關閉 GRO：
 ```sh
-sudo ethtool -K INTERFACE_NAME gro off
+$ sudo ethtool -K INTERFACE_NAME gro off
 ```
 > ```INTERFACE_NAME``` 為``` Public ```網路的網卡介面名稱，這邊範例為```eth1```。
 
@@ -462,14 +460,14 @@ sudo service neutron-l3-agent restart
 ```
 
 ### Network 驗證服務
-接著回到```Controller```節點，導入 Keystone 的```admin```帳號來驗證服務：
+接著回到```Controller```節點導入 ```admin``` 帳號來驗證服務：
 ```sh
-. admin-openrc
+$ . admin-openrc
 ```
 
 這邊可以透過 Neutron client 來查看 Agents 狀態，如以下方式：
 ```sh
-neutron agent-list
+$ neutron agent-list
 ```
 
 若成功的話會看到類似以下結果：
@@ -498,16 +496,16 @@ net.bridge.bridge-nf-call-ip6tables=1
 
 完成後，可以透過 sysctl 指令來將參數載入：
 ```sh
-sudo sysctl -p
+$ sudo sysctl -p
 ```
 
 ### Compute 套件安裝與設定
 首先透過```apt-get```安裝套件：
 ```sh
-sudo apt-get install neutron-plugin-ml2 neutron-plugin-openvswitch-agent
+$ sudo apt-get install neutron-plugin-ml2 neutron-plugin-openvswitch-agent
 ```
 
-安裝完成後，編輯```/etc/neutron/neutron.conf```，在```[DEFAULT]```部分加入以下設定：
+安裝完成後，編輯```/etc/neutron/neutron.conf```設定檔，在```[DEFAULT]```部分加入以下設定：
 ```sh
 [DEFAULT]
 ...
@@ -522,7 +520,6 @@ allow_overlapping_ips = True
 在```[database]```部分將所有 connection 與 sqlite 的參數註解掉：
 ```sh
 [database]
-...
 # connection = sqlite:////var/lib/neutron/neutron.sqlite
 ```
 
@@ -614,7 +611,7 @@ password = NEUTRON_PASS
 
 當完成上述安裝與設定後，在```Compute```節點重新啟動 Nova compute：
 ```sh
-sudo service nova-compute restart
+$ sudo service nova-compute restart
 ```
 
 重新啟動 Open vSwitch Agent：
@@ -624,13 +621,13 @@ sudo service neutron-openvswitch-agent restart
 ```
 
 ### Compute 驗證服務
-接著回到```Controller```節點，導入 Keystone 的```admin```帳號來驗證服務：
+接著回到```Controller```節點導入 ```admin``` 帳號來驗證服務：
 ```sh
-. admin-openrc
+$ . admin-openrc
 ```
 
 這邊可以透過 Neutron client 來查看 Agents 狀態，如以下方式：
 ```sh
-neutron agent-list
+$ neutron agent-list
 ```
 > 若正確的話，會看到多一個```compute```節點執行了 agent

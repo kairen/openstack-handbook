@@ -29,11 +29,12 @@ $ sudo service ntp restart
 ```
 
 ### 其他節點設定
-透過```apt-get```安裝 ntp:
+在其他節點一樣安裝 NTP：
 ```sh
 $ sudo apt-get install -y ntp
 ```
-完成安裝後，修改```/etc/ntp.conf```檔案，註解掉所有```server```的參數，並將其設定為 Controller IP：
+
+完成安裝後，編輯```/etc/ntp.conf```檔案，註解掉所有```server```的參數，並將其設定為 Controller IP：
 ```sh
 server 10.0.0.11 iburst
 ```
@@ -92,7 +93,7 @@ $ sudo add-apt-repository -y cloud-archive:liberty
 ```
 > 若要安裝 ```kilo```，修改為```cloud-archive:kilo```。
 
-更新 Repository 與套件：
+更新 Repository 與系統核心套件：
 ```sh
 $ sudo apt-get update && sudo apt-get -y dist-upgrade
 ```

@@ -268,7 +268,7 @@ sudo service cinder-scheduler restart
 $ sudo service cinder-volume restart
 ```
 
-# 啟用 Block Storage Meters
+# 啟用 Object Storage Meters
 Ceilometer 使用 Pooling 與 Notifications 組合來收集物件儲存服務的 meters。由於 Ceilometer 服務需要使用到 ResellerAdmin 來取得物件儲存的 meters。首先在 ```Controller``` 執行以下步驟：
 ```sh
 $ . admin-openrc

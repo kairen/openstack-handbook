@@ -48,6 +48,7 @@
        * [Horizon 安裝與設定](deployments/ubuntu/horizon/README.md)
            * [客制化 Horizon](deployments/ubuntu/horizon/customized-ui.md)
        * [Cinder 安裝與設定](deployments/ubuntu/cinder/README.md)
+       * [Manila 安裝與設定](deployments/ubuntu/manila/README.md)
        * [Swift 安裝與設定](deployments/ubuntu/swift/README.md)
        * [Heat 安裝與設定](deployments/ubuntu/heat/README.md)
        * [Ceilometer 安裝與設定](deployments/ubuntu/ceilometer/README.md)

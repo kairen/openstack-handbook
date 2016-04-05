@@ -43,6 +43,7 @@ OPENSTACK_KEYSTONE_DEFAULT_DOMAIN = 'default'
 
 OPENSTACK_API_VERSIONS = {
     "identity": 3,
+    "image": 2,
     "volume": 2,
 }
 ```

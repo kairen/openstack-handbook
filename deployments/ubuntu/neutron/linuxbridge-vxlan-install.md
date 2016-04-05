@@ -252,7 +252,7 @@ $ sudo sysctl -p
 ### Network 套件安裝與設定
 在開始設定之前，首先要安裝相關套件與 OpenStack 服務套件，可以透過以下指令進行安裝：
 ```sh
-$ sudo apt-get install -y neutron-plugin-ml2 neutron-plugin-linuxbridge-agent \
+$ sudo apt-get install -y neutron-plugin-ml2 neutron-linuxbridge-agent \
 neutron-l3-agent neutron-dhcp-agent neutron-metadata-agent
 ```
 
@@ -399,22 +399,9 @@ $ echo 'dhcp-option-force=26,1450' | sudo tee /etc/neutron/dnsmasq-neutron.conf
 OpenStack Metadata 提供了一些主機客製化的設定訊息，諸如 Hostname、網路配置資訊等等。編輯```/etc/neutron/metadata_agent.ini```在```[DEFAULT]```部分加入以下設定：
 ```sh
 [DEFAULT]
-verbose = True
-auth_uri = http://10.0.0.11:5000
-auth_url = http://10.0.0.11:35357
-auth_region = RegionOne
-auth_plugin = password
-project_domain_id = default
-user_domain_id = default
-project_name = service
-username = neutron
-password = NEUTRON_PASS
-
 nova_metadata_ip = 10.0.0.11
 metadata_proxy_shared_secret = METADATA_SECRET
 ```
-> 這邊```NEUTRON_PASS```可以隨需求修改。
-
 > 將其中的```METADATA_SECRET```替換為一個合適的 metadata 代理的 secret。
 
 完成上面設定後，先回到```Controller```節點，編輯```/etc/nova/nova.conf```，在```[neutron]```部分加入以下設定：
@@ -433,7 +420,7 @@ $ sudo service nova-api restart
 
 當完成上述所有安裝與設定後，回到 ```Network``` 節點重新啟動所有 Neutron agents：
 ```sh
-sudo service neutron-plugin-linuxbridge-agent restart
+sudo service neutron-linuxbridge-agent restart
 sudo service neutron-dhcp-agent restart
 sudo service neutron-metadata-agent restart
 sudo service neutron-l3-agent restart
@@ -482,7 +469,7 @@ $ sudo sysctl -p
 ### Compute 套件安裝與設定
 在開始設定之前，首先要安裝相關套件與 OpenStack 服務套件，可以透過以下指令進行安裝：
 ```sh
-$ sudo apt-get install neutron-plugin-ml2 neutron-plugin-linuxbridge-agent
+$ sudo apt-get install neutron-plugin-ml2 neutron-linuxbridge-agent
 ```
 
 安裝完成後，編輯 ```/etc/neutron/neutron.conf``` 設定檔，在```[DEFAULT]```部分加入以下設定：
@@ -597,7 +584,7 @@ $ sudo service nova-compute restart
 
 重新啟動 Linux Bridge Agent：
 ```sh
-$ sudo service neutron-plugin-linuxbridge-agent restart
+$ sudo service neutron-linuxbridge-agent restart
 ```
 
 ### Compute 驗證服務

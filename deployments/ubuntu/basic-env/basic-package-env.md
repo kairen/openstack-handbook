@@ -89,9 +89,11 @@ ind assid status  conf reach auth condition  last_event cnt
 若是 Ubuntu ```15.04 ``` 以下的版本，需加入 Repository 來獲取套件：
 ```sh
 $ sudo apt-get install -y software-properties-common
-$ sudo add-apt-repository -y cloud-archive:liberty
+$ sudo add-apt-repository -y cloud-archive:mitaka
 ```
-> 若要安裝 ```kilo```，修改為```cloud-archive:kilo```。
+> 若要安裝 ``` pre-release``` 測試版本，修改為```cloud-archive:mitaka-proposed```。
+
+> 若要安裝 ```liberty```，修改為```cloud-archive:liberty```。
 
 更新 Repository 與系統核心套件：
 ```sh
@@ -122,7 +124,6 @@ bind-address = 10.0.0.11
 default-storage-engine = innodb
 innodb_file_per_table
 collation-server = utf8_general_ci
-init-connect = 'SET NAMES utf8'
 character-set-server = utf8
 ```
 

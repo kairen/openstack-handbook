@@ -253,7 +253,7 @@ $ sudo sysctl -p
 ### Network 套件安裝與設定
 在開始設定之前，首先要安裝相關套件與 OpenStack 服務套件，可以透過以下指令進行安裝：
 ```sh
-$ sudo apt-get install -y neutron-plugin-ml2 neutron-plugin-openvswitch-agent \
+$ sudo apt-get install -y neutron-plugin-ml2 neutron-openvswitch-agent \
 neutron-l3-agent neutron-dhcp-agent neutron-metadata-agent
 ```
 
@@ -393,17 +393,6 @@ dnsmasq_config_file = /etc/neutron/dnsmasq-neutron.conf
 OpenStack Metadata 提供了一些主機客製化的設定訊息，諸如 Hostname、網路配置資訊等等。編輯```/etc/neutron/metadata_agent.ini```在```[DEFAULT]```部分加入以下設定：
 ```sh
 [DEFAULT]
-verbose = True
-auth_uri = http://10.0.0.11:5000
-auth_url = http://10.0.0.11:35357
-auth_region = RegionOne
-auth_plugin = password
-project_domain_id = default
-user_domain_id = default
-project_name = service
-username = neutron
-password = NEUTRON_PASS
-
 nova_metadata_ip = 10.0.0.11
 metadata_proxy_shared_secret = METADATA_SECRET
 ```
@@ -502,7 +491,7 @@ $ sudo sysctl -p
 ### Compute 套件安裝與設定
 首先透過```apt-get```安裝套件：
 ```sh
-$ sudo apt-get install neutron-plugin-ml2 neutron-plugin-openvswitch-agent
+$ sudo apt-get install neutron-plugin-ml2 neutron-openvswitch-agent
 ```
 
 安裝完成後，編輯```/etc/neutron/neutron.conf```設定檔，在```[DEFAULT]```部分加入以下設定：

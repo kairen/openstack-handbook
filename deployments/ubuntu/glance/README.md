@@ -86,6 +86,7 @@ flavor = keystone
 在```[glance_store]```部分加入以下內容：
 ```sh
 [glance_store]
+stores = file,http
 default_store = file
 filesystem_store_datadir = /var/lib/glance/images/
 ```

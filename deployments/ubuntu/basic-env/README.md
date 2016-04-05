@@ -6,6 +6,8 @@ Nova network 是 OpenStack 最早支援了網路部署模式，又稱 Legacy net
 * **Flat DHCP Network**
 * **VLAN Network**
 
+> Nova Network 目前已不提供手動安裝教學。
+
 而在 Neutron 網路部署中，會進一步分成以下兩種服務模式：
 * **Provider networks** 的網路服務，最簡單部署是連接 Layer 2（交換器/橋接）以及網路 VLAN 切割。本質上是橋接虛擬網路的物理網路與依賴於實體網路設備（路由器）服務。
 

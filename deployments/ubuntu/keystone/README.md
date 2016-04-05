@@ -1,10 +1,17 @@
 # Keystone 安裝與設定
-本章節會說明與操作如何安裝身份認證服務到 Controller 節點上，並設置相關參數與設定。若對於 Keystone 不瞭解的人，可以參考 [Keystone 身份認證套件章節](../../../conceptions/keystone/README.md)。
+本章節會說明與操作如何安裝身份認證服務到 Controller 節點上，並設置相關參數與設定。若對於 Keystone 不瞭解的人，可以參考 [Keystone 身份認證服務章節](../../../conceptions/keystone/README.md)。
+
+- [Keystone 安裝前準備](#安裝前準備)
+- [套件安裝與設定](#套件安裝與設定)
+- [設定 Apache HTTP 伺服器](#設定-apache-http-伺服器)
+- [建立 Service 與 API Endpoint](#建立-service-與-api-endpoint)
+- [建立 Keystone admin 與 user](#建立-keystone-admin-與-user)
+- [驗證服務](#驗證服務)
 
 ### 安裝前準備
-我們需要在 MySQL 建立儲存 Keystone 資訊的資料庫，利用 ```mysql``` 指令進入：
+在開始安裝前，要預先建立一個資料庫給 Keystone 儲存相關資訊，使用以下指令建立資料庫：
 ```sh
-mysql -u root -p
+$ mysql -u root -p
 ```
 
 透過以下命令用來更新現有帳號資料或建立 Keystone 資料庫：
@@ -15,31 +22,33 @@ GRANT ALL PRIVILEGES ON keystone.* TO 'keystone'@'%' IDENTIFIED BY 'KEYSTONE_DBP
 ```
 > 這邊```KEYSTONE_DBPASS```可以隨需求修改。
 
-完成後，透過 ```quit``` 指令離開資料庫，並透過 ```openssl``` 建立一個隨機的 admin token：
+完成後離開資料庫，之後建立一個亂數 Token，使用以下指令：
 ```sh
-openssl rand -hex 24
-
-# 會產生如下密碼
+$ openssl rand -hex 24
 21d7fb48086e09f30d40be5a5e95a7196f2052b2cae6b491
 ```
+> 該 Token 將提供給 Keystone 的 ```admin_token``` 使用。
 
-### 安裝與設定 Keystone 套件
-首先我們設定安裝完成後，不要自動開啟服務：
+### 套件安裝與設定
+由於 Eventlet 將在後續版本被棄用，所以在安裝 Keystone 之前要手動設定服務在安裝完與開機時不自動啟動：
 ```sh
-echo "manual" | sudo tee /etc/init/keystone.override
+$ echo "manual" | sudo tee /etc/init/keystone.override
+manual
 ```
-> 在 ```Kilo``` 的 Keystone 遺棄了 ```Eventlet```，改用```WSGI```來代替。所以本教學關閉使用 keystone 服務。
+> 在 Kilo 與 Liberty 版本中， Keystone 專案棄用了 Eventlet Networking，因此本教學將使用 Apache2 mod_wsgi 來提供身份證認服務，這邊預設下將佔用到 5000 與 35357 Port。因此在安裝 Keystone 時將停用原生服務。而在 Mitaka 版本將正式移除 Eventlet。
 
-再來透過```apt-get```安裝 Keystone 套件：
+確認關閉自動啟動 Keystone 後，就可以直接安裝套件，透過以下指令安裝：
 ```sh
-sudo apt-get install keystone apache2 memcached libapache2-mod-wsgi python-openstackclient python-memcache
+$ sudo apt-get install keystone apache2 memcached \
+libapache2-mod-wsgi python-openstackclient python-memcache
 ```
 
-安裝完後，編輯```/etc/keystone/keystone.conf```，將 ADMIN_TOKEN 替換為上一面產生的隨機字串：
-```
+安裝完後，編輯```/etc/keystone/keystone.conf```設定檔，在```[DEFAULT]```部分加入以下內容：
+```sh
 [DEFAULT]
 admin_token = ADMIN_TOKEN
 ```
+> 其中 ```ADMIN_TOKEN``` 取代成上面步驟建立的亂數 Token。
 
 在```[database]```部分修改使用以下方式：
 ```sh
@@ -47,47 +56,36 @@ admin_token = ADMIN_TOKEN
 connection = mysql+pymysql://keystone:KEYSTONE_DBPASS@10.0.0.11/keystone
 ```
 
-在```[memcache]```部分修改如下：
+在```[memcache]```部分加入以下內容：
 ```
 [memcache]
-servers = localhost:11211
+servers = 10.0.0.11:11211
 ```
 
-在```[token]```部分修改如下：
+在```[token]```部分加入以下內容：
 ```
 [token]
-provider = fernet
+provider = uuid
 driver = memcache
 ```
 
-完成後同步資料庫：
-```sh
-sudo keystone-manage db_sync
+在```[revoke]```部分加入以下內容：
+```[revoke]
+driver = sql
 ```
 
-初始化 Fernet keys：
+完成後，透過 Keystone 管理指令來同步資料庫建立資料表：
 ```sh
-sudo keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
+$ sudo keystone-manage db_sync
 ```
 
-成功會看到類似以下內容：
-```sh
-2016-03-30 13:08:39.452 9126 INFO keystone.token.providers.fernet.utils [-] [fernet_tokens] key_repository does not appear to exist; attempting to create it
-2016-03-30 13:08:39.453 9126 INFO keystone.token.providers.fernet.utils [-] Created a new key: /etc/keystone/fernet-keys/0
-2016-03-30 13:08:39.453 9126 INFO keystone.token.providers.fernet.utils [-] Starting key rotation with 1 key files: ['/etc/keystone/fernet-keys/0']
-2016-03-30 13:08:39.453 9126 INFO keystone.token.providers.fernet.utils [-] Current primary key is: 0
-2016-03-30 13:08:39.454 9126 INFO keystone.token.providers.fernet.utils [-] Next primary key will be: 1
-2016-03-30 13:08:39.454 9126 INFO keystone.token.providers.fernet.utils [-] Promoted key 0 to be the primary: 1
-2016-03-30 13:08:39.454 9126 INFO keystone.token.providers.fernet.utils [-] Created a new key: /etc/keystone/fernet-keys/0
-```
-
-### 設置 Apache HTTP 伺服器
-編輯```/etc/apache2/apache2.conf```的 ServerName 設為以下：
+### 設定 Apache HTTP 伺服器
+由於本教學採用 WSGI Mod 來提供 Keystone 服務，因此我們將使用到 Apache2 來建立 HTTP 服務，首先編```/etc/apache2/apache2.conf``` 加入以下內容：
 ```
 ServerName 10.0.0.11
 ```
 
-再來建立 WSGI 檔案 ```/etc/apache2/sites-available/wsgi-keystone.conf``` 給 Apache 使用，並加入以下內容：
+接著建立一個設定檔```/etc/apache2/sites-available/wsgi-keystone.conf```來提供 Keystone 服務，並加入以下內容：
 ```
 Listen 5000
 Listen 35357
@@ -139,33 +137,36 @@ Listen 35357
 </VirtualHost>
 ```
 
-完成後，開啟身份驗證服務虛擬主機：
+確認檔案無誤後，就可以讓 Apache2 使用這個設定檔，透過以下指令：
 ```sh
-sudo ln -s /etc/apache2/sites-available/wsgi-keystone.conf /etc/apache2/sites-enabled
+$ sudo ln -s /etc/apache2/sites-available/wsgi-keystone.conf /etc/apache2/sites-enabled
 ```
 
-重新啟動 HTTP 服務：
+完成後就可以重新啟動 Apache2 伺服器：
 ```sh
-sudo service apache2 restart
+$ sudo service apache2 restart
 ```
 
-刪除預設產生的 SQLite 資料庫：
+最後由於第一次安裝時，預設會建立一個 SQLite 資料庫，因此這邊可以將之刪除：
 ```sh
-sudo  rm -f /var/lib/keystone/keystone.db
+$ sudo rm -f /var/lib/keystone/keystone.db
 ```
 
-# 建立服務實體和 API 端點
-首先透過```export```設定 OS_TOKEN 環境變數，輸入 Keystone 使用的 ADMIN_TOKEN 與 API URL：
+### 建立 Service 與 API Endpoint
+在建立 Keystone service 與 Endpoint 之前，要先導入一些環境變數，由於 OpenStack client 會自動抓取系統某些環境變數來提供 API 的存取，首先透過以下指令導入：
 ```sh
 export OS_TOKEN=21d7fb48086e09f30d40be5a5e95a7196f2052b2cae6b491
 export OS_URL=http://10.0.0.11:35357/v2.0
 ```
-建立服務實體和身份驗證服務：
+> 其中```OS_TOKEN```是 Keystone 的 Admin Token。
+
+完後上述後，就可以建立 Service 實體來提供身份認證：
 ```sh
-openstack service create --name keystone \
+$ openstack service create --name keystone \
 --description "OpenStack Identity" identity
 ```
-會看到產生類似以下資訊：
+
+成功的話，會看到類似以下結果：
 ```
 +-------------+----------------------------------+
 | Field       | Value                            |
@@ -177,25 +178,26 @@ openstack service create --name keystone \
 | type        | identity                         |
 +-------------+----------------------------------+
 ```
-> OpenStack 是動態產生 ID 的，因此看到的輸出會跟範例中的輸出不同。
 
-身份驗證服務管理了一個與環境相關的 API 端點的目錄。服務使用這個目錄來決定如何與環境中的其他服務進行溝通。透過以下建立一個 API 端點：
+Keystone 為了讓指定的 API 與 Service 擁有認證機制，故要再新增 API Endpoint 目錄給 Keystone，這樣就能夠決定如何與其他服務進行存取，透過以下方式建立：
 ```sh
-openstack endpoint create \
---publicurl http://10.0.0.11:5000/v3 \
---internalurl http://10.0.0.11:5000/v3 \
---adminurl http://10.0.0.11:35357/v3 \
+$ openstack endpoint create \
+--publicurl http://10.0.0.11:5000/v2.0 \
+--internalurl http://10.0.0.11:5000/v2.0 \
+--adminurl http://10.0.0.11:35357/v2.0 \
 --region RegionOne identity
 ```
-會看到產生類似以下資訊：
+> P.S. 以上方式是採用 Keystone v2.0，若採用 v3 則需要更換其他方式。
+
+成功的話，會看到類似以下結果：
 ```
 +--------------+----------------------------------+
 | Field        | Value                            |
 +--------------+----------------------------------+
-| adminurl     | http://10.0.0.11:35357/v3        |
+| adminurl     | http://10.0.0.11:35357/v2.0      |
 | id           | 0af1316372844e579bc84cf71f66fff0 |
-| internalurl  | http://10.0.0.11:5000/v3         |
-| publicurl    | http://10.0.0.11:5000/v3         |
+| internalurl  | http://10.0.0.11:5000/vv2.0      |
+| publicurl    | http://10.0.0.11:5000/v2.0       |
 | region       | RegionOne                        |
 | service_id   | 721282b3c5514bcab6147a29fbaf28e7 |
 | service_name | keystone                         |
@@ -203,68 +205,67 @@ openstack endpoint create \
 +--------------+----------------------------------+
 ```
 
-> 添加到 OpenStack 環境中的每個服務，都需要一個或多個服務實體和身份驗證服務的一個 API 端點。
+因此後續安裝的 OpenStack 各套件服務都需要建立一個或多個 Service，以及 API Endpoint 目錄。
 
-# 建立 Projects、Users 與 Roles
-驗證服務會對每一個 Openstack 的服務提供身份驗證。驗證服務使用 Domains, Projects (tenants), Users 與 Roles 的組合。在環境中，為了進行管理操作，我們要建立```admin```的 Project、User 和 Role：
+### 建立 Keystone admin 與 user
+身份認證服務會透過 Domains、Projects、Roles 與 Users 的組合來進行授權。在大多數部署下都會擁有管理者角色，因此這邊透過 OpenStack client 建立一個名稱為 ```admin``` 的管理者，以及一個專門給所有 OpenStack 套件溝通的```Service project```：
 ```sh
-# 建立 admin Project(tenant)
-openstack project create --description "Admin Project" admin
+# 建立 admin Project
+$ openstack project create --description "Administrator project" admin
 
 # 建立 admin User
-openstack user create --password passwd --email admin@example.com admin
+$ openstack user create --password passwd --email admin@example.com admin
 
 # 建立 admin Role
-openstack role create admin
+$ openstack role create admin
 
-# 將 admin Role 加到 Project 與 User
-openstack role add --project admin --user admin admin
+# 加入 Project 與 User 到 admin Role
+$ openstack role add --project admin --user admin admin
 
 # 建立 service Project
-openstack project create --description "Service Project" service
+$ openstack project create --description "Services project" service
 ```
-為了驗證，我們建立一個沒有特權的使用者```demo```：
-```sh
-# 建立 demo Project(tenant)
-openstack project create --description "Demo Project" demo
 
-# 建立 demo User
+接著建立一個一般使用者的 Project，來提供後續的權限驗證：
+```sh
+openstack project create --description "Demo Project" demo
 openstack user create --password demo --email demo@example.com demo
 openstack role create user
 openstack role add --project demo --user demo user
 ```
-> 你可以重複此過程來建立其他的 Projects 和 Users。
+> 以上指令可以重複的建立不同的 Project 與 User。
 
-# 驗證操作
-在安裝其他服務之前，我們要確認 Keystone 的是否沒問題。首先取消```OS_TOKEN```與```OS_URL```環境變數：
+### 驗證服務
+在進行其他服務安裝之前，一定要確認 Keystone 服務沒有任何錯誤，首先取消上面導入的環境變數：
 ```sh
 unset OS_TOKEN OS_URL
 ```
 
-透過```admin```來驗證 Identity v2.0，請求一個```token```，記得輸入設定的密碼，這邊範例為```passwd```：
+接著透過 ```admin``` 使用者來驗證 v2.0 API 是否能正常取得一個 Token，透過 OpenStack client 來取得：
 ```sh
-openstack --os-auth-url http://10.0.0.11:35357 \
+$ openstack --os-auth-url http://10.0.0.11:35357 \
 --os-project-name admin \
 --os-username admin \
 --os-auth-type password \
 token issue
 ```
+> 本教學範例使用 ```passwd```。
 
-成功後，會看到以下資訊：
+成功的話，會看到類似以下結果：
 ```
-+------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Field      | Value                                                                                                                                                                                   |
-+------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| expires    | 2016-03-30T14:20:52.502499Z                                                                                                                                                             |
-| id         | gAAAAABW-9K1qG5fTNv6G-Gb9SIDX-Llv6lAOKtH9unoDpcPjN4FaYVqLbbt_yKz9fJKzrRgy7wvXH227tkwxTREA6pX7SJjufk_988BCB-KWA3BX8PN_voj0uEHhArovsfLNDI7FvICPVPqA_LvP46bBxq8Czn_2dVwzPYOQqCGMrXFRAwjd54 |
-| project_id | 136884a1934f4d4c950e1397797b7a68                                                                                                                                                        |
-| user_id    | 5625804d30a44e0a95a2bcea7292900e                                                                                                                                                        |
-+------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
++------------+----------------------------------+
+| Field      | Value                            |
++------------+----------------------------------+
+| expires    | 2015-07-23T15:36:06Z             |
+| id         | 995e854225fc45efac11e3bdc705a675 |
+| project_id | cf8f9b8b009b429488049bb2332dc311 |
+| user_id    | a2cdc03624c04bb0bd7437f6e9f7913e |
++------------+----------------------------------+
 ```
 
-接下來驗證 Identity v3.0，因為 v3.0 增加了包含對 Project 與 User 的 Domain 的支援。Project 與 User 可以在不同的 Domain 使用相同名稱，因此要使用 v3.0 API，請求至少必須顯示包含```default domain```或者```User ID```。為了簡化驗證，這邊用```default domain```，這樣範例可以用使用者帳號名稱，而不是透過ID，指令如下：
+完成 v2.0 驗證後，要繼續進行 v3 的版本驗證，由於 v3 增加了 Domains 的驗證。因此 Project 與 User 能夠在不同的 Domain 使用相同名稱，這邊是使用預設的 Domain 進行驗證：
 ```sh
-openstack --os-auth-url http://10.0.0.11:35357 \
+$ openstack --os-auth-url http://10.0.0.11:35357 \
 --os-project-domain-id default \
 --os-user-domain-id default \
 --os-project-name admin \
@@ -272,29 +273,30 @@ openstack --os-auth-url http://10.0.0.11:35357 \
 --os-auth-type password \
 token issue
 ```
+> 其中 ```default``` 是當沒有指定 Domain 時的預設名稱。
 
-成功的話，會如上資訊一樣。
+成功的話，會看到類似以下結果：
 ```
-+------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Field      | Value                                                                                                                                                                                   |
-+------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| expires    | 2016-03-30T14:21:23.993796Z                                                                                                                                                             |
-| id         | gAAAAABW-9LUVnzjviD2RagqGmVjV60eqatMFlIG_4BHU8BMHTgv9ffAFJ5Wbhhh2KRNI-J9f4XPLFE1QBqvs5veHNsZBehYb9BYGG24xBwdK8FmiACCASzYxNSUCcUcCWNvdmF_zKYmQco6yJ6-_8EfCdkkpcmTCd770pJE8W3ZWArhyuKmCto |
-| project_id | 136884a1934f4d4c950e1397797b7a68                                                                                                                                                        |
-| user_id    | 5625804d30a44e0a95a2bcea7292900e                                                                                                                                                        |
-+------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
++------------+----------------------------------+
+| Field      | Value                            |
++------------+----------------------------------+
+| expires    | 2015-07-23T15:36:06Z             |
+| id         | 67ef08f69381404a8ccaf2a4725b58d5 |
+| project_id | cf8f9b8b009b429488049bb2332dc311 |
+| user_id    | a2cdc03624c04bb0bd7437f6e9f7913e |
++------------+----------------------------------+
 ```
 
-接下來透過```admin```來列出所有的```project (tenant)```，來驗證```admin```權限：
+然後接下來要驗證權限是否正常被設定，這邊先使用 ```admin``` 使用者來進行：
 ```sh
-openstack --os-auth-url http://10.0.0.11:35357 \
+$ openstack --os-auth-url http://10.0.0.11:35357 \
 --os-project-name admin \
 --os-username admin \
 --os-auth-type password \
 project list
 ```
 
-成功的話，會看到類似以下資訊：
+成功的話，會看到類似以下結果：
 ```
 +----------------------------------+---------+
 | ID                               | Name    |
@@ -305,47 +307,9 @@ project list
 +----------------------------------+---------+
 ```
 
-也可以透過```admin```來列出所有```user```：
+然後再透 ```demo``` 使用者來驗證是否有存取權限，這邊利用 v3 來取得 Token：
 ```sh
-openstack --os-auth-url http://10.0.0.11:35357 \
---os-project-name admin \
---os-username admin \
---os-auth-type password \
-user list
-```
-
-成功會看到類似以下資訊：
-```
-+----------------------------------+-------+
-| ID                               | Name  |
-+----------------------------------+-------+
-| a2cdc03624c04bb0bd7437f6e9f7913e | admin |
-| f884a294541346d48b7e071b64011c97 | demo  |
-+----------------------------------+-------+
-```
-
-然後列出所有```role```：
-```sh
-openstack --os-auth-url http://10.0.0.11:35357 \
---os-project-name admin \
---os-username admin \
---os-auth-type password \
-role list
-```
-
-成功會看到以下資訊，這會隨著```role```的不同，而改變：
-```
-+----------------------------------+-------+
-| ID                               | Name  |
-+----------------------------------+-------+
-| 5ba17be99c624ba99046c8fddef812c2 | admin |
-| d3fd2f8c04a64e6e9fe56bff410e5fe2 | user  |
-+----------------------------------+-------+
-```
-
-接下來我們透過```demo```來驗證權限，先利用v3.0來獲取```token```：
-```sh
-openstack --os-auth-url http://10.0.0.11:5000 \
+$ openstack --os-auth-url http://10.0.0.11:5000 \
 --os-project-domain-id default \
 --os-user-domain-id default \
 --os-project-name demo \
@@ -353,23 +317,25 @@ openstack --os-auth-url http://10.0.0.11:5000 \
 --os-auth-type password \
 token issue
 ```
+> 本教學範例使用 ```demo```。
 
-成功會看到回傳以下資訊：
+成功的話，會看到類似以下結果：
 ```
-+------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Field      | Value                                                                                                                                                                                   |
-+------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| expires    | 2016-03-30T14:22:08.144189Z                                                                                                                                                             |
-| id         | gAAAAABW-9MAGwYLPe5s-QDNvHWx9qPblz8_GTeK5Sazk2BgicngVn0WA5hNSWlwz3jw9TwjsMN22V4o0i0poY4rA-N0BH_r0JCdOWI6v904ZJDt8HtMsJ43vTSOQ8mTD0Z_a8R7XzjE6rXyK4hfA3eg2zPQEsoT_2UhPOdmqOn0_NrHKLrjWdU |
-| project_id | 2ed87077902c46d39570c7f96092ebd0                                                                                                                                                        |
-| user_id    | 6c1d0737502f4b8e8f40368b739cbbdc                                                                                                                                                        |
-+------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
++------------+----------------------------------+
+| Field      | Value                            |
++------------+----------------------------------+
+| expires    | 2015-07-23T15:36:06Z             |
+| id         | b1214dcf4156464d8c6df2c20fd51e73 |
+| project_id | cf8f9b8b009b429488049bb2332dc311 |
+| user_id    | a2cdc03624c04bb0bd7437f6e9f7913e |
++------------+----------------------------------+
 ```
-> 注意！這邊採用```5000``` port 是因為該 port 允許正常的存取(非管理用) Keystone API。
 
-透過```demo```來嘗試獲取擁有權限的操作：
+> P.S 這邊會發現使用的 Port 從 35357 轉換成 5000，這邊只是為了區別 Admin URL 與 Public URL 中使用的 Port。
+
+最後再透過 ```demo``` 來使用擁有管理者權限的 API：
 ```sh
-openstack --os-auth-url http://10.0.0.11:5000 \
+$ openstack --os-auth-url http://10.0.0.11:5000 \
 --os-project-domain-id default \
 --os-user-domain-id default \
 --os-project-name demo \
@@ -378,15 +344,20 @@ openstack --os-auth-url http://10.0.0.11:5000 \
 user list
 ```
 
-若請求成功，會看到錯誤資訊：
+成功的話，會看到類似以下結果：
 ```
-Could not find requested endpoint in Service Catalog.
+ERROR: openstack You are not authorized to perform the requested action: admin_required
 ```
 
-若以上都正確，代表```keystone```應該是正常的被執行了。
+若上述過程都沒有錯誤，表示 Keystone 目前很正常的被執行中。
 
-# 建立一個 Client 端腳本
-我們會分別為```admin```與```demo```建立腳本，來方便我們做操作與驗證，首先建立```admin```檔案為```admin-openrc```，並加入以下參數：
+### 使用腳本切換使用者
+由於後續安裝可能會切換不同使用者來驗證一些服務，因此可以透過建立腳本來導入相關的環境變數，來達到不同使用者的切換，首先建立以下兩個檔案：
+```sh
+$ touch admin-openrc demo-openrc
+```
+
+編輯 ```admin-openrc``` 加入以下內容：
 ```sh
 export OS_PROJECT_DOMAIN_ID=default
 export OS_USER_DOMAIN_ID=default
@@ -397,9 +368,8 @@ export OS_PASSWORD=passwd
 export OS_AUTH_URL=http://10.0.0.11:35357/v3
 export OS_IDENTITY_API_VERSION=3
 ```
-> 注意！```OS_PASSWORD```記得修改為設定密碼，這邊採用```passwd```。
 
-再來建立```demo```為```demo-openrc```，並加入以下參數：
+編輯 ```demo-openrc``` 加入以下內容：
 ```sh
 export OS_PROJECT_DOMAIN_ID=default
 export OS_USER_DOMAIN_ID=default
@@ -410,27 +380,29 @@ export OS_PASSWORD=demo
 export OS_AUTH_URL=http://10.0.0.11:5000/v3
 export OS_IDENTITY_API_VERSION=3
 ```
-> 注意！```OS_PASSWORD```記得修改為設定密碼，這邊採用```demo```。
 
-完成後，可以透過```source```來執行加入環境變數：
+完成後，可以透過 Linux 指令來執行檔案導入環境變數，如以下指令：
 ```sh
-source admin-openrc
+$ source admin-openrc
 ```
-> P.S. 也可以使用```. admin-openrc```來執行。
-
-試看看直接請求```keystone```指令：
+> 也可以使用以下方式來執行檔案：
 ```sh
-openstack token issue
+$ . admin-openrc
 ```
 
-成功的話，會看到以下資訊：
+完成後，在使用 OpenStack client 就可以省略一些基本參數了，如以下指令：
 ```sh
-+------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| Field      | Value                                                                                                                                                                                   |
-+------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| expires    | 2016-03-30T14:37:40.456954Z                                                                                                                                                             |
-| id         | gAAAAABW-9akQwoH0NSjDGlWYnsT904-MoQwlHlFohEJ3PlVOSKwj4ZO6-mVzklmYXNzVblfnuQbUA52-ITzEEnZckPXDUcufjJToIn1jvEDaVogj0Otrw6WXiR5JT6NXueLkVJEfXxLYVzfpnZE4eIQXAekc5WWVP7nXo1jSSbCPV534RTE3ek |
-| project_id | 136884a1934f4d4c950e1397797b7a68                                                                                                                                                        |
-| user_id    | 5625804d30a44e0a95a2bcea7292900e                                                                                                                                                        |
-+------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+$ openstack token issue
+```
+
+成功的話，會看到類似以下結果：
+```sh
++------------+----------------------------------+
+| Field      | Value                            |
++------------+----------------------------------+
+| expires    | 2015-07-23T15:36:06Z             |
+| id         | b1214dcf4156464d8c6df2c20fd51e73 |
+| project_id | cf8f9b8b009b429488049bb2332dc311 |
+| user_id    | a2cdc03624c04bb0bd7437f6e9f7913e |
++------------+----------------------------------+
 ```

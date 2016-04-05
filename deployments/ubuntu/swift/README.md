@@ -398,7 +398,7 @@ $ cd /etc/swift
 ### 建立 Account Ring
 Account Server 使用 Account Ring 來維護容器的列表。首先透過以下指令建立一個 ```account.builder``` 檔案：
 ```sh
-$ sudo swift-ring-builder account.builder create 10 3 1
+$ sudo swift-ring-builder account.builder create 10 2 1
 ```
 
 然後新增每一個 ```Storage``` 節點的 Account Server 資訊到 Ring 中：
@@ -435,7 +435,7 @@ Reassigned 1024 (100.00%) partitions. Balance is now 0.00.  Dispersion is now 0.
 ### 建立 Container Ring
 Container Server 使用 Container Ring 來維護物件的列表。透過以下指令建立一個```container.builder```檔案：
 ```sh
-$ sudo swift-ring-builder container.builder create 10 3 1
+$ sudo swift-ring-builder container.builder create 10 2 1
 ```
 
 然後新增每一個 ```Storage``` 節點的 Container Server 資訊到 Ring 中：
@@ -472,7 +472,7 @@ Reassigned 1024 (100.00%) partitions. Balance is now 0.00.  Dispersion is now 0.
 ### 建立 Object Ring
 Object Server 使用 Object Ring 來維護本地裝置上物件位置的列表。。透過以下指令建立一個```object.builder```檔案：
 ```sh
-$ sudo swift-ring-builder object.builder create 10 3 1
+$ sudo swift-ring-builder object.builder create 10 2 1
 ```
 
 然後新增每一個 ```Storage``` 節點的 Object Server 資訊到 Ring 中：
@@ -520,7 +520,7 @@ ssh object2 "sudo mv ~/*.ring.gz /etc/swift/"
 若上面步驟都進行順利的話，接下來要進入最後階段，首先回到 ```Controller``` 節點，透過網路下載```/etc/swift/swift.conf ```設定檔：
 ```sh
 $ sudo curl -o /etc/swift/swift.conf \
-https://git.openstack.org/cgit/openstack/swift/plain/etc/swift.conf-sample?h=stable/liberty
+https://git.openstack.org/cgit/openstack/swift/plain/etc/swift.conf-sample?h=stable/mitaka
 ```
 
 接著編輯```/etc/swift/swift.conf```設定檔，在```[swift-hash]```部分設定 Path 的 Hash 字首字尾：

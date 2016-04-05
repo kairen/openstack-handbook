@@ -8,9 +8,38 @@ OpenStack是```美國國家航空暨太空總署```和```Rackspace```共同打�
 ![OpenStack](images/openstack_kilo_conceptual_arch.png)
 
 # 套件介紹
+以下列表為 OpenStack 目前比較成熟與較受關注的服務套件。
+
+- [OpenStack Core Service](#)
+    - [Keystone 身分識別套件](#keystone-身分識別套件)
+    - [Glance 映象檔管理套件](#glance-映象檔管理套件)
+    - [Nova 運算套件](#nova-運算套件)
+    - [Neutron 網通套件](#neutron-網通套件)
+    - [Horizon 儀表板套件](#horizon-儀表板套件)
+    - [Cinder 區塊儲存套件](#cinder-區塊儲存套件)
+    - [Swift 物件儲存套件](#wwift-物件儲存套件)
+- [OpenStack Big Tent Service](#)
+    - [Heat 編排模板套件](#keystone-身分識別套件)
+    - [Ceilometer 資料監控計量套件](#keystone-身分識別套件)
+    - [Sahara 資料處理套件](#keystone-身分識別套件)
+    - [Trove 資料庫服務套件](#keystone-身分識別套件)
+    - [Ironic 裸機部署套件](#keystone-身分識別套件)
+    - [Zaqar 雲端訊息佇列服務](#keystone-身分識別套件)
+    - [Barbican 金鑰管理服務](#keystone-身分識別套件)
+    - [Designate DNS管理服務](#keystone-身分識別套件)
+    - [Manila 共享式檔案系統服務](#keystone-身分識別套件)
+    - [Magnum 容器即服務](#keystone-身分識別套件)
+    - [Murano 應用程式目錄服務](#keystone-身分識別套件)
+    - [Monasca](#keystone-身分識別套件)
+    - [Senlin](#keystone-身分識別套件)
+
 ### Keystone 身分識別套件 (Identity service)
 Keystone套件作為OpenStack的```身份驗證```服務，具有中央目錄能查看哪位使用者可存取哪些服務，並且提供了多種驗證方式，包括使用者帳號密碼、Token以及類似AWS的登入機制。另外，Keystone可以整合現有的中央控管系統，像是LDAP（輕型目錄訪問協議）。
 > 類似 Amazon AWS 的 IAM。
+
+### Glance 映象檔管理套件 (Image Service)
+Glance套件提供了硬碟或伺服器的Image```尋找```、```註冊```以及```服務交付```等功能。儲存的Image可作為新伺服器部署所需的範本，加快服務上線速度。若是有多臺伺服器需要配置新服務，就不需要額外花費時間單獨設定，也可做為備份時所用。
+> 類似 Amazon AWS 的 VM Import／Export。
 
 ### Nova 運算套件 (Compute)
 Nova 主要擔任著```部署```與```管理```虛擬機角色。Nova提供了一套API來開發額外的應用程式，IT人員可以透過網頁介面來查看與管理資源狀態，且可以控制啟動、停止、調整虛擬機。
@@ -20,9 +49,11 @@ IT人員可將Nova套件部署在多家廠商的虛擬化平臺上，目前來�
 此外，Nova套件還具有管理LAN網路的功能，可程式化的分配IP位址與VLAN，快速部署網路與資安功能。Nova套件還可將某幾臺虛擬機器設為群組，和不同群組作隔離，並有基於角色的訪問控制（RBAC）功能，可根據使用者的角色確保可存取的資源為何。
 > 類似 Amazon AWS 的 EC2。
 
-### Glance 映象檔管理套件 (Image Service)
-Glance套件提供了硬碟或伺服器的Image```尋找```、```註冊```以及```服務交付```等功能。儲存的Image可作為新伺服器部署所需的範本，加快服務上線速度。若是有多臺伺服器需要配置新服務，就不需要額外花費時間單獨設定，也可做為備份時所用。
-> 類似 Amazon AWS 的 VM Import／Export。
+### Neutron 網通套件 (Networking)
+Neutron套件為其它OpenStack服務提供```網路連接即服務（Network-Connectivity-as-a-Service）```功能。比如OpenStack運算，為租戶提供API定義網路和使用。基於插件式的架構，使其支援眾多的網路供應商和技術，，IT人員可分配IP位址、靜態IP或是動態IP。且IT人員也可以使用SDN技術，像是OpenFlow協定來打造更大規模或是多租戶的網路環境。
+
+此外，允許部署和管理其他網路服務，像是入侵偵測系統（IDS）、負載平衡、防火牆、VPN等。
+> 類似 Amazon AWS 的 VPC。
 
 ### Horizon 儀表板套件 (Dashboard)
 Horizon套件提供IT人員一套```圖形化的網頁介面```，讓IT人員可以綜觀雲端服務目前的規模與狀態，並且能夠統一存取、部署與管理所有雲端服務所使用到的資源。
@@ -30,12 +61,11 @@ Horizon套件提供IT人員一套```圖形化的網頁介面```，讓IT人員可
 Horizon套件是個可擴展的網頁式Application。所以Horizon套件可以整合第三方的服務或是產品，像是計費、監控或是額外的管理工具。
 > 類似 Amazon AWS 的 Console。
 
-### Neutron 網通套件 (Networking)
-Neutron套件為其它OpenStack服務提供```網路連接即服務（Network-Connectivity-as-a-Service）```功能。比如OpenStack運算，為租戶提供API定義網路和使用。基於插件式的架構，使其支援眾多的網路供應商和技術，，IT人員可分配IP位址、靜態IP或是動態IP。且IT人員也可以使用SDN技術，像是OpenFlow協定來打造更大規模或是多租戶的網路環境。
+### Cinder 區塊儲存套件 (Block Storage)
+Cinder套件允許區塊儲存設備能夠整合商業化的企業儲存平臺，像是NetApp、Nexenta、SolidFire等。區塊儲存系統可讓IT人員設置伺服器和區塊儲存設備的各項指令，包括建立、連接和分離等，並整合了運算套件，可讓IT人員查看儲存設備的容量使用狀態。
 
-此外，允許部署和管理其他網路服務，像是入侵偵測系統（IDS）、負載平衡、防火牆、VPN等。
-> 類似 Amazon AWS 的 VPC。
-
+Cinder套件並提供```快照管理功能```，可保護虛擬機器上的資料，作為系統回復時所用，快照甚至可用來建立一個新的區塊儲存容量。
+> 類似 Amazon AWS 的 EBS。
 
 ### Swift 物件儲存套件 (Object Storage)
 Swift套件提供可擴展的```分散式儲存平臺```，以防止```單點故障```的情況發生。使用者可透過API進行存取，可存放非結構化的資料，像是圖片、網頁、網誌等，並可作為應用程式資料備份、歸檔以及保留之用。
@@ -45,18 +75,11 @@ Swift套件提供可擴展的```分散式儲存平臺```，以防止```單點故
 此外，因為Swift套件是透過軟體的邏輯，確保資料被複製與分布在不同設備上，這可讓企業使用較便宜的設備，節省成本。
 > 類似 Amazon AWS 的 S3。
 
-### Cinder 區塊儲存套件 (Block Storage)
-Cinder套件允許區塊儲存設備能夠整合商業化的企業儲存平臺，像是NetApp、Nexenta、SolidFire等。區塊儲存系統可讓IT人員設置伺服器和區塊儲存設備的各項指令，包括建立、連接和分離等，並整合了運算套件，可讓IT人員查看儲存設備的容量使用狀態。
-
-Cinder套件並提供```快照管理功能```，可保護虛擬機器上的資料，作為系統回復時所用，快照甚至可用來建立一個新的區塊儲存容量。
-> 類似 Amazon AWS 的 EBS。
-
+### Heat 編排模板套件 (Orchestration)
+Heat主要提供一個以```模板（Templeate）```為基礎的架構來描述雲端的應用，模板中可以讓使用者建立如虛擬映像實體（Instance）、浮動IP位址、安全群組（Security Group）或是使用者等OpenStack各種資源，也就是說，Heat讓使用者可以設定一個雲端應用模板，來串連建立設定相關所需的OpenStack服務資源，而不必一個個分別去建立設定。
 
 ### Ceilometer 資料監控計量套件(Telemetry)
 Ceilometer提供OpenStack雲端服務可藉由```監控```與```量測```OpenStack的使用，來收集CPU與網路的使用資料，以提供```收費計價（Billing）```、```評測（Benchmarking）```等使用，或是使用這些資料當作評估系統延展性以及進行系統相關統計之用。
-
-### Heat 編排模板套件 (Orchestration)
-Heat主要提供一個以```模板（Templeate）```為基礎的架構來描述雲端的應用，模板中可以讓使用者建立如虛擬映像實體（Instance）、浮動IP位址、安全群組（Security Group）或是使用者等OpenStack各種資源，也就是說，Heat讓使用者可以設定一個雲端應用模板，來串連建立設定相關所需的OpenStack服務資源，而不必一個個分別去建立設定。
 
 ### Sahara 資料處理套件 (Data Processing)
 Sahara 目的是提供給搭建```Haddoop 分散式叢集```的工程師能用簡單的概念，
@@ -102,4 +125,3 @@ Murano 專案引入一個 Application catalog 於 OpenStack上，使應用程式
 ### Monasca
 
 ### Senlin
-

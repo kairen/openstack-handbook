@@ -17,11 +17,14 @@
 $ mysql -u root -p
 ```
 
-透過以下命令用來更新現有帳號資料或建立 Nova 資料庫：
+透過以下命令用來更新現有帳號資料或建立 Nova 與 Nova API 資料庫：
 ```sql
 CREATE DATABASE nova;
+CREATE DATABASE nova_api;
 GRANT ALL PRIVILEGES ON nova.* TO 'nova'@'localhost' IDENTIFIED BY 'NOVA_DBPASS';
 GRANT ALL PRIVILEGES ON nova.* TO 'nova'@'%' IDENTIFIED BY 'NOVA_DBPASS';
+GRANT ALL PRIVILEGES ON nova_api.* TO 'nova'@'localhost' IDENTIFIED BY 'NOVA_DBPASS';
+GRANT ALL PRIVILEGES ON nova_api.* TO 'nova'@'%' IDENTIFIED BY 'NOVA_DBPASS';
 ```
 > 這邊```NOVA_DBPASS```可以隨需求修改。
 
@@ -65,13 +68,11 @@ nova-consoleauth nova-novncproxy nova-scheduler python-novaclient
 ```sh
 [DEFAULT]
 ...
-enabled_apis=osapi_compute,metadata
+enabled_apis = osapi_compute,metadata
 rpc_backend = rabbit
 auth_strategy = keystone
 
-network_api_class = nova.network.neutronv2.api.API
-security_group_api = neutron
-linuxnet_interface_driver = nova.network.linux_net.NeutronLinuxBridgeInterfaceDriver
+use_neutron = True
 firewall_driver = nova.virt.firewall.NoopFirewallDriver
 
 my_ip = MANAGEMENT_IP
@@ -89,6 +90,13 @@ vncserver_proxyclient_address = 10.0.0.11
 ```sh
 [database]
 connection = mysql+pymysql://nova:NOVA_DBPASS@10.0.0.11/nova
+```
+> 這邊```NOVA_DBPASS```可以隨需求修改。
+
+在```[api_database]```部分修改使用以下方式：
+```sh
+[api_database]
+connection = mysql+pymysql://nova:NOVA_DBPASS@10.0.0.11/nova_api
 ```
 > 這邊```NOVA_DBPASS```可以隨需求修改。
 
@@ -119,7 +127,7 @@ password = NOVA_PASS
 在```[glance]```部分加入以下內容：
 ```sh
 [glance]
-host = 10.0.0.11
+api_servers = http://10.0.0.11:9292
 ```
 
 在```[oslo_concurrency]```部分加入以下內容：
@@ -128,9 +136,10 @@ host = 10.0.0.11
 lock_path = /var/lib/nova/tmp
 ```
 
-完成所有設定後，即可同步資料庫來建立 Nova 資料表：
+完成所有設定後，即可同步資料庫來建立 Nova 與 Nova API 資料表：
 ```sh
-$ sudo nova-manage db sync
+sudo nova-manage api_db sync
+sudo nova-manage db sync
 ```
 
 資料庫建立完成後，就可以重新啟動所有 Nova 服務：
@@ -164,9 +173,7 @@ $ sudo apt-get install -y nova-compute sysfsutils
 rpc_backend = rabbit
 auth_strategy = keystone
 
-network_api_class = nova.network.neutronv2.api.API
-security_group_api = neutron
-linuxnet_interface_driver = nova.network.linux_net.NeutronLinuxBridgeInterfaceDriver
+use_neutron = True
 firewall_driver = nova.virt.firewall.NoopFirewallDriver
 resume_guests_state_on_host_boot = true
 
@@ -211,7 +218,7 @@ password = NOVA_PASS
 在```[glance]```部分加入以下內容：
 ```sh
 [glance]
-host = 10.0.0.11
+api_servers = http://10.0.0.11:9292
 ```
 
 在```[oslo_concurrency]```，部分加入以下內容：

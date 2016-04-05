@@ -77,9 +77,11 @@ object1
 最後要新增 OpenStack Repository，來取的要安裝套件：
 ```sh
 $ sudo apt-get install -y software-properties-common
-$ sudo add-apt-repository -y cloud-archive:liberty
+$ sudo add-apt-repository -y cloud-archive:mitaka
 ```
-> 若要安裝 ```kilo```，修改為```cloud-archive:kilo```。
+> 若要安裝 ``` pre-release``` 測試版本，修改為```cloud-archive:mitaka-proposed```。
+
+> 若要安裝 ```liberty```，修改為```cloud-archive:liberty```。
 
 更新 Repository 與系統核心套件：
 ```sh
@@ -137,7 +139,7 @@ $ sudo mkdir -p /etc/swift
 接著透過網路來下載```proxy-server.conf```範例檔案板模：
 ```sh
 $ sudo curl -o /etc/swift/proxy-server.conf \
-https://git.openstack.org/cgit/openstack/swift/plain/etc/proxy-server.conf-sample?h=stable/liberty
+https://git.openstack.org/cgit/openstack/swift/plain/etc/proxy-server.conf-sample?h=stable/mitaka
 ```
 
 然後編輯```/etc/swift/proxy-server.conf```設定檔，在```[DEFAULT]```部分加入以下內容：
@@ -280,15 +282,15 @@ $ sudo apt-get install swift swift-account swift-container swift-object
 ```sh
 # Account server
 $ sudo curl -o /etc/swift/account-server.conf \
-https://git.openstack.org/cgit/openstack/swift/plain/etc/account-server.conf-sample?h=stable/liberty
+https://git.openstack.org/cgit/openstack/swift/plain/etc/account-server.conf-sample?h=stable/mitaka
 
 # Container server
 $ sudo curl -o /etc/swift/container-server.conf \
-https://git.openstack.org/cgit/openstack/swift/plain/etc/container-server.conf-sample?h=stable/liberty
+https://git.openstack.org/cgit/openstack/swift/plain/etc/container-server.conf-sample?h=stable/mitaka
 
 # Object server
 $ sudo curl -o /etc/swift/object-server.conf \
-https://git.openstack.org/cgit/openstack/swift/plain/etc/object-server.conf-sample?h=stable/liberty
+https://git.openstack.org/cgit/openstack/swift/plain/etc/object-server.conf-sample?h=stable/mitaka
 ```
 
 首先編輯```/etc/swift/account-server.conf```設定檔，在```[DEFAULT]```部分設定以下內容：
@@ -300,12 +302,12 @@ bind_port = 6002
 user = swift
 swift_dir = /etc/swift
 devices = /srv/node
-mount_check = true
+mount_check = True
 ```
 > P.S. ```MANAGEMENT_IP```取代為 Storage 節點的管理網路 IP。
 
 在```[pipeline:main]```部分加入以下內容：
-```sh
+```
 [pipeline:main]
 pipeline = healthcheck recon account-server
 ```

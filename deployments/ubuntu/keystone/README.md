@@ -7,6 +7,7 @@
 - [建立 Service 與 API Endpoint](#建立-service-與-api-endpoint)
 - [建立 Keystone admin 與 user](#建立-keystone-admin-與-user)
 - [驗證服務](#驗證服務)
+- [使用腳本切換使用者](#使用腳本切換使用者)
 
 ### 安裝前準備
 在開始安裝前，要預先建立一個資料庫給 Keystone 儲存相關資訊，使用以下指令建立資料庫：
@@ -65,18 +66,24 @@ servers = 10.0.0.11:11211
 在```[token]```部分加入以下內容：
 ```
 [token]
-provider = uuid
-driver = memcache
-```
-
-在```[revoke]```部分加入以下內容：
-```[revoke]
-driver = sql
+provider = fernet
 ```
 
 完成後，透過 Keystone 管理指令來同步資料庫建立資料表：
 ```sh
 $ sudo keystone-manage db_sync
+```
+
+接著初始化 fernet keys：
+```sh
+$ sudo keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
+2016-03-30 13:08:39.452 9126 INFO keystone.token.providers.fernet.utils [-] [fernet_tokens] key_repository does not appear to exist; attempting to create it
+2016-03-30 13:08:39.453 9126 INFO keystone.token.providers.fernet.utils [-] Created a new key: /etc/keystone/fernet-keys/0
+2016-03-30 13:08:39.453 9126 INFO keystone.token.providers.fernet.utils [-] Starting key rotation with 1 key files: ['/etc/keystone/fernet-keys/0']
+2016-03-30 13:08:39.453 9126 INFO keystone.token.providers.fernet.utils [-] Current primary key is: 0
+2016-03-30 13:08:39.454 9126 INFO keystone.token.providers.fernet.utils [-] Next primary key will be: 1
+2016-03-30 13:08:39.454 9126 INFO keystone.token.providers.fernet.utils [-] Promoted key 0 to be the primary: 1
+2016-03-30 13:08:39.454 9126 INFO keystone.token.providers.fernet.utils [-] Created a new key: /etc/keystone/fernet-keys/0
 ```
 
 ### 設定 Apache HTTP 伺服器
@@ -182,9 +189,9 @@ $ openstack service create --name keystone \
 Keystone 為了讓指定的 API 與 Service 擁有認證機制，故要再新增 API Endpoint 目錄給 Keystone，這樣就能夠決定如何與其他服務進行存取，透過以下方式建立：
 ```sh
 $ openstack endpoint create \
---publicurl http://10.0.0.11:5000/v2.0 \
---internalurl http://10.0.0.11:5000/v2.0 \
---adminurl http://10.0.0.11:35357/v2.0 \
+--publicurl http://10.0.0.11:5000/v3 \
+--internalurl http://10.0.0.11:5000/v3 \
+--adminurl http://10.0.0.11:35357/v3 \
 --region RegionOne identity
 ```
 > P.S. 以上方式是採用 Keystone v2.0，若採用 v3 則需要更換其他方式。
@@ -194,10 +201,10 @@ $ openstack endpoint create \
 +--------------+----------------------------------+
 | Field        | Value                            |
 +--------------+----------------------------------+
-| adminurl     | http://10.0.0.11:35357/v2.0      |
+| adminurl     | http://10.0.0.11:35357/v3        |
 | id           | 0af1316372844e579bc84cf71f66fff0 |
-| internalurl  | http://10.0.0.11:5000/vv2.0      |
-| publicurl    | http://10.0.0.11:5000/v2.0       |
+| internalurl  | http://10.0.0.11:5000/v3         |
+| publicurl    | http://10.0.0.11:5000/v3         |
 | region       | RegionOne                        |
 | service_id   | 721282b3c5514bcab6147a29fbaf28e7 |
 | service_name | keystone                         |
@@ -253,14 +260,16 @@ token issue
 
 成功的話，會看到類似以下結果：
 ```
-+------------+----------------------------------+
-| Field      | Value                            |
-+------------+----------------------------------+
-| expires    | 2015-07-23T15:36:06Z             |
-| id         | 995e854225fc45efac11e3bdc705a675 |
-| project_id | cf8f9b8b009b429488049bb2332dc311 |
-| user_id    | a2cdc03624c04bb0bd7437f6e9f7913e |
-+------------+----------------------------------+
++------------+-----------------------------------------------------------------+
+| Field      | Value                                                           |
++------------+-----------------------------------------------------------------+
+| expires    | 2016-02-12T20:44:35.659723Z                                     |
+| id         | gAAAAABWvjYj-Zjfg8WXFaQnUd1DMYTBVrKw4h3fIagi5NoEmh21U72SrRv2trl |
+|            | JWFYhLi2_uPR31Igf6A8mH2Rw9kv_bxNo1jbLNPLGzW_u5FC7InFqx0yYtTwa1e |
+|            | eq2b0f6-18KZyQhs7F3teAta143kJEWuNEYET-y7u29y0be1_64KYkM7E       |
+| project_id | 343d245e850143a096806dfaefa9afdc                                |
+| user_id    | ac3377633149401296f6c0d92d79dc16                                |
++------------+-----------------------------------------------------------------+
 ```
 
 完成 v2.0 驗證後，要繼續進行 v3 的版本驗證，由於 v3 增加了 Domains 的驗證。因此 Project 與 User 能夠在不同的 Domain 使用相同名稱，這邊是使用預設的 Domain 進行驗證：
@@ -277,14 +286,16 @@ token issue
 
 成功的話，會看到類似以下結果：
 ```
-+------------+----------------------------------+
-| Field      | Value                            |
-+------------+----------------------------------+
-| expires    | 2015-07-23T15:36:06Z             |
-| id         | 67ef08f69381404a8ccaf2a4725b58d5 |
-| project_id | cf8f9b8b009b429488049bb2332dc311 |
-| user_id    | a2cdc03624c04bb0bd7437f6e9f7913e |
-+------------+----------------------------------+
++------------+-----------------------------------------------------------------+
+| Field      | Value                                                           |
++------------+-----------------------------------------------------------------+
+| expires    | 2016-02-12T20:44:35.659723Z                                     |
+| id         | gAAAAABWvjYj-Zjfg8WXFaQnUd1DMYTBVrKw4h3fIagi5NoEmh21U72SrRv2trl |
+|            | JWFYhLi2_uPR31Igf6A8mH2Rw9kv_bxNo1jbLNPLGzW_u5FC7InFqx0yYtTwa1e |
+|            | eq2b0f6-18KZyQhs7F3teAta143kJEWuNEYET-y7u29y0be1_64KYkM7E       |
+| project_id | 343d245e850143a096806dfaefa9afdc                                |
+| user_id    | ac3377633149401296f6c0d92d79dc16                                |
++------------+-----------------------------------------------------------------+
 ```
 
 然後接下來要驗證權限是否正常被設定，這邊先使用 ```admin``` 使用者來進行：
@@ -321,14 +332,16 @@ token issue
 
 成功的話，會看到類似以下結果：
 ```
-+------------+----------------------------------+
-| Field      | Value                            |
-+------------+----------------------------------+
-| expires    | 2015-07-23T15:36:06Z             |
-| id         | b1214dcf4156464d8c6df2c20fd51e73 |
-| project_id | cf8f9b8b009b429488049bb2332dc311 |
-| user_id    | a2cdc03624c04bb0bd7437f6e9f7913e |
-+------------+----------------------------------+
++------------+-----------------------------------------------------------------+
+| Field      | Value                                                           |
++------------+-----------------------------------------------------------------+
+| expires    | 2016-02-12T20:44:35.659723Z                                     |
+| id         | gAAAAABWvjYj-Zjfg8WXFaQnUd1DMYTBVrKw4h3fIagi5NoEmh21U72SrRv2trl |
+|            | JWFYhLi2_uPR31Igf6A8mH2Rw9kv_bxNo1jbLNPLGzW_u5FC7InFqx0yYtTwa1e |
+|            | eq2b0f6-18KZyQhs7F3teAta143kJEWuNEYET-y7u29y0be1_64KYkM7E       |
+| project_id | 343d245e850143a096806dfaefa9afdc                                |
+| user_id    | ac3377633149401296f6c0d92d79dc16                                |
++------------+-----------------------------------------------------------------+
 ```
 
 > P.S 這邊會發現使用的 Port 從 35357 轉換成 5000，這邊只是為了區別 Admin URL 與 Public URL 中使用的 Port。
@@ -346,7 +359,7 @@ user list
 
 成功的話，會看到類似以下結果：
 ```
-ERROR: openstack You are not authorized to perform the requested action: admin_required
+Could not find requested endpoint in Service Catalog.
 ```
 
 若上述過程都沒有錯誤，表示 Keystone 目前很正常的被執行中。
@@ -393,16 +406,14 @@ $ . admin-openrc
 完成後，在使用 OpenStack client 就可以省略一些基本參數了，如以下指令：
 ```sh
 $ openstack token issue
-```
-
-成功的話，會看到類似以下結果：
-```sh
-+------------+----------------------------------+
-| Field      | Value                            |
-+------------+----------------------------------+
-| expires    | 2015-07-23T15:36:06Z             |
-| id         | b1214dcf4156464d8c6df2c20fd51e73 |
-| project_id | cf8f9b8b009b429488049bb2332dc311 |
-| user_id    | a2cdc03624c04bb0bd7437f6e9f7913e |
-+------------+----------------------------------+
++------------+-----------------------------------------------------------------+
+| Field      | Value                                                           |
++------------+-----------------------------------------------------------------+
+| expires    | 2016-02-12T20:44:35.659723Z                                     |
+| id         | gAAAAABWvjYj-Zjfg8WXFaQnUd1DMYTBVrKw4h3fIagi5NoEmh21U72SrRv2trl |
+|            | JWFYhLi2_uPR31Igf6A8mH2Rw9kv_bxNo1jbLNPLGzW_u5FC7InFqx0yYtTwa1e |
+|            | eq2b0f6-18KZyQhs7F3teAta143kJEWuNEYET-y7u29y0be1_64KYkM7E       |
+| project_id | 343d245e850143a096806dfaefa9afdc                                |
+| user_id    | ac3377633149401296f6c0d92d79dc16                                |
++------------+-----------------------------------------------------------------+
 ```

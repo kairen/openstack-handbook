@@ -66,9 +66,11 @@ block1
 最後要新增 OpenStack Repository，來取的要安裝套件：
 ```sh
 $ sudo apt-get install -y software-properties-common
-$ sudo add-apt-repository -y cloud-archive:liberty
+$ sudo add-apt-repository -y cloud-archive:mitaka
 ```
-> 若要安裝 ```kilo```，修改為```cloud-archive:kilo```。
+> 若要安裝 ``` pre-release``` 測試版本，修改為```cloud-archive:mitaka-proposed```。
+
+> 若要安裝 ```liberty```，修改為```cloud-archive:liberty```。
 
 更新 Repository 與系統核心套件：
 ```sh
@@ -172,6 +174,7 @@ rabbit_password = RABBIT_PASS
 在```[keystone_authtoken]```部分加入以下內容：
 ```sh
 [keystone_authtoken]
+memcached_servers = 10.0.0.11:11211
 auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
 auth_plugin = password
@@ -186,7 +189,7 @@ password = CINDER_PASS
 在```[oslo_concurrency]```部分加入以下內容：
 ```sh
 [oslo_concurrency]
-lock_path = /var/lock/cinder
+lock_path = /var/lib/cinder/tmp
 ```
 
 完成所有設定後，即可同步資料庫來建立 Cinder 資料表：
@@ -269,7 +272,7 @@ auth_strategy = keystone
 enabled_backends = lvm
 
 my_ip = MANAGEMENT_IP
-glance_host = 10.0.0.11
+glance_api_servers = http://10.0.0.11:9292
 ```
 > P.S. ```MANAGEMENT_IP```這邊為```10.0.0.41```。
 
@@ -291,6 +294,7 @@ rabbit_password = RABBIT_PASS
 在```[keystone_authtoken]```部分加入以下內容：
 ```sh
 [keystone_authtoken]
+memcached_servers = 10.0.0.11:11211
 auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
 auth_plugin = password
@@ -314,7 +318,7 @@ iscsi_helper = tgtadm
 在```[oslo_concurrency]```部分加入以下內容：
 ```sh
 [oslo_concurrency]
-lock_path = /var/lock/cinder
+lock_path = /var/lib/cinder/tmp
 ```
 
 完成所有安裝後，即可重新啟動服務：

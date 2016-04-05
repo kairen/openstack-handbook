@@ -226,7 +226,7 @@ $ sudo apt-get install manila-common python-pymysql neutron-linuxbridge-agent co
 $ sudo apt-get install manila-common python-pymysql neutron-openvswitch-agent conntrack
 ```
 
-安裝完成後，編輯```/etc/cinder/cinder.conf```設定檔，並在```[DEFAULT]```部分設定以下內容：
+安裝完成後，編輯```/etc/manila/manila.conf```設定檔，並在```[DEFAULT]```部分設定以下內容：
 ```
 [DEFAULT]
 ...

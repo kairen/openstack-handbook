@@ -1,5 +1,5 @@
 # Keystone 安裝與設定
-本章節會說明與操作如何安裝身份認證服務到 Controller 節點上，並設置相關參數與設定。若對於 Keystone 不瞭解的人，可以參考 [Keystone 身份認證套件章節](../../../conceptions/keystone/README.md)。
+本章節會說明與操作如何安裝身份認證服務到 Controller 節點上，並設置相關參數與設定。若對於 Keystone 不瞭解的人，可以參考 [Keystone 身份認證服務章節](../../../conceptions/keystone/README.md)。
 
 - [Keystone 安裝前準備](#安裝前準備)
 - [套件安裝與設定](#套件安裝與設定)
@@ -43,7 +43,7 @@ $ sudo apt-get install keystone apache2 memcached \
 libapache2-mod-wsgi python-openstackclient python-memcache
 ```
 
-安裝完後，編輯```/etc/keystone/keystone.conf```設定檔，在```[DEFAULT]```部分修改如下：
+安裝完後，編輯```/etc/keystone/keystone.conf```設定檔，在```[DEFAULT]```部分加入以下內容：
 ```sh
 [DEFAULT]
 admin_token = ADMIN_TOKEN
@@ -56,20 +56,20 @@ admin_token = ADMIN_TOKEN
 connection = mysql+pymysql://keystone:KEYSTONE_DBPASS@10.0.0.11/keystone
 ```
 
-在```[memcache]```部分修改如下：
+在```[memcache]```部分加入以下內容：
 ```
 [memcache]
 servers = 10.0.0.11:11211
 ```
 
-在```[token]```部分修改如下：
+在```[token]```部分加入以下內容：
 ```
 [token]
 provider = uuid
 driver = memcache
 ```
 
-在```[revoke]```部分修改如下：
+在```[revoke]```部分加入以下內容：
 ```[revoke]
 driver = sql
 ```

@@ -1,5 +1,5 @@
 # Nova 安裝與設定
-本章節會說明與操作如何安裝運算服務到 Controller 與 Compute 節點上，並修改相關設定檔。若對於 Nova 不瞭解的人，可以參考 [Nova 運算套件章節](../../../conceptions/nova/README.md)。
+本章節會說明與操作如何安裝運算服務到 Controller 與 Compute 節點上，並修改相關設定檔。若對於 Nova 不瞭解的人，可以參考 [Nova 運算服務章節](../../../conceptions/nova/README.md)。
 
 - [Controller Node](#controller-node)
     - [安裝前準備](#安裝前準備)
@@ -35,7 +35,7 @@ $ . admin-openrc
 # 建立 Nova user
 $ openstack user create --domain default --password NOVA_PASS --email nova@example.com nova
 
-# 建立 Nova role
+# 新增 Nova 到 Admin Role
 $ openstack role add --project service --user nova admin
 
 # 建立 Nova service
@@ -122,7 +122,7 @@ password = NOVA_PASS
 host = 10.0.0.11
 ```
 
-在```[oslo_concurrency]```，部分加入以下內容：
+在```[oslo_concurrency]```部分加入以下內容：
 ```sh
 [oslo_concurrency]
 lock_path = /var/lib/nova/tmp

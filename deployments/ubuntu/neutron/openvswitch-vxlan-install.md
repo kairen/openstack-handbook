@@ -50,7 +50,7 @@ $ . admin-openrc
 # 建立 Neutron User
 $ openstack user create --domain default --password NEUTRON_PASS --email neutron@example.com neutron
 
-# 建立 Neutron Role
+# 新增 Neutron 到 Admin Role
 $ openstack role add --project service --user neutron admin
 
 # 建立 Neutron Service

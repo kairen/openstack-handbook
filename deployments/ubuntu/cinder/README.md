@@ -1,5 +1,5 @@
 # Cinder 安裝與設定
-本章節會說明與操作如何安裝區塊儲存服務到 Controller 與 Storage 節點上，並修改相關設定檔。若對於 Cinder 不瞭解的人，可以參考 [Cinder 區塊儲存套件章節](../../../conceptions/cinder/README.md)。
+本章節會說明與操作如何安裝區塊儲存服務到 Controller 與 Storage 節點上，並修改相關設定檔。若對於 Cinder 不瞭解的人，可以參考 [Cinder 區塊儲存服務章節](../../../conceptions/cinder/README.md)。
 
 - [部署前系統環境準備](#部署前系統環境準備)
     - [硬體規格與網路分配](#硬體規格與網路分配)
@@ -77,10 +77,10 @@ $ sudo apt-get update && sudo apt-get -y dist-upgrade
 > 如果 Upgrade 包含了新的核心套件的話，請重新開機。
 
 # Controller Node
-在 Controller 節點我們需要安裝 Swift 中的 API Server 與 Scheduler 服務。
+在 Controller 節點我們需要安裝 Cider 中的 API Server 與 Scheduler 服務。
 
 ### Controller 安裝前準備
-在開始安裝前，要預先建立一個資料庫給 Nova 儲存相關資訊，使用以下指令建立資料庫：
+在開始安裝前，要預先建立一個資料庫給 Cinder 儲存相關資訊，使用以下指令建立資料庫：
 ```sh
 $ mysql -u root -p
 ```
@@ -103,7 +103,7 @@ $ . admin-openrc
 # 建立 Cinder user
 $ openstack user create --domain default --password CINDER_PASS --email cinder@example.com cinder
 
-# 建立 Cinder role
+# 新增 Cinder 到 Admin Role
 $ openstack role add --project service --user cinder admin
 
 # 建立 Cinder service
@@ -260,7 +260,7 @@ PV UUID               tsYzd6-a4s8-32iL-aYdA-AMol-qtj2-4RMhvA
 $ sudo apt-get install cinder-volume python-mysqldb
 ```
 
-安裝完成後，編輯```/etc/nova/nova.conf```設定檔，並在```[DEFAULT]```部分設定以下內容：
+安裝完成後，編輯```/etc/cinder/cinder.conf```設定檔，並在```[DEFAULT]```部分設定以下內容：
 ```sh
 [DEFAULT]
 ...
@@ -335,7 +335,7 @@ $ echo "export OS_VOLUME_API_VERSION=2" \
 | sudo tee -a admin-openrc demo-openrc
 ```
 
-接著節點導入 ```admin``` 帳號來驗證服務：
+接著導入 ```admin``` 帳號來驗證服務：
 ```sh
 $ . admin-openrc
 ```

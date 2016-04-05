@@ -1,7 +1,7 @@
 # Glance 安裝與設定
-本章節會說明與操作如何安裝映像檔服務到 Controller 節點上，並設置相關參數與設定。若對於 Glance 不瞭解的人，可以參考 [Glance 映像檔套件章節](../../../conceptions/glance/README.md)。
+本章節會說明與操作如何安裝映像檔服務到 Controller 節點上，並設置相關參數與設定。若對於 Glance 不瞭解的人，可以參考 [Glance 映像檔服務章節](../../../conceptions/glance/README.md)。
 
-- [Glance 安裝前準備](#安裝前準備)
+- [安裝前準備](#安裝前準備)
 - [套件安裝與設定](#套件安裝與設定)
 - [驗證服務](#驗證服務)
 
@@ -29,7 +29,7 @@ $ . admin-openrc
 # 建立 Glance user
 $ openstack user create --domain default --password GLANCE_PASS --email glance@example.com glance
 
-# 建立 Glance role
+# 新增 Glance 到 Admin Role
 $ openstack role add --project service --user glance admin
 
 # 建立 Glance service
@@ -132,7 +132,7 @@ sudo service glance-api restart
 
 最後刪除預設的 SQLite 資料庫：
 ```sh
-$ sudo rm -f /var/lib/glance/cinder.sqlite
+$ sudo rm -f /var/lib/glance/glance.sqlite
 ```
 
 ### 驗證服務
@@ -142,7 +142,7 @@ $ echo "export OS_IMAGE_API_VERSION=2" \
 | sudo  tee -a admin-openrc demo-openrc
 ```
 
-接著節點導入 ```admin``` 帳號來驗證服務：
+接著導入 ```admin``` 帳號來驗證服務：
 ```sh
 $ . admin-openrc
 ```

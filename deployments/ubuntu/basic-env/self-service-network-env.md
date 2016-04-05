@@ -8,9 +8,9 @@ Self-Service 的網路服務，可以讓部署多了 Layer 3（路由）服務�
 ![](images/scenario-classic-general.png)
 
 ### 最小部署硬體規格分配
-* **Controller Node**: 四核處理器, 8 GB 記憶體, 250 GB 儲存空間
-* **Network Node**: 雙核處理器, 4 GB 記憶體, 250 GB 儲存空間
-* **Compute Node**: 四核處理器, 8 GB 記憶體, 500 GB 儲存空間
+* **Controller Node**: 四核處理器, 8 GB 記憶體, 250 GB 儲存空間。
+* **Network Node**: 雙核處理器, 4 GB 記憶體, 250 GB 儲存空間。
+* **Compute Node**: 四核處理器, 8 GB 記憶體, 500 GB 儲存空間。
 
 > 注意以上節點的 Linux OS 請採用 ```64``` 位元的版本，因為若是在 Compute 節點安裝 ```32``` 位元，在執行映像檔時，會出錯。
 

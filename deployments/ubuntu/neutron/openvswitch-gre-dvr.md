@@ -165,7 +165,7 @@ ethtool -K INTERFACE_NAME gro off
 重新開啟服務：
 ```sh
 sudo service nova-compute restart
-sudo service neutron-plugin-openvswitch-agent restart
+sudo service neutron-openvswitch-agent restart
 sudo service neutron-metadata-agent restart
 sudo service neutron-l3-agent restart
 ```

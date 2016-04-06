@@ -97,7 +97,7 @@ metering admin http://10.0.0.11:8777
 在開始設定之前，首先要安裝相關套件與 OpenStack 服務套件，可以透過以下指令進行安裝：
 ```sh
 $ sudo apt-get install ceilometer-api ceilometer-collector \
-ceilometer-agent-central ceilometer-agent-notification
+ceilometer-agent-central ceilometer-agent-notification \
 python-ceilometerclient
 ```
 
@@ -260,7 +260,6 @@ Ceilometer 使用 Notifications 來收集區塊儲存服務的 meters。我們�
 首先編輯所有節點的```/etc/cinder/cinder.conf```設定檔，在```[oslo_messaging_notifications]```部分加入以下內容：
 ```
 [oslo_messaging_notifications]
-...
 driver = messagingv2
 ```
 
@@ -448,22 +447,9 @@ sudo service aodh-listener restart
 ```
 
 # 驗證服務
-首先建立一個環境參數檔案```ceilometer-openrc```，並加入以下內容：
-```sh
-unset OS_PROJECT_DOMAIN_ID
-unset OS_USER_DOMAIN_ID
-export OS_PROJECT_NAME=admin
-export OS_TENANT_NAME=admin
-export OS_USERNAME=admin
-export OS_PASSWORD=passwd
-export OS_AUTH_URL=http://10.0.0.11:35357
-export OS_IMAGE_API_VERSION=2
-export OS_VOLUME_API_VERSION=2
-```
-
 導入該環境參數，來透過 Ceilometer client 查看服務狀態：
 ```sh
-$ . ceilometer-openrc
+$ . admin-openrc
 ```
 
 這邊可以透過 Ceilometer client 來查看所有 meter，如以下方式：
@@ -475,7 +461,3 @@ $ ceilometer meter-list
 ```sh
 $ ceilometer statistics -m image.download -p 60
 ```
-
-# 其他參考網站
-* [Ceilometer Measurements](http://docs.openstack.org/admin-guide-cloud/telemetry-measurements.html)
-* [OpenStack configuration overview for ceilometer](http://docs.openstack.org/liberty/config-reference/content/section_ceilometer.conf.html)

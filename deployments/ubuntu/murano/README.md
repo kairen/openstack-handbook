@@ -89,7 +89,7 @@ sudo pip install tox
  git clone git://git.openstack.org/openstack/murano
 ```
 > 若使用 .deb 安裝的話，可以執行以下指令：
-> 
+>
 ```
 sudo apt-get install murano-api murano-engine python-muranoclient
 ```
@@ -133,7 +133,7 @@ auth_url = http://10.0.0.11:5000/v2.0
 admin_password = MURANO_PASS
 admin_user = murano
 admin_tenant_name = service
-cafile = 
+cafile =
 auth_protocol = http
 auth_port = 35357
 auth_host = 10.0.0.11
@@ -198,6 +198,7 @@ stop on runlevel [!2345]
 exec start-stop-daemon --start --chuid murano --exec /usr/local/bin/murano-api -- --config-file=/etc/murano/murano.conf
 EOF
 ```
+
 #### murano-engine
 ```sh
 cat > /etc/init/murano-engine.conf << EOF
@@ -221,10 +222,3 @@ sudo update-rc.d murano-engine defaults
 sudo start murano-api
 sudo start murano-engine
 ```
-
-
-
-
-
-
-

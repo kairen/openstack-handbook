@@ -453,7 +453,7 @@ $ sudo ethtool -K INTERFACE_NAME gro off
 當完成上述所有安裝與設定後，回到```Network```節點重新啟動所有 Neutron agents 與 openvswitch-switch：
 ```sh
 sudo service openvswitch-switch restart
-sudo service neutron-openvswitch-agent restart
+sudo service neutron-plugin-openvswitch-agent restart
 sudo service neutron-dhcp-agent restart
 sudo service neutron-metadata-agent restart
 sudo service neutron-l3-agent restart
@@ -617,7 +617,7 @@ $ sudo service nova-compute restart
 重新啟動 Open vSwitch Agent：
 ```sh
 sudo service openvswitch-switch restart
-sudo service neutron-openvswitch-agent restart
+sudo service neutron-plugin-openvswitch-agent restart
 ```
 
 ### Compute 驗證服務

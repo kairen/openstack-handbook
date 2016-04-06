@@ -245,13 +245,13 @@ nova_admin_tenant_name = service
 nova_admin_username = nova
 nova_admin_password = NOVA_PASS
 
-cinder_admin_auth_url = http://controller:5000/v2.0
+cinder_admin_auth_url = http://10.0.0.11:5000/v2.0
 cinder_admin_tenant_name = service
 cinder_admin_username = cinder
 cinder_admin_password = CINDER_PASS
 
-neutron_admin_auth_url = http://controller:5000/v2.0
-neutron_url = http://controller:9696
+neutron_admin_auth_url = http://10.0.0.11:5000/v2.0
+neutron_url = http://10.0.0.11:9696
 neutron_admin_project_name = service
 neutron_admin_username = neutron
 neutron_admin_password = NEUTRON_PASS
@@ -312,9 +312,22 @@ interface_driver = manila.network.linux.interface.BridgeInterfaceDriver
 lock_path = /var/lib/manila/tmp
 ```
 
+建立一個 Upstart 檔案來管理 manila-share ：
+```sh
+cat > /etc/init/manila-share.conf << EOF
+description "OpenStack Manila Share"
+author "kyle Bai <kyle.b@inwinStack.com>"
+
+start on runlevel [2345]
+stop on runlevel [!2345]
+
+exec start-stop-daemon --start --chuid manila --exec /usr/bin/manila-share -- --config-file=/etc/manila/manila.conf
+EOF
+```
+
 完成所有安裝後，即可重新啟動服務：
 ```sh
-$ sudo service manila-share restart
+$ sudo start manila-share
 ```
 
 最後刪除預設的 SQLite 資料庫：
@@ -331,4 +344,10 @@ $ . admin-openrc
 這邊可以透過 Manila client 來查看服務列表，如以下方式：
 ```sh
 $ manila service-list
++----+------------------+---------------+------+---------+-------+----------------------------+
+| Id | Binary           | Host          | Zone | Status  | State | Updated_at                 |
++----+------------------+---------------+------+---------+-------+----------------------------+
+| 1  | manila-scheduler | controller    | nova | enabled | up    | 2016-04-06T15:01:15.000000 |
+| 2  | manila-share     | share@generic | nova | enabled | up    | 2016-04-06T15:01:13.000000 |
++----+------------------+---------------+------+---------+-------+----------------------------+
 ```

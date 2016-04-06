@@ -1,6 +1,6 @@
 # Nova Hypervisor Support Matrix
 
-以下說明 Nova Hypervisor 支援的列表
+以下說明目前 Nova 所支援的 Hypervisor 列表：
 
 | Feature                            	| Status    	| Hyper-V 	| Ironic 	| Libvirt KVM (x86) 	| Libvirt LXC 	| Libvirt QEMU (x86) 	| Libvirt Xen 	| VMware vCenter 	| XenServer 	|
 |------------------------------------	|-----------	|:-------:	|:------:	|:-----------------:	|:-----------:	|:------------------:	|:-----------:	|:--------------:	|:---------:	|

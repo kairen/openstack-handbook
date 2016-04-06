@@ -16,7 +16,7 @@
 
 ### 硬體規格與網路分配
 這邊只會加入一台 Share 節點，規格如下所示：
-* **Storage Node**: 雙核處理器, 8 GB 記憶體, 250 GB 硬碟（/dev/sda）。
+* **Share Node**: 雙核處理器, 8 GB 記憶體, 250 GB 硬碟（/dev/sda）。
 
 在節點上需要提供對映的多張網卡（NIC）來設定給不同網路使用：
 * **Management（管理網路）**：10.0.0.0/24，需要一個 Gateway 並設定為 10.0.0.1。
@@ -48,7 +48,7 @@ server 10.0.0.11 iburst
 
 接著編輯```/etc/hostname```來改變主機名稱（Option）：
 ```sh
-filesystem1
+share
 ```
 
 並設定主機 IP 與名稱的對照，編輯```/etc/hosts```檔案加入以下內容：
@@ -56,7 +56,7 @@ filesystem1
 10.0.0.11   controller
 10.0.0.21   network
 10.0.0.31   compute1
-10.0.0.61   filesystem1
+10.0.0.61   share
 ```
 > P.S. 若有```127.0.1.1```存在的話，請將之註解掉，避免解析問題。
 

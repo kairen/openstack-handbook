@@ -1,5 +1,5 @@
 # Manila 安裝與設定
-本章節會說明與操作如何安裝共享式檔案系統服務到 Controller 與 Storage 節點上，並修改相關設定檔。若對於 Manila 不瞭解的人，可以參考 [Manila 共享式檔案系統服務章節](../../../conceptions/manila/README.md)。
+本章節會說明與操作如何安裝共享式檔案系統服務到 Controller 與 Share 節點上，並修改相關設定檔。若對於 Manila 不瞭解的人，可以參考 [Manila 共享式檔案系統服務章節](../../../conceptions/manila/README.md)。
 
 - [部署前系統環境準備](#部署前系統環境準備)
     - [硬體規格與網路分配](#硬體規格與網路分配)
@@ -7,23 +7,21 @@
 - [Controller Node](#controller-node)
     - [Controller 安裝前準備](#controller-安裝前準備)
     - [Controller 套件安裝與設定](#controller-套件安裝與設定)
-- [Storage Node](#storage-node)
-    - [Storage 套件安裝與設定](#storage-套件安裝與設定)
+- [Share Node](#share-node)
+    - [Share 套件安裝與設定](#share-套件安裝與設定)
 - [驗證服務](#驗證服務)
 
 # 部署前系統環境準備
 當要加入 Manila 來提供持久性儲存給虛擬機實例使用時，必須額外新增節點來提供實際儲存。首先如教學最開始的步驟，要先設定基本主機環境與安裝基本套件。
 
 ### 硬體規格與網路分配
-這邊只會加入一台 Storage 節點，規格如下所示：
-* **Storage Node**: 雙核處理器, 8 GB 記憶體, 250 GB 硬碟（/dev/sda）與 500 GB 硬碟（/dev/sdb）。
+這邊只會加入一台 Share 節點，規格如下所示：
+* **Share Node**: 雙核處理器, 8 GB 記憶體, 250 GB 硬碟（/dev/sda）。
 
 在節點上需要提供對映的多張網卡（NIC）來設定給不同網路使用：
 * **Management（管理網路）**：10.0.0.0/24，需要一個 Gateway 並設定為 10.0.0.1。
-> 這邊需要提供一個 Gateway 來提供給所有節點使用內部的私有網路，該網路必須能夠連接網際網路來讓主機進行套件安裝與更新等。
 
-* **Storage（儲存網路）**：10.0.2.0/24，不需要 Gateway。
-> P.S. 該網路並非必要，若想使用如 NAS 或 SAN 的儲存來給 Manila 充當後端儲存的話，可以考慮加入一個獨立的網路給這些儲存系統使用。
+> 這邊需要提供一個 Gateway 來提供給所有節點使用內部的私有網路，該網路必須能夠連接網際網路來讓主機進行套件安裝與更新等。
 
 這邊將第一張網卡介面設定為 ```Management（管理網路）```：
 * IP address：10.0.0.61
@@ -50,7 +48,7 @@ server 10.0.0.11 iburst
 
 接著編輯```/etc/hostname```來改變主機名稱（Option）：
 ```sh
-filesystem1
+share
 ```
 
 並設定主機 IP 與名稱的對照，編輯```/etc/hosts```檔案加入以下內容：
@@ -58,7 +56,7 @@ filesystem1
 10.0.0.11   controller
 10.0.0.21   network
 10.0.0.31   compute1
-10.0.0.61   filesystem1
+10.0.0.61   share
 ```
 > P.S. 若有```127.0.1.1```存在的話，請將之註解掉，避免解析問題。
 
@@ -211,10 +209,10 @@ sudo service manila-api restart
 $ sudo rm -f /var/lib/manila/manila.sqlite
 ```
 
-# Storage Node
-安裝與設定完成 Controller 上的 Manila 所有服務後，接著要來設定實際提供檔案系統的 Storage 節點。該節點只會安裝一些 Linux 相關套件與 manila-share 服務。
+# Share Node
+安裝與設定完成 Controller 上的 Manila 所有服務後，接著要來設定實際提供檔案系統的 Share 節點。該節點只會安裝一些 Linux 相關套件與 manila-share 服務。
 
-### Storage 套件安裝與設定
+### Share 套件安裝與設定
 在開始設定之前，首先要安裝相關套件與 OpenStack 服務套件，可以透過以下指令進行安裝：
 ```sh
 $ sudo apt-get install manila-common python-pymysql neutron-linuxbridge-agent conntrack
@@ -299,9 +297,10 @@ share_driver = manila.share.drivers.generic.GenericShareDriver
 driver_handles_share_servers = True
 service_instance_flavor_id = 2
 
-service_image_name = manila-service-image
-service_instance_user = manila
-service_instance_password = manila
+service_image_name = ubuntu-1204-nfs-cifs
+service_image_url = http://files.imaclouds.com/images/ubuntu_1204_nfs_cifs.qcow2
+service_instance_user = ubuntu
+service_instance_password = ubuntu
 interface_driver = manila.network.linux.interface.BridgeInterfaceDriver
 ```
 > 這邊```interface_driver```要隨部署的網路架構改變。

@@ -299,9 +299,10 @@ share_driver = manila.share.drivers.generic.GenericShareDriver
 driver_handles_share_servers = True
 service_instance_flavor_id = 2
 
-service_image_name = manila-service-image
-service_instance_user = manila
-service_instance_password = manila
+service_image_name = ubuntu-1204-nfs-cifs
+service_image_url = http://files.imaclouds.com/images/ubuntu_1204_nfs_cifs.qcow2
+service_instance_user = ubuntu
+service_instance_password = ubuntu
 interface_driver = manila.network.linux.interface.BridgeInterfaceDriver
 ```
 > 這邊```interface_driver```要隨部署的網路架構改變。
@@ -341,7 +342,37 @@ $ sudo rm -f /var/lib/manila/manila.sqlite
 $ . admin-openrc
 ```
 
-這邊可以透過 Manila client 來查看服務列表，如以下方式：
+這邊可以透過 Manila client 來建立 Share Type，如以下方式：
+```sh
+$ manila type-create default_share_type True
++----------------------+--------------------------------------+
+| Property             | Value                                |
++----------------------+--------------------------------------+
+| required_extra_specs | driver_handles_share_servers : True  |
+| Name                 | default_share_type                   |
+| Visibility           | public                               |
+| is_default           | -                                    |
+| ID                   | ae825759-a3e5-4aec-8c78-138866bab7c4 |
+| optional_extra_specs | snapshot_support : True              |
++----------------------+--------------------------------------+
+```
+
+接著透過 Manila client 來建立 Share Network，如以下方式：
+```sh
+$ NET_ID=$(neutron net-list | awk '/ ext-net / { print $2 }')
+$ SUBNET_ID=$(neutron net-list | awk '/ ext-net / { print $6 }')
+$ manila share-network-create \
+--name share-network \
+--neutron-net-id ${NET_ID} \
+--neutron-subnet-id ${SUBNET_ID}
+```
+
+完成上述後，即可建立檔案系統：
+```sh
+$ manila create NFS 5 --name testshare --share-network share-network
+```
+
+透過 Manila client 來查看服務列表，如以下方式：
 ```sh
 $ manila service-list
 +----+------------------+---------------+------+---------+-------+----------------------------+

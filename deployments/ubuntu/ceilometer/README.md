@@ -71,13 +71,13 @@ $ . admin-openrc
 接著透過以下流程來建立 Ceilometer 的使用者、Service 以及 API Endpoint：
 ```sh
 # 建立 Ceilometer User
-openstack user create --domain default --password CEILOMETER_PASS --email ceilometer@example.com ceilometer
+$ openstack user create --domain default --password CEILOMETER_PASS --email ceilometer@example.com ceilometer
 
 # 建立 Ceilometer Role
-openstack role add --project service --user ceilometer admin
+$ openstack role add --project service --user ceilometer admin
 
 # 建立 Ceilometer Service
-openstack service create --name ceilometer  --description "Telemetry" metering
+$ openstack service create --name ceilometer  --description "Telemetry" metering
 
 # 建立 Ceilometer public endpoints
 $ openstack endpoint create --region RegionOne \
@@ -324,7 +324,7 @@ log_level = WARN
 
 完成後就可以重新啟動 Swift Proxy 服務：
 ```sh
-sudo service swift-proxy restart
+$ sudo swift-init all restart
 ```
 
 # Alarming service

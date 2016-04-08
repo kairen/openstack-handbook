@@ -325,7 +325,7 @@ recon_cache_path = /var/cache/swift
 ```
 [DEFAULT]
 ...
-bind_ip = MANAGEMENT_INTERFACE_IP_ADDRESS
+bind_ip = MANAGEMENT_IP
 bind_port = 6001
 user = swift
 swift_dir = /etc/swift

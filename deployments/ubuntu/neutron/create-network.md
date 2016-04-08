@@ -15,7 +15,7 @@
 
 這邊可以透過 Neutron client 來查看建立外部網路，如以下方式：
 ```sh
-neutron net-create ext-net --router:external \
+$ neutron net-create ext-net --router:external \
 --provider:physical_network external \
 --provider:network_type flat
 ```
@@ -55,7 +55,7 @@ neutron net-create ext-net --router:external \
 ### 建立 External network 子網路
 這邊可以透過 Neutron client 來查看建立外部網路子網路，如以下方式：
 ```sh
-neutron subnet-create ext-net EXTERNAL_NETWORK_CIDR \
+$ neutron subnet-create ext-net EXTERNAL_NETWORK_CIDR \
 --allocation-pool start=FLOATING_IP_START,end=FLOATING_IP_END \
 --disable-dhcp --gateway EXTERNAL_NETWORK_GATEWAY \
 --name ext-subnet
@@ -130,7 +130,7 @@ $ neutron net-create demo-net
 ### 建立 Tenant network 子網路
 這邊可以透過 Neutron client 來查看建立租戶網路子網路，如以下方式：
 ```sh
-neutron subnet-create demo-net TENANT_NETWORK_CIDR \
+$ neutron subnet-create demo-net TENANT_NETWORK_CIDR \
 --name demo-subnet --gateway TENANT_NETWORK_GATEWAY
 ```
 > * 將```TENANT_NETWORK_CIDR```替換為你想關聯到租戶網路的子網路。
@@ -140,7 +140,7 @@ neutron subnet-create demo-net TENANT_NETWORK_CIDR \
 ```sh
 neutron subnet-create demo-net 192.168.1.0/24 \
 --gateway 192.168.1.1 \
---dns_nameservers 8.8.8.8 \
+--dns-nameserver 8.8.8.8 \
 --name demo-subnet
 ```
 
@@ -201,6 +201,7 @@ Set gateway for router demo-router
 
 # 服務驗證
 接著進行下一步之前，我們要先驗證網路是否已正常。當我們建立一個虛擬路由器，並附加一個外部網路時，會從上面建立的外部子網路的範圍中自動分配一個 IP 給路由器的介面使用，一般來說會循序分配（若該網路沒有其他硬體裝置的話），因此這邊會拿到```10.21.20.101```，這時候我們可以在該外部網路上的任一主機進行 Ping 的動作。
+
 > 如果您在虛擬機上設定您的 OpenStack 節點，您必須設定管理程式以允許外部網路上的混雜模式。
 
 這邊透過簡單的 ICMP 來檢查虛擬路由器有正常啟動：
@@ -211,7 +212,7 @@ ping -c 4 10.21.20.101
 ### 無法解析 domain name 問題
 當建立的網路提供給虛擬機使用時，可以連接到網路網路，可能會發生無法解析網址導致無法下載與更新服務等問題。這可能是因為在建立租戶網路時，忘記設定 DNS，這邊可以透過以下指令來更新已存在的租戶子網路：
 ```sh
-neutron subnet-update demo-subnet --dns_nameservers list=true 8.8.8.8 8.8.4.4 163.17.131.2
+neutron subnet-update demo-subnet --dns-nameserver list=true 8.8.8.8 8.8.8.4 163.17.131.2
 ```
 
 完成後，就可以正常連接了。

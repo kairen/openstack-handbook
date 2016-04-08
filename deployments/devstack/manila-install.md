@@ -1,6 +1,7 @@
 # DevStack Manila 安裝
 若要安裝 manila，可以依照下面方式設定```localrc```安裝：
 ```sh
+HOST=localhost
 enable_service horizon
 disable_service n-net
 

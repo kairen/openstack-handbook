@@ -126,7 +126,7 @@ rabbit_password = RABBIT_PASS
 在```[keystone_authtoken]```部分加入以下內容：
 ```
 [keystone_authtoken]
-memcache_servers = localhost:11211
+memcache_servers = 10.0.0.11:11211
 auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
 auth_plugin = password

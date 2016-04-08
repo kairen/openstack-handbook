@@ -4,7 +4,7 @@
 - [Controller Node](#controller-node)
     - [Controller 安裝前準備](#controller-安裝前準備)
     - [Controller 套件安裝與設定](#controller-套件安裝與設定)
-- [Share Node](#share-node)
+- [設定 Compute Service](#設定-compute-service)
     - [Share 套件安裝與設定](#share-套件安裝與設定)
 - [驗證服務](#驗證服務)
 
@@ -142,3 +142,43 @@ $ sudo ironic-dbsync --config-file /etc/ironic/ironic.conf create_schema
 sudo service ironic-api restart
 sudo service ironic-conductor restart
 ```
+
+# 設定 Compute Service
+在所有的 Compute Service 節點都需要設定使用 Bare Metal 服務驅動程式。這個設定檔一般是```/etc/nva/nova.conf```。該檔案必須設定 Controller 與 Compute 節點。
+
+在任一有 Computer Service 的節點上編輯```/etc/nova/nova.conf```設定檔，在```[DEFAULT]```部分加入以下內容：
+```
+[DEFAULT]
+...
+compute_scheduler_driver = nova.scheduler.filter_scheduler.FilterScheduler
+compute_driver = ironic.nova.virt.ironic.IronicDriver
+compute_manager = ironic.nova.compute.manager.ClusteredComputeManager
+scheduler_host_manager = nova.scheduler.ironic_host_manager.IronicHostManager
+ram_allocation_ratio = 1.0
+reserved_host_memory_mb = 0
+scheduler_use_baremetal_filters = True
+scheduler_tracks_instance_changes = False
+```
+
+在```[ironic]```部分加入以下內容：
+```
+[ironic]
+admin_url = http://10.0.0.11:35357/v2.0
+api_endpoint = http://10.0.0.11:6385/v1
+admin_tenant_name = service
+admin_username = ironic
+admin_password = IRONIC_PASS
+```
+
+所有 Compute Service 節點完成後，在 ```Controller``` 節點重新啟動以下服務：
+```sh
+$ sudo service nova-scheduler restart
+```
+
+在 ```Compute``` 節點重新啟動以下服務：
+```sh
+$ sudo service nova-compute restart
+```
+
+* [Ironic installation and configuration guide](http://amar266.blogspot.tw/2014/12/ironic-installation-and-configuration.html)
+* [Ironic 部署](http://m.blog.csdn.net/article/details?id=50162441)

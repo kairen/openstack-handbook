@@ -329,18 +329,11 @@ share_volume_fstype = ext4
 
 driver_handles_share_servers = True
 
-<<<<<<< 7cb7d5d3cfcbb4014f0ada344f25af09f2d6c744
 service_instance_flavor_id = 2
 service_image_name = manila-service-image
 service_instance_user = manila
 service_instance_password = manila
 service_instance_network_helper_type = neutron
-=======
-service_image_name = ubuntu-1204-nfs-cifs
-service_image_url = http://files.imaclouds.com/images/ubuntu_1204_nfs_cifs.qcow2
-service_instance_user = ubuntu
-service_instance_password = ubuntu
->>>>>>> Fix manila installation for Ubuntu
 interface_driver = manila.network.linux.interface.BridgeInterfaceDriver
 ```
 > 這邊```interface_driver```要隨部署的網路架構改變。

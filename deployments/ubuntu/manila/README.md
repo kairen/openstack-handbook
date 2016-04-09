@@ -20,8 +20,8 @@
 
 在節點上需要提供對映的多張網卡（NIC）來設定給不同網路使用：
 * **Management（管理網路）**：10.0.0.0/24，需要一個 Gateway 並設定為 10.0.0.1。
-
 > 這邊需要提供一個 Gateway 來提供給所有節點使用內部的私有網路，該網路必須能夠連接網際網路來讓主機進行套件安裝與更新等。
+
 
 這邊將第一張網卡介面設定為 ```Management（管理網路）```：
 * IP address：10.0.0.61
@@ -65,7 +65,6 @@ share
 $ sudo apt-get install -y software-properties-common
 $ sudo add-apt-repository -y cloud-archive:liberty
 ```
-> 若要安裝 ```kilo```，修改為```cloud-archive:kilo```。
 
 更新 Repository 與系統核心套件：
 ```sh
@@ -147,21 +146,23 @@ $ sudo apt-get install manila-api manila-scheduler python-manilaclient
 [DEFAULT]
 ...
 default_share_type = default_share_type
+scheduler_driver = manila.scheduler.filter_scheduler.FilterScheduler
 share_name_template = share-%s
 rootwrap_config = /etc/manila/rootwrap.conf
 api_paste_config = /etc/manila/api-paste.ini
-
 rpc_backend = rabbit
 auth_strategy = keystone
 
 my_ip = 10.0.0.11
 ```
+> 這邊```NOVA_PASS```、```CINDER_PASS```、```NEUTRON_PASS```可以隨需求修改。
 
 在```[database]```部分修改使用以下方式：
 ```
 [database]
 connection = mysql+pymysql://manila:MANILA_DBPASS@10.0.0.11/manila
 ```
+> 這邊```MANILA_DBPASS```可以隨需求修改。
 
 在```[oslo_messaging_rabbit]```部分加入以下內容：
 ```
@@ -186,6 +187,51 @@ username = manila
 password = MANILA_PASS
 ```
 > 這邊```MANILA_PASS```可以隨需求修改。
+
+在```[neutron]```部分加入以下內容：
+```
+[neutron]
+memcached_servers = 10.0.0.11:11211
+auth_uri = http://10.0.0.11:5000
+auth_url = http://10.0.0.11:35357
+project_domain_id = default
+project_name = service
+auth_type = password
+user_domain_id = default
+username = neutron
+password = NEUTRON_PASS
+```
+> 這邊```NEUTRON_PASS```可以隨需求修改。
+
+在```[nova]```部分加入以下內容：
+```
+[nova]
+memcached_servers = 10.0.0.11:11211
+auth_uri = http://10.0.0.11:5000
+auth_url = http://10.0.0.11:35357
+project_domain_id = default
+project_name = service
+auth_type = password
+user_domain_id = default
+username = nova
+password = NOVA_PASS
+```
+> 這邊```NOVA_PASS```可以隨需求修改。
+
+在```[cinder]```部分加入以下內容：
+```
+[cinder]
+memcached_servers = 10.0.0.11:11211
+auth_uri = http://10.0.0.11:5000
+auth_url = http://10.0.0.11:35357
+project_domain_id = default
+project_name = service
+auth_type = password
+user_domain_id = default
+username = cinder
+password = CINDER_PASS
+```
+> 這邊```CINDER_PASS```可以隨需求修改。
 
 在```[oslo_concurrency]```部分加入以下內容：
 ```
@@ -215,54 +261,37 @@ $ sudo rm -f /var/lib/manila/manila.sqlite
 ### Share 套件安裝與設定
 在開始設定之前，首先要安裝相關套件與 OpenStack 服務套件，可以透過以下指令進行安裝：
 ```sh
-$ sudo apt-get install manila-common python-pymysql neutron-linuxbridge-agent conntrack
+$ sudo apt-get install manila-common python-pymysql neutron-plugin-linuxbridge-agent conntrack
 ```
 > 這邊```neutron-linuxbridge-agent```要隨網路部署的 agent 而變。如採用 OVS 則使用以下方式：
 ```sh
-$ sudo apt-get install manila-common python-pymysql neutron-openvswitch-agent conntrack
+$ sudo apt-get install manila-common python-pymysql neutron-plugin-openvswitch-agent conntrack
 ```
 
 安裝完成後，編輯```/etc/manila/manila.conf```設定檔，並在```[DEFAULT]```部分設定以下內容：
 ```
 [DEFAULT]
 ...
-default_share_type = default_share_type
 share_name_template = share-%s
 rootwrap_config = /etc/manila/rootwrap.conf
 api_paste_config = /etc/manila/api-paste.ini
-
+default_share_type = default_share_type
 enabled_share_backends = generic
 enabled_share_protocols = NFS,CIFS
-
 rpc_backend = rabbit
 auth_strategy = keystone
+network_api_class = manila.network.neutron.neutron_network_plugin.NeutronNetworkPlugin
+
 my_ip = MANAGEMENT_IP
-
-nova_admin_auth_url = http://10.0.0.11:5000/v2.0
-nova_admin_tenant_name = service
-nova_admin_username = nova
-nova_admin_password = NOVA_PASS
-
-cinder_admin_auth_url = http://10.0.0.11:5000/v2.0
-cinder_admin_tenant_name = service
-cinder_admin_username = cinder
-cinder_admin_password = CINDER_PASS
-
-neutron_admin_auth_url = http://10.0.0.11:5000/v2.0
-neutron_url = http://10.0.0.11:9696
-neutron_admin_project_name = service
-neutron_admin_username = neutron
-neutron_admin_password = NEUTRON_PASS
 ```
 > P.S. ```MANAGEMENT_IP```這邊為```10.0.0.61```。
-
-> 這邊```NOVA_PASS```、```CINDER_PASS```、```NEUTRON_PASS```可以隨需求修改。
 
 在```[database]```部分修改使用以下方式：
 ```
 [database]
 connection = mysql+pymysql://manila:MANILA_DBPASS@10.0.0.11/manila
 ```
+> 這邊```MANILA_DBPASS```可以隨需求修改。
 
 在```[oslo_messaging_rabbit]```部分加入以下內容：
 ```
@@ -293,17 +322,65 @@ password = MANILA_PASS
 [generic]
 share_backend_name = GENERIC
 share_driver = manila.share.drivers.generic.GenericShareDriver
+share_volume_fstype = ext4
 
 driver_handles_share_servers = True
-service_instance_flavor_id = 2
 
-service_image_name = ubuntu-1204-nfs-cifs
-service_image_url = http://files.imaclouds.com/images/ubuntu_1204_nfs_cifs.qcow2
-service_instance_user = ubuntu
-service_instance_password = ubuntu
+service_instance_flavor_id = 2
+service_image_name = manila-service-image
+service_instance_user = manila
+service_instance_password = manila
+service_instance_network_helper_type = neutron
 interface_driver = manila.network.linux.interface.BridgeInterfaceDriver
 ```
 > 這邊```interface_driver```要隨部署的網路架構改變。
+
+> Open vSwitch 使用 ```manila.network.linux.interface.OVSInterfaceDriver```。
+
+在```[neutron]```部分加入以下內容：
+```
+[neutron]
+memcached_servers = 10.0.0.11:11211
+auth_uri = http://10.0.0.11:5000
+auth_url = http://10.0.0.11:35357
+project_domain_id = default
+project_name = service
+auth_type = password
+user_domain_id = default
+username = neutron
+password = NEUTRON_PASS
+```
+> 這邊```NEUTRON_PASS```可以隨需求修改。
+
+在```[nova]```部分加入以下內容：
+```
+[nova]
+memcached_servers = 10.0.0.11:11211
+auth_uri = http://10.0.0.11:5000
+auth_url = http://10.0.0.11:35357
+project_domain_id = default
+project_name = service
+auth_type = password
+user_domain_id = default
+username = nova
+password = NOVA_PASS
+```
+> 這邊```NOVA_PASS```可以隨需求修改。
+
+在```[cinder]```部分加入以下內容：
+```
+[cinder]
+memcached_servers = 10.0.0.11:11211
+auth_uri = http://10.0.0.11:5000
+auth_url = http://10.0.0.11:35357
+project_domain_id = default
+project_name = service
+auth_type = password
+user_domain_id = default
+username = cinder
+password = CINDER_PASS
+```
+> 這邊```CINDER_PASS```可以隨需求修改。
 
 在```[oslo_concurrency]```部分加入以下內容：
 ```
@@ -340,7 +417,7 @@ $ sudo rm -f /var/lib/manila/manila.sqlite
 $ . admin-openrc
 ```
 
-這邊可以透過 Manila client 來查看服務列表，如以下方式：
+首先透過 Manila client 來查看服務列表，如以下方式：
 ```sh
 $ manila service-list
 +----+------------------+---------------+------+---------+-------+----------------------------+
@@ -349,4 +426,47 @@ $ manila service-list
 | 1  | manila-scheduler | controller    | nova | enabled | up    | 2016-04-06T15:01:15.000000 |
 | 2  | manila-share     | share@generic | nova | enabled | up    | 2016-04-06T15:01:13.000000 |
 +----+------------------+---------------+------+---------+-------+----------------------------+
+```
+
+下載將使用的 Manila service 映像檔：
+```sh
+$ wget http://tarballs.openstack.org/manila-image-elements/images/manila-service-image-master.qcow2
+```
+> 其他版本可以參考 [Manila image elements](https://github.com/openstack/manila-image-elements)。
+
+然後使用 Glance client 來上傳 Manila Service 映像檔：
+```sh
+$ glance image-create --name manila-service-image \
+--disk-format qcow2 --container-format bare \
+--file manila-service-image-master.qcow2
+```
+
+透過 Manila client 來建立 Share Type，如以下方式：
+```sh
+$ manila type-create default_share_type True
++----------------------+--------------------------------------+
+| Property             | Value                                |
++----------------------+--------------------------------------+
+| required_extra_specs | driver_handles_share_servers : True  |
+| Name                 | default_share_type                   |
+| Visibility           | public                               |
+| is_default           | -                                    |
+| ID                   | ae825759-a3e5-4aec-8c78-138866bab7c4 |
+| optional_extra_specs | snapshot_support : True              |
++----------------------+--------------------------------------+
+```
+
+接著透過 Manila client 來建立 Share Network，如以下方式：
+```sh
+$ NET_ID=$(neutron net-list | awk '/ admin-net / { print $2 }')
+$ SUBNET_ID=$(neutron net-list | awk '/ admin-net / { print $6 }')
+$ manila share-network-create \
+--name share_network \
+--neutron-net-id ${NET_ID} \
+--neutron-subnet-id ${SUBNET_ID}
+```
+
+完成上述後，即可建立檔案系統：
+```sh
+$ manila create NFS 1 --name share01 --share-network share_network
 ```

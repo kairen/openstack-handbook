@@ -264,11 +264,11 @@ $ sudo rm -f /var/lib/manila/manila.sqlite
 ### Share 套件安裝與設定
 在開始設定之前，首先要安裝相關套件與 OpenStack 服務套件，可以透過以下指令進行安裝：
 ```sh
-$ sudo apt-get install manila-common python-pymysql neutron-linuxbridge-agent conntrack
+$ sudo apt-get install manila-common python-pymysql neutron-plugin-linuxbridge-agent conntrack
 ```
 > 這邊```neutron-linuxbridge-agent```要隨網路部署的 agent 而變。如採用 OVS 則使用以下方式：
 ```sh
-$ sudo apt-get install manila-common python-pymysql neutron-openvswitch-agent conntrack
+$ sudo apt-get install manila-common python-pymysql neutron-plugin-openvswitch-agent conntrack
 ```
 
 安裝完成後，編輯```/etc/manila/manila.conf```設定檔，並在```[DEFAULT]```部分設定以下內容：

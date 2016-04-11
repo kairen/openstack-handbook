@@ -441,7 +441,7 @@ $ wget http://tarballs.openstack.org/manila-image-elements/images/manila-service
 ```sh
 $ glance image-create --name manila-service-image \
 --disk-format qcow2 --container-format bare \
---file manila-service-image-master.qcow2
+--file manila-service-image-master.qcow2 --progress
 ```
 
 透過 Manila client 來建立 Share Type，如以下方式：

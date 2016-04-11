@@ -149,7 +149,7 @@ password = HEAT_PASS
 ```
 > 這邊```HEAT_PASS```可以隨需求修改。
 
-在```/etc/heat/heat.conf```部分加入以下內容：
+在最底部加入以下內容：
 ```sh
 [clients_keystone]
 auth_uri = http://10.0.0.11:5000

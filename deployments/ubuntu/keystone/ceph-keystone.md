@@ -2,10 +2,10 @@
 在 ```controller``` (keystone api 所在主機）執行下面指令，並將 controller 的 /var/ceph/nss 內的檔案(cert8.db  key3.db  secmod.db)複製到 radosgw 主機的 /var/ceph/nss 目錄：
 ```sh
 $ sudo mkdir -p /var/ceph/nss
-$ openssl x509 -in /etc/keystone/ssl/certs/ca.pem -pubkey | \
+$ sudo openssl x509 -in /etc/keystone/ssl/certs/ca.pem -pubkey | \
 certutil -d /var/ceph/nss -A -n ca -t "TCu,Cu,Tuw"
-        
-$ openssl x509 -in /etc/keystone/ssl/certs/signing_cert.pem -pubkey | \
+
+$ sudo openssl x509 -in /etc/keystone/ssl/certs/signing_cert.pem -pubkey | \
 certutil -A -d /var/ceph/nss -n signing_cert -t "P,P,P"
 ```
 
@@ -20,12 +20,17 @@ $ openstack role add --project service --user swift admin
 # 建立 Swift service
 $ openstack service create --name swift  --description "OpenStack Object Storage" object-store
 
-# 建立 Swift URL
-$ openstack endpoint create \
- --publicurl 'http://10.0.0.11:8080/swift/v1'  \
- --internalurl 'http://10.0.0.11:8080/swift/v1'  \
- --adminurl 'http://10.0.0.11:8080/swift/v1'  \
- --region RegionOne  object-store
+# 建立 Swift v1 public endpoints
+$ openstack endpoint create --region RegionOne \
+object-store public http://10.0.0.11:8080/swift/v1
+
+# 建立 Swift v1 internal endpoints
+$ openstack endpoint create --region RegionOne \
+object-store internal http://10.0.0.11:8080/swift/v1
+
+# 建立 Swift v1 admin endpoints
+$ openstack endpoint create --region RegionOne \
+object-store admin http://10.0.0.11:8080/swift/v1
 ```
 
 ### 變更 ceph.conf 設定

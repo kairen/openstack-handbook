@@ -23,6 +23,7 @@
    * [Heat 協調整合套件](conceptions/heat/README.md)
    * [Ceilometer 資料監控套件](conceptions/ceilometer/README.md)
    * [Sahara 資料處理套件](conceptions/sahara/README.md)
+   * [Magnum 容器即服務](conceptions/magnum/README.md)
 * [OpenStack 部署與安裝](deployments/README.md)
    * [Ubuntu 單節點 15.04 安裝](deployments/ubuntu/ubuntu-signal-install.md)
    * [DevStack 簡單安裝](deployments/devstack/README.md)

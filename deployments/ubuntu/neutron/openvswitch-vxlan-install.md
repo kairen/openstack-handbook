@@ -93,6 +93,7 @@ nova_url = http://10.0.0.11:8774/v2
 在```[database]```部分修改使用以下方式：
 ```sh
 [database]
+# connection = sqlite:////var/lib/neutron/neutron.sqlite
 connection = mysql+pymysql://neutron:NEUTRON_DBPASS@10.0.0.11/neutron
 ```
 
@@ -108,7 +109,6 @@ rabbit_password = RABBIT_PASS
 在```[keystone_authtoken]```部分加入以下設定：
 ```sh
 [keystone_authtoken]
-memcached_servers = 10.0.0.11:11211
 auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
 auth_plugin = password
@@ -123,11 +123,11 @@ password = NEUTRON_PASS
 在```[nova]```部分加入以下設定：
 ```sh
 [nova]
+auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
 auth_plugin = password
 project_domain_id = default
 user_domain_id = default
-region_name = RegionOne
 project_name = service
 username = nova
 password = NOVA_PASS
@@ -287,7 +287,6 @@ rabbit_password = RABBIT_PASS
 在```[keystone_authtoken]```部分加入以下設定：
 ```sh
 [keystone_authtoken]
-memcached_servers = 10.0.0.11:11211
 auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
 auth_plugin = password
@@ -454,9 +453,9 @@ $ sudo ethtool -K INTERFACE_NAME gro off
 ```sh
 sudo service openvswitch-switch restart
 sudo service neutron-plugin-openvswitch-agent restart
+sudo service neutron-l3-agent restart
 sudo service neutron-dhcp-agent restart
 sudo service neutron-metadata-agent restart
-sudo service neutron-l3-agent restart
 ```
 
 ### Network 驗證服務
@@ -535,7 +534,6 @@ rabbit_password = RABBIT_PASS
 在```[keystone_authtoken]```部分加入以下設定：
 ```sh
 [keystone_authtoken]
-memcached_servers = 10.0.0.11:11211
 auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
 auth_plugin = password
@@ -598,14 +596,11 @@ firewall_driver = neutron.agent.linux.iptables_firewall.OVSHybridIptablesFirewal
 ```sh
 [neutron]
 url = http://10.0.0.11:9696
-auth_url = http://10.0.0.11:35357
-auth_type = password
-project_domain_name = default
-user_domain_name = default
-region_name = RegionOne
-project_name = service
-username = neutron
-password = NEUTRON_PASS
+auth_strategy = keystone
+admin_auth_url = http://10.0.0.11:35357/v2.0
+admin_tenant_name = service
+admin_username = neutron
+admin_password = NEUTRON_PASS
 ```
 > 這邊```NEUTRON_PASS```可以隨需求修改。
 

@@ -92,14 +92,13 @@ Manila 提供 OpenStack 共享的檔案系統，核心概念有共享目錄、AC
 ### Magnum 容器即服務 (Containers service)
 Magnum 是一個 OpenStack API 服務，是由 OpenStack Containers Team 開發作為``` Container orchestration``` 的引擎，諸如 Docker、Kubernetes 這一類別可以在 Openstack 上作為資源。
 
-Magnum 使用 Heat 來編排一個 OS Image，其中包含 Docker 以及 Kubernetes，並執行 Image 於任何的虛擬機或 bare metal 叢集配置。
+Magnum 使用 Heat 來編排一個 OS Image，其中包含 Docker 以及 Kubernetes，並執行 Image 於任何的虛擬機或 Bare Metal 叢集配置。
 
-### Murano 應用程式目錄服務(Application catalog)
-Murano 專案引入一個 Application catalog 於 OpenStack上，使應用程式開發人員與雲端管理人員，可以發布各種已就緒的雲端應於可瀏覽的分類目錄。
+### Murano 應用程式目錄服務(Application Catalog)
+Murano 專案引入一個 Application Catalog 於 OpenStack，使應用程式開發人員與雲端管理人員，可以快速的發布各種已就緒的雲端應用程式，並以目錄方式進行分類。
 
-雲端使用者、包括沒經驗的人可以通過統一的框架與 API 實現應用程式的快速部署與應用程式的生命週期管理，來降低應用程式對底層平台（IaaS層）的依賴。
+雲端使用者、包括沒經驗的人可以通過統一的框架與 API 實現應用程式的快速部署與應用程式的生命週期管理，來降低應用程式對底層平台（IaaS 層）的依賴。
 
 ### Monasca
 
 ### Senlin
-

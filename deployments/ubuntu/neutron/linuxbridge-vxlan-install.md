@@ -107,7 +107,6 @@ rabbit_password = RABBIT_PASS
 在```[keystone_authtoken]```部分加入以下設定：
 ```sh
 [keystone_authtoken]
-memcached_servers = 10.0.0.11:11211
 auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
 auth_plugin = password
@@ -122,11 +121,11 @@ password = NEUTRON_PASS
 在```[nova]```部分加入以下設定：
 ```sh
 [nova]
+auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
 auth_plugin = password
 project_domain_id = default
 user_domain_id = default
-region_name = RegionOne
 project_name = service
 username = nova
 password = NOVA_PASS
@@ -163,12 +162,11 @@ enable_ipset = True
 當完成 ML2 設定後，接著編輯```/etc/nova/nova.conf```，在```[neutron]```部分加入以下設定：
 ```sh
 [neutron]
-url = http://10.0.0.11:9696
+auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
-auth_type = password
-project_domain_name = default
-user_domain_name = default
-region_name = RegionOne
+auth_plugin = password
+project_domain_id = default
+user_domain_id = default
 project_name = service
 username = neutron
 password = NEUTRON_PASS
@@ -286,7 +284,6 @@ rabbit_password = RABBIT_PASS
 在```[keystone_authtoken]```部分加入以下設定：
 ```sh
 [keystone_authtoken]
-memcached_servers = 10.0.0.11:11211
 auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
 auth_plugin = password
@@ -515,7 +512,6 @@ rabbit_password = RABBIT_PASS
 在```[keystone_authtoken]```部分加入以下設定：
 ```sh
 [keystone_authtoken]
-memcached_servers = 10.0.0.11:11211
 auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
 auth_plugin = password
@@ -579,14 +575,11 @@ firewall_driver = neutron.agent.linux.iptables_firewall.IptablesFirewallDriver
 ```sh
 [neutron]
 url = http://10.0.0.11:9696
-auth_url = http://10.0.0.11:35357
-auth_type = password
-project_domain_name = default
-user_domain_name = default
-region_name = RegionOne
-project_name = service
-username = neutron
-password = NEUTRON_PASS
+auth_strategy = keystone
+admin_auth_url = http://10.0.0.11:35357/v2.0
+admin_tenant_name = service
+admin_username = neutron
+admin_password = NEUTRON_PASS
 ```
 > 這邊```NEUTRON_PASS```可以隨需求修改。
 

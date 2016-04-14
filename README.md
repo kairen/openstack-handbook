@@ -34,4 +34,10 @@ $ git rebase upstream/master
 $ git push -f origin master
 ```
 
+# Contributor
+* [kairen](https://github.com/kairen)
+* [pilot9527](https://github.com/pilot9527)
+* [ellisMing](https://github.com/ellisMing)
+* [WebberKuo](https://github.com/WebberKuo)
+
 # License

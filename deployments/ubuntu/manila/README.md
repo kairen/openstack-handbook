@@ -9,6 +9,7 @@
     - [Controller 套件安裝與設定](#controller-套件安裝與設定)
 - [Share Node](#share-node)
     - [Share 套件安裝與設定](#share-套件安裝與設定)
+    - [配置共享伺服器管理支援選項](#配置共享伺服器管理支援選項)
 - [驗證服務](#驗證服務)
 
 # 部署前系統環境準備
@@ -16,7 +17,7 @@
 
 ### 硬體規格與網路分配
 這邊只會加入一台 Share 節點，規格如下所示：
-* **Share Node**: 雙核處理器, 8 GB 記憶體, 250 GB 硬碟（/dev/sda）。
+* **Share Node**: 雙核處理器, 8 GB 記憶體, 250 GB 硬碟（/dev/sda）, 250 GB 硬碟（/dev/sdb）。
 
 在節點上需要提供對映的多張網卡（NIC）來設定給不同網路使用：
 * **Management（管理網路）**：10.0.0.0/24，需要一個 Gateway 並設定為 10.0.0.1。
@@ -156,9 +157,9 @@ api_paste_config = /etc/manila/api-paste.ini
 rpc_backend = rabbit
 auth_strategy = keystone
 
-my_ip = 10.0.0.11
+my_ip = MANAGEMENT_IP
 ```
-> 這邊```NOVA_PASS```、```CINDER_PASS```、```NEUTRON_PASS```可以隨需求修改。
+> P.S. ```MANAGEMENT_IP```這邊為```10.0.0.11```。
 
 在```[database]```部分修改使用以下方式：
 ```
@@ -191,51 +192,6 @@ password = MANILA_PASS
 ```
 > 這邊```MANILA_PASS```可以隨需求修改。
 
-在```[neutron]```部分加入以下內容：
-```
-[neutron]
-memcached_servers = 10.0.0.11:11211
-auth_uri = http://10.0.0.11:5000
-auth_url = http://10.0.0.11:35357
-project_domain_id = default
-project_name = service
-auth_type = password
-user_domain_id = default
-username = neutron
-password = NEUTRON_PASS
-```
-> 這邊```NEUTRON_PASS```可以隨需求修改。
-
-在```[nova]```部分加入以下內容：
-```
-[nova]
-memcached_servers = 10.0.0.11:11211
-auth_uri = http://10.0.0.11:5000
-auth_url = http://10.0.0.11:35357
-project_domain_id = default
-project_name = service
-auth_type = password
-user_domain_id = default
-username = nova
-password = NOVA_PASS
-```
-> 這邊```NOVA_PASS```可以隨需求修改。
-
-在```[cinder]```部分加入以下內容：
-```
-[cinder]
-memcached_servers = 10.0.0.11:11211
-auth_uri = http://10.0.0.11:5000
-auth_url = http://10.0.0.11:35357
-project_domain_id = default
-project_name = service
-auth_type = password
-user_domain_id = default
-username = cinder
-password = CINDER_PASS
-```
-> 這邊```CINDER_PASS```可以隨需求修改。
-
 在```[oslo_concurrency]```部分加入以下內容：
 ```
 [oslo_concurrency]
@@ -264,26 +220,17 @@ $ sudo rm -f /var/lib/manila/manila.sqlite
 ### Share 套件安裝與設定
 在開始設定之前，首先要安裝相關套件與 OpenStack 服務套件，可以透過以下指令進行安裝：
 ```sh
-$ sudo apt-get install manila-common python-pymysql neutron-linuxbridge-agent conntrack
-```
-> 這邊```neutron-linuxbridge-agent```要隨網路部署的 agent 而變。如採用 OVS 則使用以下方式：
-```sh
-$ sudo apt-get install manila-common python-pymysql neutron-openvswitch-agent conntrack
+$ sudo apt-get install manila-share python-pymysql
 ```
 
 安裝完成後，編輯```/etc/manila/manila.conf```設定檔，並在```[DEFAULT]```部分設定以下內容：
 ```
 [DEFAULT]
 ...
-share_name_template = share-%s
-rootwrap_config = /etc/manila/rootwrap.conf
-api_paste_config = /etc/manila/api-paste.ini
-default_share_type = default_share_type
-enabled_share_backends = generic
-enabled_share_protocols = NFS,CIFS
 rpc_backend = rabbit
 auth_strategy = keystone
-network_api_class = manila.network.neutron.neutron_network_plugin.NeutronNetworkPlugin
+default_share_type = default_share_type
+rootwrap_config = /etc/manila/rootwrap.conf
 
 my_ip = MANAGEMENT_IP
 ```
@@ -320,91 +267,36 @@ password = MANILA_PASS
 ```
 > 這邊```MANILA_PASS```可以隨需求修改。
 
-在```[generic]```部分加入以下內容：
-```
-[generic]
-share_backend_name = GENERIC
-share_driver = manila.share.drivers.generic.GenericShareDriver
-share_volume_fstype = ext4
-
-driver_handles_share_servers = True
-
-service_instance_flavor_id = 2
-service_image_name = manila-service-image
-service_instance_user = manila
-service_instance_password = manila
-service_instance_network_helper_type = neutron
-interface_driver = manila.network.linux.interface.BridgeInterfaceDriver
-```
-> 這邊```interface_driver```要隨部署的網路架構改變。
-
-> Open vSwitch 使用 ```manila.network.linux.interface.OVSInterfaceDriver```。
-
-在```[neutron]```部分加入以下內容：
-```
-[neutron]
-memcached_servers = 10.0.0.11:11211
-auth_uri = http://10.0.0.11:5000
-auth_url = http://10.0.0.11:35357
-project_domain_id = default
-project_name = service
-auth_type = password
-user_domain_id = default
-username = neutron
-password = NEUTRON_PASS
-```
-> 這邊```NEUTRON_PASS```可以隨需求修改。
-
-在```[nova]```部分加入以下內容：
-```
-[nova]
-memcached_servers = 10.0.0.11:11211
-auth_uri = http://10.0.0.11:5000
-auth_url = http://10.0.0.11:35357
-project_domain_id = default
-project_name = service
-auth_type = password
-user_domain_id = default
-username = nova
-password = NOVA_PASS
-```
-> 這邊```NOVA_PASS```可以隨需求修改。
-
-在```[cinder]```部分加入以下內容：
-```
-[cinder]
-memcached_servers = 10.0.0.11:11211
-auth_uri = http://10.0.0.11:5000
-auth_url = http://10.0.0.11:35357
-project_domain_id = default
-project_name = service
-auth_type = password
-user_domain_id = default
-username = cinder
-password = CINDER_PASS
-```
-> 這邊```CINDER_PASS```可以隨需求修改。
-
 在```[oslo_concurrency]```部分加入以下內容：
 ```
 [oslo_concurrency]
 lock_path = /var/lib/manila/tmp
 ```
 
-建立一個 Upstart 檔案來管理 manila-share ：
+### 配置共享伺服器管理支援選項
+在 Share 節點有兩種設定模式，分別為無驅動程式支援與有驅動程式支援，這取決於部署叢集的其它套件是否有支援。
+
+* [選項一:無驅動程式支援](no-driver-support.md) : 該模式部署沒有共享管理驅動程式支援的服務。在這種模式下，該服務不會做任何與網路相關的操作。管理員必須確保 Instance 與 NFS 伺服器之間的網路有連接。採用本模式需要安裝 LVM、NFS Server 以及 manila-share LVM volume 群組。
+
+* [選項二:有驅動程式支援](driver-support.md)：該模式將部署有共享管理驅動程式支援的服務。在這種模式下，服務需要 Compute（Nova）、Networking（Neutron）以及 Block Storage（Cinder）來用於管理共享服務。用於建立共享服務的資訊將被配置成一個共享網路。該模式使用通用驅動程式來處理共享伺服器的容量，並要求附加一個 Self-service 網路到一個 Public Router。
+
+完成後重新啟動 Manila Share 服務：
 ```sh
-cat > /etc/init/manila-share.conf << EOF
-description "OpenStack Manila Share"
-author "kyle Bai <kyle.b@inwinStack.com>"
+$ sudo service manila-share restart
+```
+> 如果發現沒有任何 manila-share 的 service 程式的話，可以透過建立一個 Upstart 檔案```/etc/init/manila-share.conf```來管理 manila-share。
+
+```
+description 'OpenStack Manila Share'
+author 'kyle Bai <kyle.b@inwinStack.com>'
 
 start on runlevel [2345]
 stop on runlevel [!2345]
 
 exec start-stop-daemon --start --chuid manila --exec /usr/bin/manila-share -- --config-file=/etc/manila/manila.conf
-EOF
 ```
 
-完成所有安裝後，即可重新啟動服務：
+> 完成所有安裝後，即可重新啟動服務：
 ```sh
 $ sudo start manila-share
 ```
@@ -430,6 +322,7 @@ $ manila service-list
 | 2  | manila-share     | share@generic | nova | enabled | up    | 2016-04-06T15:01:13.000000 |
 +----+------------------+---------------+------+---------+-------+----------------------------+
 ```
+> 上述為使用 Driver Support 的模式，若使用其他則會不一樣。
 
 下載將使用的 Manila service 映像檔：
 ```sh
@@ -437,11 +330,13 @@ $ wget http://tarballs.openstack.org/manila-image-elements/images/manila-service
 ```
 > 其他版本可以參考 [Manila image elements](https://github.com/openstack/manila-image-elements)。
 
-然後使用 Glance client 來上傳 Manila Service 映像檔：
+然後使用 OpenStack client 來上傳 Manila Service 映像檔：
 ```sh
-$ glance image-create --name manila-service-image \
---disk-format qcow2 --container-format bare \
---file manila-service-image-master.qcow2 --progress
+$ openstack image create "manila-service-image" \
+--file manila-service-image-master.qcow2 \
+--disk-format qcow2 \
+--container-format bare \
+--public
 ```
 
 透過 Manila client 來建立 Share Type，如以下方式：
@@ -458,6 +353,7 @@ $ manila type-create default_share_type True
 | optional_extra_specs | snapshot_support : True              |
 +----------------------+--------------------------------------+
 ```
+> 若是 No Driver 則後面為 ```False```。
 
 接著透過 Manila client 來建立 Share Network，如以下方式：
 ```sh
@@ -468,8 +364,25 @@ $ manila share-network-create \
 --neutron-net-id ${NET_ID} \
 --neutron-subnet-id ${SUBNET_ID}
 ```
+> 若是 No Driver 則不需要建立。
 
 完成上述後，即可建立檔案系統：
 ```sh
-$ manila create NFS 1 --name share01 --share-network share_network
+$ manila create NFS 1 --name share1 --share-network share_network
+```
+> 若是 No Driver 則只需要執行以下指令：
+```sh
+$ manila create NFS 1 --name share1
+```
+
+最後配置使用者可以存取新的共享檔案系統：
+```sh
+$ manila access-allow share1 ip INSTANCE_IP_ADDRESS
+```
+> 這邊```INSTANCE_IP_ADDRESS```為 ```10.0.0.61```。
+
+沒問題就可以掛載使用：
+```sh
+$ sudo mkdir folder
+$ sudo mount -t nfs 10.0.0.61:/var/lib/manila/mnt/share-b94a4dbf-49e2-452c-b9c7-510277adf5c6 ~/folder
 ```

@@ -126,12 +126,12 @@ rabbit_password = RABBIT_PASS
 在```[keystone_authtoken]```部分加入以下內容：
 ```
 [keystone_authtoken]
-memcache_servers = 10.0.0.11:11211
 auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
-auth_plugin = password
-project_domain_id = default
-user_domain_id = default
+memcached_servers = 10.0.0.11:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
 project_name = service
 username = heat
 password = HEAT_PASS
@@ -143,7 +143,7 @@ password = HEAT_PASS
 [trustee]
 auth_url = http://10.0.0.11:35357
 auth_plugin = password
-user_domain_id = default
+user_domain_name = default
 username = heat
 password = HEAT_PASS
 ```
@@ -156,18 +156,7 @@ auth_uri = http://10.0.0.11:5000
 
 [ec2authtoken]
 auth_uri = http://10.0.0.11:5000
-
-[heat_api]
-workers = 2
-bind_port = 8004
-
-[heat_api_cfn]
-bind_port = 8000
-
-[heat_api_cloudwatch]
-bind_port = 8003
 ```
-
 
 完成以上檔案設定後，即可同步資料庫來建立資料表：
 ```sh

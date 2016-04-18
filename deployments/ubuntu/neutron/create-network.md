@@ -67,7 +67,7 @@ $ neutron subnet-create ext-net EXTERNAL_NETWORK_CIDR \
 
 如以下實際範例，我們建立一個```10.21.20.0/24```的子網路：
 ```sh
-neutron subnet-create ext-net 10.21.20.0/24 \
+$ neutron subnet-create ext-net 10.21.20.0/24 \
 --allocation-pool start=10.21.20.101,end=10.21.20.150 \
 --disable-dhcp --gateway 10.21.20.254 \
 --name ext-subnet

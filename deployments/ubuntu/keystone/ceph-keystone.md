@@ -12,7 +12,8 @@ certutil -A -d /var/ceph/nss -n signing_cert -t "P,P,P"
 在能執行 keystone 指令的任意電腦，執行以下指令：
 ```sh
 # 建立 Swift User
-$ openstack user create --password SWIFT_PASS --email swift@example.com swift
+$ openstack user create --domain default \
+--password SWIFT_PASS --email swift@example.com swift
 
 # 建立 Swift Role
 $ openstack role add --project service --user swift admin
@@ -51,12 +52,13 @@ rgw keystone revocation interval = 500
 rgw s3 auth use keystone = true
 rgw nss db path = /var/ceph/nss
 ```
-重啟服務：
+
+完成後重新啟動 radosgw 服務：
 ```sh
 $ sudo /etc/init.d/radosgw restart
 ```
 
-設定 Boot 時啟動：
+設定 Boot 時啟動 radosgw 服務：
 ```sh
 $ sudo update-rc.d radosgw defaults
 ```

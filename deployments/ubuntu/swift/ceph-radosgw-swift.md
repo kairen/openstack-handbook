@@ -18,6 +18,7 @@ $ sudo apt-get install apache2 libapache2-mod-fastcgi radosgw -y
 $ HOSTNAME=$(hostname)
 $ sudo ceph-authtool --create-keyring /etc/ceph/ceph.client.radosgw.${HOSTNAME}.keyring
 ```
+
 設定該認證的權限：
 ```sh
 $ sudo chmod +r /etc/ceph/ceph.client.radosgw.${HOSTNAME}.keyring
@@ -25,6 +26,7 @@ $ sudo ceph-authtool /etc/ceph/ceph.client.radosgw.${HOSTNAME}.keyring -n client
 $ sudo ceph-authtool -n client.radosgw.${HOSTNAME} --cap osd 'allow rwx' --cap mon 'allow rwx' /etc/ceph/ceph.client.radosgw.${HOSTNAME}.keyring
 $ sudo ceph -k /etc/ceph/ceph.client.admin.keyring auth add client.radosgw.${HOSTNAME} -i /etc/ceph/ceph.client.radosgw.${HOSTNAME}.keyring
 ```
+
 新增以下內容到```/etc/ceph/ceph.conf```檔案：
 ```sh
 $ echo -n "
@@ -36,6 +38,7 @@ log file = /var/log/ceph/radosgw.${HOSTNAME}.log
 rgw dns name = ${HOSTNAME}
 " | sudo tee -a /etc/ceph/ceph.conf
 ```
+
 建立 fcgi 檔案，並設定檔案權限：
 ```sh
 $ echo -n "#!/bin/sh
@@ -71,22 +74,26 @@ $ echo -n "FastCgiExternalServer /var/www/s3gw.fcgi -socket /tmp/radosgw.sock
 </VirtualHost>
 " | sudo tee /etc/apache2/sites-available/rgw.conf
 ```
+
 使用 apache2 模組：
 ```sh
 $ sudo a2enmod rewrite
 $ sudo a2enmod fastcgi
 ```
+
 使用 rgw 虛擬主機設定檔：
 ```sh
 $ sudo a2ensite rgw.conf
 $ sudo a2dissite default
 ```
+
 重新啟動相關服務：
 ```sh
 $ sudo service ceph restart
 $ sudo service apache2 restart
 $ sudo /etc/init.d/radosgw start
 ```
+
 設定 Boot 時啟動：
 ```sh
 $ sudo update-rc.d radosgw defaults
@@ -95,7 +102,7 @@ $ sudo update-rc.d radosgw defaults
 > Keystone 整合可參考 Keystone 安裝。
 
 ### 建立  pool
- ```sh
+```sh
 ceph osd pool create {pool-name} {pg-num} [{pgp-num}] [replicated] \
      [crush-ruleset-name] [expected-num-objects]
 ```
@@ -109,7 +116,7 @@ ceph osd pool create {pool-name} {pg-num} [{pgp-num}] [replicated] \
  * users.swift          
  * rgw.buckets.index     
  * rgw.buckets
- 
+
 > 可以參考 [PG Calc](http://ceph.com/pgcalc/) 的 PG Number，並產生指令。
 
 ### 使用 cph-deploy 建立 radosgw 與 pool

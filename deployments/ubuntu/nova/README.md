@@ -46,15 +46,15 @@ $ openstack service create --name nova --description "OpenStack Compute" compute
 
 # 建立 Nova public endpoints
 $ openstack endpoint create --region RegionOne \
-compute public http://10.0.0.11:8774/v2/%\(tenant_id\)s
+compute public http://10.0.0.11:8774/v2.1/%\(tenant_id\)s
 
 # 建立 Nova internal endpoints
 $ openstack endpoint create --region RegionOne \
-compute internal http://10.0.0.11:8774/v2/%\(tenant_id\)s
+compute internal http://10.0.0.11:8774/v2.1/%\(tenant_id\)s
 
 # 建立 Nova admin endpoints
 $ openstack endpoint create --region RegionOne \
-compute admin http://10.0.0.11:8774/v2/%\(tenant_id\)s
+compute admin http://10.0.0.11:8774/v2.1/%\(tenant_id\)s
 ```
 
 ### Controller 套件安裝與設定
@@ -112,12 +112,12 @@ rabbit_password = RABBIT_PASS
 在```[keystone_authtoken]```部分加入以下內容：
 ```sh
 [keystone_authtoken]
-memcached_servers = 10.0.0.11:11211
 auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
-auth_plugin = password
-project_domain_id = default
-user_domain_id = default
+memcached_servers = 10.0.0.11:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
 project_name = service
 username = nova
 password = NOVA_PASS
@@ -203,12 +203,12 @@ rabbit_password = RABBIT_PASS
 在```[keystone_authtoken]```設部分加入以下內容：
 ```sh
 [keystone_authtoken]
-memcached_servers = 10.0.0.11:11211
 auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
-auth_plugin = password
-project_domain_id = default
-user_domain_id = default
+memcached_servers = 10.0.0.11:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
 project_name = service
 username = nova
 password = NOVA_PASS

@@ -84,15 +84,14 @@ service_plugins = router
 allow_overlapping_ips = True
 rpc_backend = rabbit
 auth_strategy = keystone
-
 notify_nova_on_port_status_changes = True
 notify_nova_on_port_data_changes = True
-nova_url = http://10.0.0.11:8774/v2
 ```
 
 在```[database]```部分修改使用以下方式：
 ```sh
 [database]
+# connection = sqlite:////var/lib/neutron/neutron.sqlite
 connection = mysql+pymysql://neutron:NEUTRON_DBPASS@10.0.0.11/neutron
 ```
 
@@ -108,12 +107,12 @@ rabbit_password = RABBIT_PASS
 在```[keystone_authtoken]```部分加入以下設定：
 ```sh
 [keystone_authtoken]
-memcached_servers = 10.0.0.11:11211
 auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
-auth_plugin = password
-project_domain_id = default
-user_domain_id = default
+memcached_servers = 10.0.0.11:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
 project_name = service
 username = neutron
 password = NEUTRON_PASS
@@ -124,9 +123,9 @@ password = NEUTRON_PASS
 ```sh
 [nova]
 auth_url = http://10.0.0.11:35357
-auth_plugin = password
-project_domain_id = default
-user_domain_id = default
+auth_type = password
+project_domain_name = default
+user_domain_name = default
 region_name = RegionOne
 project_name = service
 username = nova
@@ -161,11 +160,12 @@ enable_ipset = True
 當完成 ML2 設定後，接著編輯```/etc/nova/nova.conf```設定檔，在```[neutron]```部分加入以下設定：
 ```sh
 [neutron]
-auth_uri = http://10.0.0.11:5000
+url = http://10.0.0.11:9696
 auth_url = http://10.0.0.11:35357
-auth_plugin = password
-project_domain_id = default
-user_domain_id = default
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+region_name = RegionOne
 project_name = service
 username = neutron
 password = NEUTRON_PASS
@@ -198,10 +198,6 @@ $ . admin-openrc
 這邊可以透過 Neutron client 來查看外部網路列表，如以下方式：
 ```sh
 $ neutron ext-list
-```
-
-成功的話會看到類似以下結果：
-```
 +---------------------------+-----------------------------------------------+
 | alias                     | name                                          |
 +---------------------------+-----------------------------------------------+
@@ -286,12 +282,12 @@ rabbit_password = RABBIT_PASS
 在```[keystone_authtoken]```部分加入以下設定：
 ```sh
 [keystone_authtoken]
-memcached_servers = 10.0.0.11:11211
 auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
-auth_plugin = password
-project_domain_id = default
-user_domain_id = default
+memcached_servers = 10.0.0.11:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
 project_name = service
 username = neutron
 password = NEUTRON_PASS
@@ -454,10 +450,6 @@ $ . admin-openrc
 這邊可以透過 Neutron client 來查看 Agents 狀態，如以下方式：
 ```sh
 $ neutron agent-list
-```
-
-若成功的話會看到類似以下結果：
-```
 +--------------------------------------+--------------------+----------+-------------------+-------+----------------+---------------------------+
 | id                                   | agent_type         | host     | availability_zone | alive | admin_state_up | binary                    |
 +--------------------------------------+--------------------+----------+-------------------+-------+----------------+---------------------------+
@@ -488,7 +480,7 @@ $ sudo sysctl -p
 ### Compute 套件安裝與設定
 在開始設定之前，首先要安裝相關套件與 OpenStack 服務套件，可以透過以下指令進行安裝：
 ```sh
-$ sudo apt-get install neutron-plugin-ml2 neutron-openvswitch-agent
+$ sudo apt-get install neutron-openvswitch-agent
 ```
 
 安裝完成後，編輯```/etc/neutron/neutron.conf```設定檔，在```[DEFAULT]```部分加入以下設定：
@@ -521,12 +513,12 @@ rabbit_password = RABBIT_PASS
 在```[keystone_authtoken]```部分加入以下設定：
 ```sh
 [keystone_authtoken]
-memcached_servers = 10.0.0.11:11211
 auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
-auth_plugin = password
-project_domain_id = default
-user_domain_id = default
+memcached_servers = 10.0.0.11:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
 project_name = service
 username = neutron
 password = NEUTRON_PASS
@@ -535,28 +527,7 @@ password = NEUTRON_PASS
 
 
 ### Compute 設定 ML2
-這邊 Neutron ML2 外掛使用 Open vSwitch agent 來提供給虛擬機建立虛擬網路。這邊 Compute 需要設定 Open vSwitch agent，因為 Compute 會透過 Agent 連接 Network 節點來使用虛擬化網路。要設定 ML2 可以編輯```/etc/neutron/plugins/ml2/ml2_conf.ini```並在```[ml2]```部分加入以下設定：
-```sh
-[ml2]
-type_drivers = flat,vlan,gre,vxlan
-tenant_network_types = gre
-mechanism_drivers = openvswitch,l2population
-extension_drivers = port_security
-```
-
-在```[ml2_type_gre]```部分加入以下設定：
-```sh
-[ml2_type_gre]
-tunnel_id_ranges = 1:1000
-```
-
-在```[securitygroup]```部分加入以下設定：
-```sh
-[securitygroup]
-enable_ipset = True
-```
-
-接著要設定 Open vSwitch agent，編輯```/etc/neutron/plugins/ml2/openvswitch_agent.ini```在```[ovs]```部分加入以下設定：
+這邊 Neutron ML2 外掛使用 Open vSwitch agent 來提供給虛擬機建立虛擬網路。這邊 Compute 需要設定 Open vSwitch agent，因為 Compute 會透過 Agent 連接 Network 節點來使用虛擬化網路。要設定 Open vSwitch agent，編輯```/etc/neutron/plugins/ml2/openvswitch_agent.ini```在```[ovs]```部分加入以下設定：
 ```sh
 [ovs]
 local_ip = TUNNELS_IP

@@ -72,8 +72,9 @@ $ sudo apt-get install ironic-api ironic-conductor python-ironicclient
 rpc_backend = rabbit
 auth_strategy = keystone
 enabled_drivers = pxe_ipmitool
-my_ip = 10.0.0.11
+my_ip = MANAGEMENT_IP
 ```
+> P.S. ```MANAGEMENT_IP```這邊為```10.0.0.11```。
 
 在```[database]```部分修改使用以下方式：
 ```sh

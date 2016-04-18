@@ -153,8 +153,9 @@ $ sudo apt-get install cinder-api cinder-scheduler python-cinderclient
 ...
 rpc_backend = rabbit
 auth_strategy = keystone
-my_ip = 10.0.0.11
+my_ip = MANAGEMENT_IP
 ```
+> P.S. ```MANAGEMENT_IP```這邊為```10.0.0.11```。
 
 在```[database]```部分修改使用以下方式：
 ```sh
@@ -174,12 +175,12 @@ rabbit_password = RABBIT_PASS
 在```[keystone_authtoken]```部分加入以下內容：
 ```sh
 [keystone_authtoken]
-memcached_servers = 10.0.0.11:11211
 auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
-auth_plugin = password
-project_domain_id = default
-user_domain_id = default
+memcached_servers = 10.0.0.11:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
 project_name = service
 username = cinder
 password = CINDER_PASS
@@ -197,7 +198,18 @@ lock_path = /var/lib/cinder/tmp
 $ sudo cinder-manage db sync
 ```
 
-資料庫建立完成後，就可以重新啟動所有 Cinder 服務：
+接著編輯```/etc/nova/nova.conf```設定檔，在```[cinder]```加入以下內容，讓 Nova 使用 Volume：
+```
+[cinder]
+os_region_name = RegionOne
+```
+
+重新啟動 Nova API 服務：
+```sh
+$ sudo service nova-api restart
+```
+
+重新啟動所有 Cinder 服務：
 ```sh
 sudo service cinder-scheduler restart
 sudo service cinder-api restart
@@ -236,7 +248,7 @@ $ sudo vgcreate cinder-volumes /dev/sdb
 Volume group "cinder-volumes" successfully created
 ```
 
-由於 Cinder 只提供給虛擬機存取區塊儲存，因此任何作業系統底層不應該被任意存取該 LVM volume。且預設下的 LVM 會透過工具搜尋包含 ```/dev``` 的區塊儲存裝置目錄。如果部署時是使用 LVM 來提供 Volume 的話，該工具會檢查這些 Volume，並試著快取目錄，這樣將會造成各式各樣的問題，因此要編輯 ```/etc/lvm/lvm.conf``` 來正確的提供 Volume Group 的硬碟使用。這邊設定只使用 ```/dev/sdb```：
+由於 Cinder 會使用被建立成 LVM 的裝置來提供區塊儲存。為了確保儲存安全問題，故任何作業系統底層不應該被任意存取該 LVM volume。且預設下的 LVM 會透過工具搜尋包含 ```/dev``` 的區塊儲存裝置目錄。如果部署時是使用 LVM 來提供 Volume 的話，該工具會檢查這些 Volume，並試著快取目錄，這樣將會造成各式各樣的問題，因此要編輯 ```/etc/lvm/lvm.conf``` 來正確的提供 Volume Group 的硬碟使用。這邊設定只使用 ```/dev/sdb```：
 ```sh
 filter = [ 'a/sdb/', 'r/.*/']
 ```
@@ -294,12 +306,12 @@ rabbit_password = RABBIT_PASS
 在```[keystone_authtoken]```部分加入以下內容：
 ```sh
 [keystone_authtoken]
-memcached_servers = 10.0.0.11:11211
 auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
-auth_plugin = password
-project_domain_id = default
-user_domain_id = default
+memcached_servers = 10.0.0.11:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
 project_name = service
 username = cinder
 password = CINDER_PASS

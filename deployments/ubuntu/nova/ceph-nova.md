@@ -65,7 +65,6 @@ rbd cache size = 268435456
 rbd cache max dirty = 134217728
 rbd cache max dirty age = 5
 rbd cache writethrough until flush = true
-admin socket = /var/run/ceph/guests/$cluster-$type.$id.$pid.$cctid.asok
 log file = /var/log/qemu/qemu-guest-$pid.log
 rbd concurrent management ops = 20
 
@@ -80,31 +79,25 @@ keyring = /etc/ceph/client.glance.keyring
 ```
 > 也可以在```deploy 節點```修改完後，使用```ceph-deploy --overwrite-conf config push <host>```來 push。
 
-建立 qume 檔案，並修改權限：
-```sh
-$ sudo mkdir -p /var/run/ceph/guests/ /var/log/qemu/
-$ sudo chown qemu:libvirtd /var/run/ceph/guests /var/log/qemu/
-```
-
 接著編輯```/etc/nova/nova.conf```，在```[libvirt]```加入以下：
 ```sh
 [libvirt]
-virt_type=kvm
-inject_password=False
-inject_key=False
-inject_partition=-2
-block_migration_flag=VIR_MIGRATE_UNDEFINE_SOURCE,VIR_MIGRATE_PEER2PEER,VIR_MIGRATE_LIVE,VIR_MIGRATE_NON_SHARED_INC
-live_migration_flag=VIR_MIGRATE_UNDEFINE_SOURCE,VIR_MIGRATE_PEER2PEER,VIR_MIGRATE_LIVE,VIR_MIGRATE_PERSIST_DEST
+virt_type = kvm
+inject_password = False
+inject_key = False
+inject_partition = -2
+block_migration_flag = VIR_MIGRATE_UNDEFINE_SOURCE,VIR_MIGRATE_PEER2PEER,VIR_MIGRATE_LIVE,VIR_MIGRATE_NON_SHARED_INC
+live_migration_flag = VIR_MIGRATE_UNDEFINE_SOURCE,VIR_MIGRATE_PEER2PEER,VIR_MIGRATE_LIVE,VIR_MIGRATE_PERSIST_DEST
 disk_cachemodes = "network=writeback"
 hw_disk_discard = unmap
-cpu_mode=host-model
-images_type=rbd
-images_rbd_pool=vms
-rbd_user=cinder
-rbd_secret_uuid=457eb676-33da-42ec-9a8c-9293d545c337
+cpu_mode = host-model
+images_type = rbd
+images_rbd_pool = vms
+rbd_user = cinder
+rbd_secret_uuid = 457eb676-33da-42ec-9a8c-9293d545c337
 ```
 
-完成後，重起服務：
+完成後重新啟動 Nova Computer 服務：
 ```sh
 $ sudo service nova-compute restart
 ```

@@ -51,8 +51,10 @@ keyring = /etc/ceph/client.cinder-backup.keyring
 [DEFAULT]
 ...
 # volume_group = cinder-volumes
-# enabled_backends = lvm
+enabled_backends = rbd
 
+[rbd]
+volume_backend_name = rbd-backend
 volume_driver = cinder.volume.drivers.rbd.RBDDriver
 rbd_pool = volumes
 rbd_ceph_conf = /etc/ceph/ceph.conf

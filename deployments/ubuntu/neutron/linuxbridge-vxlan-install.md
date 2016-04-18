@@ -83,15 +83,14 @@ service_plugins = router
 allow_overlapping_ips = True
 rpc_backend = rabbit
 auth_strategy = keystone
-
 notify_nova_on_port_status_changes = True
 notify_nova_on_port_data_changes = True
-nova_url = http://10.0.0.11:8774/v2
 ```
 
 在```[database]```部分修改使用以下方式：
 ```sh
 [database]
+# connection = sqlite:////var/lib/neutron/neutron.sqlite
 connection = mysql+pymysql://neutron:NEUTRON_DBPASS@10.0.0.11/neutron
 ```
 
@@ -107,12 +106,12 @@ rabbit_password = RABBIT_PASS
 在```[keystone_authtoken]```部分加入以下設定：
 ```sh
 [keystone_authtoken]
-memcached_servers = 10.0.0.11:11211
 auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
-auth_plugin = password
-project_domain_id = default
-user_domain_id = default
+memcached_servers = 10.0.0.11:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
 project_name = service
 username = neutron
 password = NEUTRON_PASS
@@ -123,9 +122,9 @@ password = NEUTRON_PASS
 ```sh
 [nova]
 auth_url = http://10.0.0.11:35357
-auth_plugin = password
-project_domain_id = default
-user_domain_id = default
+auth_type = password
+project_domain_name = default
+user_domain_name = default
 region_name = RegionOne
 project_name = service
 username = nova
@@ -201,36 +200,35 @@ $ . admin-openrc
 這邊可以透過 Neutron client 來查看外部網路列表，如以下方式：
 ```sh
 $ neutron ext-list
-```
-
-成功的話，會看到類似以下資訊：
-```
-+-----------------------+-----------------------------------------------+
-| alias                 | name                                          |
-+-----------------------+-----------------------------------------------+
-| dns-integration       | DNS Integration                               |
-| ext-gw-mode           | Neutron L3 Configurable external gateway mode |
-| binding               | Port Binding                                  |
-| agent                 | agent                                         |
-| subnet_allocation     | Subnet Allocation                             |
-| l3_agent_scheduler    | L3 Agent Scheduler                            |
-| external-net          | Neutron external network                      |
-| flavors               | Neutron Service Flavors                       |
-| net-mtu               | Network MTU                                   |
-| quotas                | Quota management support                      |
-| l3-ha                 | HA Router extension                           |
-| provider              | Provider Network                              |
-| multi-provider        | Multi Provider Network                        |
-| extraroute            | Neutron Extra Route                           |
-| router                | Neutron L3 Router                             |
-| extra_dhcp_opt        | Neutron Extra DHCP opts                       |
-| security-group        | security-group                                |
-| dhcp_agent_scheduler  | DHCP Agent Scheduler                          |
-| rbac-policies         | RBAC Policies                                 |
-| port-security         | Port Security                                 |
-| allowed-address-pairs | Allowed Address Pairs                         |
-| dvr                   | Distributed Virtual Router                    |
-+-----------------------+-----------------------------------------------+
++---------------------------+-----------------------------------------------+
+| alias                     | name                                          |
++---------------------------+-----------------------------------------------+
+| dns-integration           | DNS Integration                               |
+| network_availability_zone | Network Availability Zone                     |
+| address-scope             | Address scope                                 |
+| ext-gw-mode               | Neutron L3 Configurable external gateway mode |
+| binding                   | Port Binding                                  |
+| agent                     | agent                                         |
+| subnet_allocation         | Subnet Allocation                             |
+| l3_agent_scheduler        | L3 Agent Scheduler                            |
+| external-net              | Neutron external network                      |
+| net-mtu                   | Network MTU                                   |
+| availability_zone         | Availability Zone                             |
+| quotas                    | Quota management support                      |
+| l3-ha                     | HA Router extension                           |
+| provider                  | Provider Network                              |
+| multi-provider            | Multi Provider Network                        |
+| extraroute                | Neutron Extra Route                           |
+| router                    | Neutron L3 Router                             |
+| extra_dhcp_opt            | Neutron Extra DHCP opts                       |
+| security-group            | security-group                                |
+| dhcp_agent_scheduler      | DHCP Agent Scheduler                          |
+| router_availability_zone  | Router Availability Zone                      |
+| rbac-policies             | RBAC Policies                                 |
+| port-security             | Port Security                                 |
+| allowed-address-pairs     | Allowed Address Pairs                         |
+| dvr                       | Distributed Virtual Router                    |
++---------------------------+-----------------------------------------------+
 ```
 
 # Network Node
@@ -286,12 +284,12 @@ rabbit_password = RABBIT_PASS
 在```[keystone_authtoken]```部分加入以下設定：
 ```sh
 [keystone_authtoken]
-memcached_servers = 10.0.0.11:11211
 auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
-auth_plugin = password
-project_domain_id = default
-user_domain_id = default
+memcached_servers = 10.0.0.11:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
 project_name = service
 username = neutron
 password = NEUTRON_PASS
@@ -435,10 +433,6 @@ $ . admin-openrc
 這邊可以透過 Neutron client 來查看 Agents 狀態，如以下方式：
 ```sh
 $ neutron agent-list
-```
-
-成功的話，會看到類似以下資訊：
-```
 +--------------------------------------+--------------------+----------+-------------------+-------+----------------+---------------------------+
 | id                                   | agent_type         | host     | availability_zone | alive | admin_state_up | binary                    |
 +--------------------------------------+--------------------+----------+-------------------+-------+----------------+---------------------------+
@@ -469,7 +463,7 @@ $ sudo sysctl -p
 ### Compute 套件安裝與設定
 在開始設定之前，首先要安裝相關套件與 OpenStack 服務套件，可以透過以下指令進行安裝：
 ```sh
-$ sudo apt-get install neutron-plugin-ml2 neutron-linuxbridge-agent
+$ sudo apt-get install neutron-linuxbridge-agent
 ```
 
 安裝完成後，編輯 ```/etc/neutron/neutron.conf``` 設定檔，在```[DEFAULT]```部分加入以下設定：
@@ -502,12 +496,12 @@ rabbit_password = RABBIT_PASS
 在```[keystone_authtoken]```部分加入以下設定：
 ```sh
 [keystone_authtoken]
-memcached_servers = 10.0.0.11:11211
 auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
-auth_plugin = password
-project_domain_id = default
-user_domain_id = default
+memcached_servers = 10.0.0.11:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
 project_name = service
 username = neutron
 password = NEUTRON_PASS
@@ -516,29 +510,7 @@ password = NEUTRON_PASS
 
 
 ### Compute 設定 ML2
-這邊 Neutron ML2 外掛使用 Linux bridge agent 來提供給虛擬機建立虛擬網路。這邊 Compute 需要設定 Linux bridge agent，因為 Compute 會透過 Agent 連接 Network 節點來使用虛擬化網路。要設定 ML2 可以編輯```/etc/neutron/plugins/ml2/ml2_conf.ini```並在```[ml2]```部分加入以下設定：
-```sh
-[ml2]
-type_drivers = flat,vlan,gre,vxlan
-tenant_network_types = vxlan
-mechanism_drivers = linuxbridge,l2population
-extension_drivers = port_security
-```
-
-在```[ml2_type_vxlan]```部分加入以下設定：
-```sh
-[ml2_type_vxlan]
-vni_ranges = 1:1000
-```
-> VIN 支援 2 ^ 24 次方個數。
-
-在```[securitygroup]```部分加入以下設定：
-```sh
-[securitygroup]
-enable_ipset = True
-```
-
-接著編輯```/etc/neutron/plugins/ml2/linuxbridge_agent.ini```，在```[vxlan]```部分加入以下設定：
+這邊 Neutron ML2 外掛使用 Linux bridge agent 來提供給虛擬機建立虛擬網路。這邊 Compute 需要設定 Linux bridge agent，因為 Compute 會透過 Agent 連接 Network 節點來使用虛擬化網路。要設定 Linux bridge agent 可以編輯```/etc/neutron/plugins/ml2/linuxbridge_agent.ini```，在```[vxlan]```部分加入以下設定：
 ```sh
 [vxlan]
 local_ip = OVERLAY_IP

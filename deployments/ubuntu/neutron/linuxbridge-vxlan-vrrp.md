@@ -42,13 +42,11 @@ vni_ranges = 1:1000
 ```sh
 [securitygroup]
 enable_ipset = True
-enable_security_group = True
-firewall_driver = neutron.agent.linux.iptables_firewall.IptablesFirewallDriver
 ```
 
 重新啟動 neutron-server 服務：
 ```sh
-sudo service neutron-server restart
+$ sudo service neutron-server restart
 ```
 
 # Network 節點配置
@@ -94,7 +92,7 @@ agent_mode = legacy
 
 重新啟動 Neutron 所有服務：
 ```sh
-sudo service neutron-plugin-linuxbridge-agent restart
+sudo service neutron-linuxbridge-agent restart
 sudo service neutron-dhcp-agent restart
 sudo service neutron-metadata-agent restart
 sudo service neutron-l3-agent restart

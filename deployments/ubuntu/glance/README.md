@@ -58,6 +58,7 @@ $ sudo apt-get install -y glance python-glanceclient
 安裝完成後，編輯 ```/etc/glance/glance-api.conf``` 設定檔，在```[database]```部分修改使用以下方式：
 ```sh
 [database]
+# sqlite_db = /var/lib/glance/glance.sqlite
 connection = mysql+pymysql://glance:GLANCE_DBPASS@10.0.0.11/glance
 ```
 > 這邊```GLANCE_DBPASS```可以隨需求修改。
@@ -65,12 +66,12 @@ connection = mysql+pymysql://glance:GLANCE_DBPASS@10.0.0.11/glance
 接下來，在```[keystone_authtoken]```部分加入以下內容：
 ```sh
 [keystone_authtoken]
-memcached_servers = 10.0.0.11:11211
 auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
-auth_plugin = password
-project_domain_id = default
-user_domain_id = default
+memcached_servers = 10.0.0.11:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
 project_name = service
 username = glance
 password = GLANCE_PASS
@@ -95,6 +96,7 @@ filesystem_store_datadir = /var/lib/glance/images/
 完成後，要接著編輯```/etc/glance/glance-registry.conf```並完成以下設定，在```[database]```部分修改使用以下方式：
 ```sh
 [database]
+# sqlite_db = /var/lib/glance/glance.sqlite
 connection = mysql+pymysql://glance:GLANCE_DBPASS@10.0.0.11/glance
 ```
 > 這邊```GLANCE_DBPASS```可以隨需求修改。
@@ -102,12 +104,12 @@ connection = mysql+pymysql://glance:GLANCE_DBPASS@10.0.0.11/glance
 接下來，在```[keystone_authtoken]```部分加入以下內容：
 ```sh
 [keystone_authtoken]
-memcached_servers = 10.0.0.11:11211
 auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
-auth_plugin = password
-project_domain_id = default
-user_domain_id = default
+memcached_servers = 10.0.0.11:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
 project_name = service
 username = glance
 password = GLANCE_PASS
@@ -137,13 +139,7 @@ $ sudo rm -f /var/lib/glance/glance.sqlite
 ```
 
 ### 驗證服務
-首先我們要在```admin-openrc```與```demo-openrc```加入 Glance API 使用版本的環境變數：
-```sh
-$ echo "export OS_IMAGE_API_VERSION=2" \
-| sudo  tee -a admin-openrc demo-openrc
-```
-
-接著導入 ```admin``` 帳號來驗證服務：
+首先接著導入 ```admin``` 帳號來驗證服務：
 ```sh
 $ . admin-openrc
 ```
@@ -155,7 +151,7 @@ $ wget http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img
 
 這邊透過指令將映像檔上傳，採用 ```QCOW2``` 格式，並且設定為公開的映像檔，來提供給雲端租戶們使用：
 ```sh
-$ glance image-create --name "cirros-0.3.4-x86_64" \
+$ glance image-create --name "cirros-0.3.4" \
 --file cirros-0.3.4-x86_64-disk.img \
 --disk-format qcow2 --container-format bare \
 --visibility public --progress

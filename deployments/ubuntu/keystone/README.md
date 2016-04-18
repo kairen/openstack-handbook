@@ -219,6 +219,19 @@ identity admin http://10.0.0.11:35357/v3
 +--------------+----------------------------------+
 ```
 
+完成後，接著建立一個 default domain：
+```sh
+$ openstack domain create --description "Default Domain" default
++-------------+----------------------------------+
+| Field       | Value                            |
++-------------+----------------------------------+
+| description | Default Domain                   |
+| enabled     | True                             |
+| id          | fb9492511bd1426a861ccbf7ff1d4d9f |
+| name        | default                          |
++-------------+----------------------------------+
+```
+
 在後續安裝的 OpenStack 各套件服務都需要建立一個或多個 Service，以及 API Endpoint 目錄。
 
 ### 建立 Keystone admin 與 user
@@ -269,13 +282,11 @@ unset OS_TOKEN OS_URL
 
 這邊直接透過 v3 版本來驗證服務，v3 增加了 Domains 的驗證。因此 Project 與 User 能夠在不同的 Domain 使用相同名稱，這邊是使用預設的 Domain 進行驗證：
 ```sh
-$ openstack --os-auth-url http://10.0.0.11:35357 \
---os-project-domain-id default \
---os-user-domain-id default \
+$ openstack --os-auth-url http://10.0.0.11:35357/v3 \
+--os-project-domain-name default \
+--os-user-domain-name default \
 --os-project-name admin \
---os-username admin \
---os-auth-type password \
-token issue
+--os-username admin token issue
 ```
 > 其中 ```default``` 是當沒有指定 Domain 時的預設名稱。
 
@@ -295,11 +306,11 @@ token issue
 
 然後接下來要驗證權限是否正常被設定，這邊先使用 ```admin``` 使用者來進行：
 ```sh
-$ openstack --os-auth-url http://10.0.0.11:35357 \
+$ openstack --os-auth-url http://10.0.0.11:35357/v3 \
+--os-project-domain-name default \
+--os-user-domain-name default \
 --os-project-name admin \
---os-username admin \
---os-auth-type password \
-project list
+--os-username admin project list
 ```
 
 成功的話，會看到類似以下結果：
@@ -315,13 +326,11 @@ project list
 
 然後再透 ```demo``` 使用者來驗證是否有存取權限，這邊利用 v3 來取得 Token：
 ```sh
-$ openstack --os-auth-url http://10.0.0.11:5000 \
---os-project-domain-id default \
---os-user-domain-id default \
+$ openstack --os-auth-url http://10.0.0.11:5000/v3 \
+--os-project-domain-name default \
+--os-user-domain-name default \
 --os-project-name demo \
---os-username demo \
---os-auth-type password \
-token issue
+--os-username demo token issue
 ```
 > 本教學範例密碼為```demo```。
 
@@ -343,18 +352,16 @@ token issue
 
 最後再透過 ```demo``` 來使用擁有管理者權限的 API：
 ```sh
-$ openstack --os-auth-url http://10.0.0.11:5000 \
---os-project-domain-id default \
---os-user-domain-id default \
+$ openstack --os-auth-url http://10.0.0.11:5000/v3 \
+--os-project-domain-name default \
+--os-user-domain-name default \
 --os-project-name demo \
---os-username demo \
---os-auth-type password \
-user list
+--os-username demo user list
 ```
 
 成功的話，會看到類似以下結果：
 ```
-Could not find requested endpoint in Service Catalog.
+You are not authorized to perform the requested action: identity:list_users (HTTP 403)
 ```
 
 若上述過程都沒有錯誤，表示 Keystone 目前很正常的被執行中。
@@ -367,26 +374,26 @@ $ touch admin-openrc demo-openrc
 
 編輯 ```admin-openrc``` 加入以下內容：
 ```sh
-export OS_PROJECT_DOMAIN_ID=default
-export OS_USER_DOMAIN_ID=default
+export OS_PROJECT_DOMAIN_NAME=default
+export OS_USER_DOMAIN_NAME=default
 export OS_PROJECT_NAME=admin
-export OS_TENANT_NAME=admin
 export OS_USERNAME=admin
-export OS_PASSWORD=passwd
-export OS_AUTH_URL=http://10.0.0.11:35357/v3
+export OS_PASSWORD=ADMIN_PASS
+export OS_AUTH_URL=http://controller:35357/v3
 export OS_IDENTITY_API_VERSION=3
+export OS_IMAGE_API_VERSION=2
 ```
 
 編輯 ```demo-openrc``` 加入以下內容：
 ```sh
-export OS_PROJECT_DOMAIN_ID=default
-export OS_USER_DOMAIN_ID=default
+export OS_PROJECT_DOMAIN_NAME=default
+export OS_USER_DOMAIN_NAME=default
 export OS_PROJECT_NAME=demo
-export OS_TENANT_NAME=demo
 export OS_USERNAME=demo
 export OS_PASSWORD=demo
 export OS_AUTH_URL=http://10.0.0.11:5000/v3
 export OS_IDENTITY_API_VERSION=3
+export OS_IMAGE_API_VERSION=2
 ```
 
 完成後，可以透過 Linux 指令來執行檔案導入環境變數，如以下指令：

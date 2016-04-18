@@ -175,12 +175,12 @@ rabbit_password = RABBIT_PASS
 在```[keystone_authtoken]```部分加入以下內容：
 ```sh
 [keystone_authtoken]
-memcached_servers = 10.0.0.11:11211
 auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
-auth_plugin = password
-project_domain_id = default
-user_domain_id = default
+memcached_servers = 10.0.0.11:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
 project_name = service
 username = cinder
 password = CINDER_PASS
@@ -198,7 +198,18 @@ lock_path = /var/lib/cinder/tmp
 $ sudo cinder-manage db sync
 ```
 
-資料庫建立完成後，就可以重新啟動所有 Cinder 服務：
+接著編輯```/etc/nova/nova.conf```設定檔，在```[cinder]```加入以下內容，讓 Nova 使用 Volume：
+```
+[cinder]
+os_region_name = RegionOne
+```
+
+重新啟動 Nova API 服務：
+```sh
+$ sudo service nova-api restart
+```
+
+重新啟動所有 Cinder 服務：
 ```sh
 sudo service cinder-scheduler restart
 sudo service cinder-api restart
@@ -295,12 +306,12 @@ rabbit_password = RABBIT_PASS
 在```[keystone_authtoken]```部分加入以下內容：
 ```sh
 [keystone_authtoken]
-memcached_servers = 10.0.0.11:11211
 auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
-auth_plugin = password
-project_domain_id = default
-user_domain_id = default
+memcached_servers = 10.0.0.11:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
 project_name = service
 username = cinder
 password = CINDER_PASS

@@ -180,22 +180,23 @@ operator_roles = admin,user
 paste.filter_factory = keystonemiddleware.auth_token:filter_factory
 auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
-auth_plugin = password
-project_domain_id = default
-user_domain_id = default
+memcached_servers = 10.0.0.11:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
 project_name = service
 username = swift
 password = SWIFT_PASS
-delay_auth_decision = true
+delay_auth_decision = True
 ```
 > 這邊```SWIFT_PASS```可以隨需求修改。
 
 在```[filter:cache]```部分加入以下內容：
-```sh
+```
 [filter:cache]
 ...
 use = egg:swift#memcache
-memcache_servers = 127.0.0.1:11211
+memcache_servers = 10.0.0.11:11211
 ```
 
 # Storage Node
@@ -387,6 +388,7 @@ $ sudo chown -R swift:swift /srv/node
 ```
 sudo mkdir -p /var/cache/swift
 sudo chown -R root:swift /var/cache/swift
+sudo chmod -R 775 /var/cache/swift
 ```
 
 # 建立與分散初始 Rings

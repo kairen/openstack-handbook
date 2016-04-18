@@ -330,13 +330,18 @@ $ wget http://tarballs.openstack.org/manila-image-elements/images/manila-service
 ```
 > 其他版本可以參考 [Manila image elements](https://github.com/openstack/manila-image-elements)。
 
-然後使用 OpenStack client 來上傳 Manila Service 映像檔：
+使用 OpenStack client 來上傳 Manila Service 映像檔：
 ```sh
 $ openstack image create "manila-service-image" \
 --file manila-service-image-master.qcow2 \
 --disk-format qcow2 \
 --container-format bare \
---public
+--public --progress
+```
+
+接著建立 flavor 來提供給 Instance 使用：
+```sh
+$ openstack flavor create manila-service-flavor --id 100 --ram 256 --disk 0 --vcpus 1
 ```
 
 透過 Manila client 來建立 Share Type，如以下方式：
@@ -368,7 +373,9 @@ $ manila share-network-create \
 
 完成上述後，即可建立檔案系統：
 ```sh
-$ manila create NFS 1 --name share1 --share-network share_network
+$ manila create NFS 1 --name share1 \
+--share-network share_network \
+--share-type default_share_type
 ```
 > 若是 No Driver 則只需要執行以下指令：
 ```sh
@@ -378,11 +385,21 @@ $ manila create NFS 1 --name share1
 最後配置使用者可以存取新的共享檔案系統：
 ```sh
 $ manila access-allow share1 ip INSTANCE_IP_ADDRESS
++--------------+--------------------------------------+
+| Property     | Value                                |
++--------------+--------------------------------------+
+| share_id     | 0b595594-5e2b-4f1a-a855-2f129014f199 |
+| access_type  | ip                                   |
+| access_to    | 172.16.1.28                          |
+| access_level | rw                                   |
+| state        | new                                  |
+| id           | aaf66634-827b-4205-b1a7-4a8a22b30e19 |
++--------------+--------------------------------------+
 ```
-> 這邊```INSTANCE_IP_ADDRESS```為 ```10.0.0.61```。
+> 這邊```INSTANCE_IP_ADDRESS```為 ```172.16.1.28```。
 
 沒問題就可以掛載使用：
 ```sh
 $ sudo mkdir folder
-$ sudo mount -t nfs 10.0.0.61:/var/lib/manila/mnt/share-b94a4dbf-49e2-452c-b9c7-510277adf5c6 ~/folder
+$ sudo mount -t nfs 10.254.0.8:/shares/share-10f12b83-87c2-4064-939c-df2a0822ee4a folder
 ```

@@ -123,12 +123,12 @@ rabbit_password = RABBIT_PASS
 在```[keystone_authtoken]```部分加入以下內容：
 ```
 [keystone_authtoken]
-memcached_servers = 10.0.0.11:11211
 auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
-auth_plugin = password
-project_domain_id = default
-user_domain_id = default
+memcached_servers = controller:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
 project_name = service
 username = ceilometer
 password = CEILOMETER_PASS
@@ -142,8 +142,8 @@ os_auth_url = http://10.0.0.11:5000/v2.0
 os_username = ceilometer
 os_tenant_name = service
 os_password = CEILOMETER_PASS
-os_endpoint_type = internalURL
-os_region_name = RegionOne
+interface = internalURL
+region_name = RegionOne
 ```
 > 這邊```CEILOMETER_PASS```可以隨需求修改。
 
@@ -212,12 +212,12 @@ rabbit_password = RABBIT_PASS
 在```[keystone_authtoken]```部分加入以下內容：
 ```
 [keystone_authtoken]
-memcached_servers = 10.0.0.11:11211
 auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
-auth_plugin = password
-project_domain_id = default
-user_domain_id = default
+memcached_servers = controller:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
 project_name = service
 username = ceilometer
 password = CEILOMETER_PASS
@@ -231,8 +231,8 @@ os_auth_url = http://10.0.0.11:5000/v2.0
 os_username = ceilometer
 os_tenant_name = service
 os_password = CEILOMETER_PASS
-os_endpoint_type = internalURL
-os_region_name = RegionOne
+interface = internalURL
+region_name = RegionOne
 ```
 
 接著編輯```/etc/nova/nova.conf ```設定檔，在```[DEFAULT]```部分加入以下內容：

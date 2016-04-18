@@ -336,7 +336,7 @@ $ openstack image create "manila-service-image" \
 --file manila-service-image-master.qcow2 \
 --disk-format qcow2 \
 --container-format bare \
---public --progress
+--public
 ```
 
 接著建立 flavor 來提供給 Instance 使用：

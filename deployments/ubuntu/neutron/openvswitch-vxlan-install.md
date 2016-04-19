@@ -72,7 +72,7 @@ network admin http://10.0.0.11:9696
 ### Controller 套件安裝與設定
 在開始設定之前，首先要安裝相關套件與 OpenStack 服務套件，可以透過以下指令進行安裝：
 ```sh
-sudo apt-get install neutron-server neutron-plugin-ml2 python-neutronclient
+$ sudo apt-get install neutron-server neutron-plugin-ml2 python-neutronclient
 ```
 
 安裝完成後，編輯 ```/etc/neutron/neutron.conf``` 設定檔，在```[DEFAULT]```部分加入以下設定：

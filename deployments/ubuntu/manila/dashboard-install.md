@@ -9,16 +9,22 @@ git clone https://github.com/openstack/manila-ui
 ```
 > 安裝 Horizon 參考本書 Git 安裝章節
 
-安裝 Magnum Dashboard 的相依套件與環境：
+安裝 Manila Dashboard 的相依套件與環境：
 ```sh
 $ sudo pip install -e manila-ui/
 ```
 > 也可以用 ```python setup.py install``` 安裝，差異在於一個是參考，一個是直接安裝到 /usr/bin。
 
-將 Magnum dashboard 相關程式檔案複製到 Horizon:
+將 Manila dashboard 相關程式檔案複製到 Horizon:
 ```sh
 $ cd horizon/
 $ cp ../manila-ui/manila_ui/enabled/_90_manila_*.py openstack_dashboard/local/enabled
+```
+
+完成後讓 Django 進行 collectstatic 與 compress：
+```sh
+$ ./manage.py collectstatic
+$ ./manage.py compress
 ```
 
 完成後可以透過 Django 來執行測試:

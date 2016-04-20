@@ -10,7 +10,7 @@ git clone git://git.openstack.org/openstack/murano-dashboard
 > 安裝 Horizon 參考本書 Git 安裝章節
 
 > 若使用 .deb 安裝的話，可以執行以下指令：
-> 
+>
 ```
 sudo apt-get install murano-dashboard
 ```
@@ -25,8 +25,15 @@ pip install -e murano-dashboard/
 
 進入 Horizon git 目錄，並複製以下檔案:
 ```sh
-cp ../murano-dashboard/muranodashboard/local/_50_murano.py openstack_dashboard/local/enabled/
+cp ../murano-dashboard/muranodashboard/local/__*.py openstack_dashboard/local/enabled
 ```
+
+完成後讓 Django 進行 collectstatic 與 compress：
+```sh
+$ ./manage.py collectstatic
+$ ./manage.py compress
+```
+
 透過```./run_tests.sh```來執行測試用 Dashboard：
 ```sh
 ./run_tests.sh --runserver 0.0.0.0:8080

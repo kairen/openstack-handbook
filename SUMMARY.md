@@ -75,6 +75,7 @@
        * [Magnum 安裝與設定](deployments/ubuntu/magnum/README.md)
            * [Magnum Dashboard 安裝](deployments/ubuntu/magnum/dashboard-install.md)
        * [Trove 安裝與設定](deployments/ubuntu/trove/README.md)
+           * [Trove Dashboard 安裝](deployments/ubuntu/trove/dashboard-install.md)
        * [Sahara 安裝與設定](deployments/ubuntu/sahara/README.md)
        * [Ironic 安裝與設定](deployments/ubuntu/ironic/README.md)
        * [Designate 安裝與設定](deployments/ubuntu/designate/README.md)

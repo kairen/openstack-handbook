@@ -73,12 +73,12 @@ auth_strategy = keystone
 default_datastore = mysql
 
 add_addresses = True
-network_label_regex = ^NETWORK_NAME$
-
+default_neutron_networks = TANENT_NET_ID
+network_label_regex = ^private$
 ```
 > 如果使用 radosgw 來提供 Swift 要改用```http://10.0.0.11:8080/swift/v1```。
 
-> 請取代```NETWORK_NAME```為一個 Tanent network。
+> 請取代```TANENT_NET_ID```為一個 Tanent nework。
 
 在```[database]```部分修改使用以下方式：
 ```
@@ -129,11 +129,15 @@ swift_url = http://10.0.0.11:8080/v1/AUTH_
 neutron_url = http://10.0.0.11:9696/
 notifier_queue_hostname = 10.0.0.11
 rpc_backend = rabbit
+auth_strategy = keystone
 
-nova_proxy_admin_user = admin
-nova_proxy_admin_pass = ADMIN_PASS
-nova_proxy_admin_tenant_name = admin
+nova_proxy_admin_user = trove
+nova_proxy_admin_pass = trove_test
+nova_proxy_admin_tenant_name = service
 taskmanager_manager = trove.taskmanager.manager.Manager
+
+network_driver = trove.network.neutron.NeutronDriver
+control_exchange = trove
 ```
 > 如果使用 radosgw 來提供 Swift 要改用```http://10.0.0.11:8080/swift/v1```。
 
@@ -155,6 +159,21 @@ rabbit_password = RABBIT_PASS
 ```
 > 這邊```RABBIT_PASS```可以隨需求修改。
 
+在```[keystone_authtoken]```部分加入以下內容：
+```
+[keystone_authtoken]
+memcached_servers = 10.0.0.11:11211
+auth_uri = http://10.0.0.11:5000
+auth_url = http://10.0.0.11:35357
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+project_name = service
+username = trove
+password = TROVE_PASS
+```
+> 這邊```TROVE_PASS```可以隨需求修改。
+
 在```[profiler]```部分加入以下內容：
 ```
 [profiler]
@@ -166,6 +185,8 @@ trace_sqlalchemy = false
 ```
 [DEFAULT]
 ...
+rpc_backend = rabbit
+auth_strategy = keystone
 control_exchange = trove
 trove_auth_url = http://10.0.0.11:5000/v2.0
 ```
@@ -189,6 +210,21 @@ rabbit_password = RABBIT_PASS
 ```
 > 這邊```RABBIT_PASS```可以隨需求修改。
 
+在```[keystone_authtoken]```部分加入以下內容：
+```
+[keystone_authtoken]
+memcached_servers = 10.0.0.11:11211
+auth_uri = http://10.0.0.11:5000
+auth_url = http://10.0.0.11:35357
+auth_type = password
+project_domain_name = default
+user_domain_name = default
+project_name = service
+username = trove
+password = TROVE_PASS
+```
+> 這邊```TROVE_PASS```可以隨需求修改。
+
 在```[profiler]```部分加入以下內容：
 ```
 [profiler]
@@ -200,12 +236,11 @@ trace_sqlalchemy = false
 ```
 [DEFAULT]
 rpc_backend = rabbit
-nova_proxy_admin_user = admin
-nova_proxy_admin_pass = ADMIN_PASS
-nova_proxy_admin_tenant_name = admin
+nova_proxy_admin_user = trove
+nova_proxy_admin_pass = trove_test
+nova_proxy_admin_tenant_name = service
 trove_auth_url = http://10.0.0.11:35357/v2.0
 ```
-> 這邊```ADMIN_PASS```可以隨需求修改。
 
 在```[oslo_messaging_rabbit]```部分加入以下內容：
 ```
@@ -291,12 +326,10 @@ Datastore version 'mysql-5.6' updated.
 若已有建立的 flavor 符合要求，就可以透過以下指令建立一個 Trove Instance：
 ```sh
 $ FLAVOR_ID=$(openstack flavor list | awk '/ m1.small / { print $2 }')
-$ NET_ID=$(neutron net-list | awk '/ admin-net / { print $2 }')
 $ trove create mysql-instance ${FLAVOR_ID} \
 --size 5 --databases myDB \
 --users user:r00tme \
 --datastore_version mysql-5.6 \
---nic net-id=${NET_ID} \
 --datastore mysql
 ```
 

@@ -9,7 +9,6 @@ git clone https://github.com/openstack/magnum-ui
 ```
 > 安裝 Horizon 參考本書 Git 安裝章節
 
-
 安裝 Magnum Dashboard 的相依套件與環境：
 ```sh
 pip install -e magnum-ui/
@@ -18,14 +17,17 @@ pip install -e magnum-ui/
 
 將 Magnum dashboard 相關程式檔案複製到 Horizon:
 ```sh
-cp ../magnum-ui/enabled/_50_project_containers_panelgroup.py openstack_dashboard/local/enabled
-cp ../magnum-ui/enabled/_51_project_containers_bays_panel.py openstack_dashboard/local/enabled
-cp ../magnum-ui/enabled/_52_project_containers_baymodels_panel.py openstack_dashboard/local/enabled
-cp ../magnum-ui/enabled/_53_project_containers_containers_panel.py openstack_dashboard/local/enabled
+cp ../magnum-ui/enabled/_*.py openstack_dashboard/local/enabled
 ```
 > 若是```liberty```的話，請使用以下指令：
 ```sh
 cp ../magnum-ui/enabled/_50_add_containers_dashboard.py openstack_dashboard/local/enabled
+```
+
+完成後讓 Django 進行 collectstatic 與 compress：
+```sh
+$ ./manage.py collectstatic
+$ ./manage.py compress
 ```
 
 完成後可以透過 Django 來執行測試:

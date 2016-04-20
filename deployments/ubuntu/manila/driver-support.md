@@ -7,13 +7,11 @@
 ### 安裝前準備
 在開始之前，請務必檢查 Compute、Networking 以及 Block storage 服務都正常。這個模式將透過連網方式來實現共享式檔案系統服務。首先要安裝相關套件與 OpenStack 服務套件，可以透過以下指令進行安裝：
 ```sh
-$ sudo apt-get install neutron-plugin-ml2 neutron-linuxbridge-agent
+$ sudo apt-get install neutron-linuxbridge-agent
 ```
 > 若是使用 Open vSwitch 則安裝 ```neutron-openvswitch-agent```。其他 agent 以此類推。
 
 > Neutron 參考 [Compute 套件安裝與設定](../neutron/linuxbridge-vxlan-install.md#compute-套件安裝與設定)。
-
-> ML2 參考 [Compute 設定 ML2](../neutron/linuxbridge-vxlan-install.md#compute-設定-ml2)。
 
 ### 驅動程式支援設定
 由於預設下配置檔案分散有所不同。因此需要增加這些 [section] 與 options，而不是修改現有的 [section] 與 options。

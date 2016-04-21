@@ -4,6 +4,7 @@
 $ git clone https://git.openstack.org/openstack-dev/devstack
 $ cd devstack
 ```
+
 編輯```localrc```，並加入以下內容：
 ```sh
 DATABASE_PASSWORD=password

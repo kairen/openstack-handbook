@@ -587,3 +587,5 @@ $ . admin-openrc
 $ neutron agent-list
 ```
 > 若正確的話，會看到多一個```compute```節點執行了 agent
+
+完成後，就可以建立外部網路與租戶網路（Self-service），請參閱 [建立外部網路與租戶網路](create-network.md)。

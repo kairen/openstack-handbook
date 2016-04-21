@@ -9,7 +9,7 @@ git clone https://github.com/openstack/horizon.git /opt/horizon stable/liberty
 ```
 設定目錄權限，這邊 user 為```openstack```：
 ```sh
-sudo chown -R $USER:$USER /opt/horizon
+sudo chown -R ${USER}:${USER} /opt/horizon
 ```
 > 若權限還有問題，可採用```sudo chmod 775 -R /opt/horizon```。
 
@@ -30,23 +30,28 @@ cp openstack_dashboard/local/local_settings.py.example openstack_dashboard/local
 加入與修改 ```openstack_dashboard/local/local_settings.py```的以下變數：
 ```sh
 COMPRESS_OFFLINE = True
-OPENSTACK_HOST = "controller"
-OPENSTACK_KEYSTONE_URL = "http://%s:5000/v2.0" % OPENSTACK_HOST
-OPENSTACK_KEYSTONE_DEFAULT_ROLE = "user"
+OPENSTACK_HOST = "10.0.0.11"
+ALLOWED_HOSTS = '*'
 
-SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-        'LOCATION': '127.0.0.1:11211',
-    }
+   'default': {
+       'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+       'LOCATION': '127.0.0.1:11211',
+   }
 }
 
-#CACHES = {
-#    'default': {
-#        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-#    }
-#}
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+
+OPENSTACK_KEYSTONE_URL = "http://%s:5000/v3" % OPENSTACK_HOST
+OPENSTACK_KEYSTONE_DEFAULT_ROLE = "user"
+OPENSTACK_KEYSTONE_MULTIDOMAIN_SUPPORT = True
+OPENSTACK_KEYSTONE_DEFAULT_DOMAIN = 'default'
+
+OPENSTACK_API_VERSIONS = {
+    "identity": 3,
+    "image": 2,
+    "volume": 2,
+}
 ```
 > 更多的部署與設定可以參考 [Deploying Horizon](http://docs.openstack.org/developer/horizon/topics/deployment.html)與[Settings and Configuration](http://docs.openstack.org/developer/horizon/topics/settings.html)。
 
@@ -55,18 +60,22 @@ CACHES = {
 ./manage.py collectstatic
 ./manage.py compress
 ```
+
 設定一個支援 WSGI 的 Web server，首先安裝相關套件：
 ```sh
 sudo apt-get install apache2 libapache2-mod-wsgi
 ```
+
 可以採用內建的```openstack_dashboard/wsgi/django.wsgi```檔案，也可以自行建立：
 ```sh
 ./manage.py make_web_conf --wsgi
 ```
+
 我們需為 Apache2 提供一個 WSGI 設定檔案 ```/etc/apache2/sites-available/horizon.conf```，可以採用以下指令產生：
 ```sh
 ./manage.py make_web_conf --apache | sudo tee /etc/apache2/sites-available/horizon.conf
 ```
+
 修改與設定 Apache2 的 sites-available 下的 ```/etc/apache2/sites-available/horizon.conf```：
 ```
 <VirtualHost *:80>
@@ -109,4 +118,3 @@ sudo apt-get install apache2 libapache2-mod-wsgi
 2. 使用admin或demo的使用者登入。
 
 ![horizon](images/horizon.png)
-

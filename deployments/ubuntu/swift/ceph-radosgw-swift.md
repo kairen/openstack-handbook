@@ -42,7 +42,8 @@ rgw dns name = ${HOSTNAME}
 建立 fcgi 檔案，並設定檔案權限：
 ```sh
 $ echo -n "#!/bin/sh
-exec /usr/bin/radosgw -c /etc/ceph/ceph.conf -n client.radosgw.${HOSTNAME}" | sudo tee -a /var/www/s3gw.fcgi
+exec /usr/bin/radosgw -c /etc/ceph/ceph.conf -n client.radosgw.${HOSTNAME}" \
+| sudo tee -a /var/www/s3gw.fcgi
 $ sudo chmod +x /var/www/s3gw.fcgi
 ```
 
@@ -103,32 +104,32 @@ $ sudo update-rc.d radosgw defaults
 
 ### 建立  pool
 ```sh
-ceph osd pool create {pool-name} {pg-num} [{pgp-num}] [replicated] \
+$ ceph osd pool create {pool-name} {pg-num} [{pgp-num}] [replicated] \
      [crush-ruleset-name] [expected-num-objects]
 ```
- * rgw.root   
- * rgw.control
- * rgw
- * rgw.gc
- * users.uid
- * users
- * users.email
- * users.swift          
- * rgw.buckets.index     
- * rgw.buckets
+ * .rgw.root   
+ * .rgw.control
+ * .rgw
+ * .rgw.gc
+ * .users.uid
+ * .users
+ * .users.email
+ * .users.swift          
+ * .rgw.buckets.index     
+ * .rgw.buckets
 
 > 可以參考 [PG Calc](http://ceph.com/pgcalc/) 的 PG Number，並產生指令。
 
 ### 使用 cph-deploy 建立 radosgw 與 pool
 ```sh
-ceph-deploy install <host>
-ceph-deploy rgw create <host>:rgw1
+$ ceph-deploy install <host>
+$ ceph-deploy rgw create <host>:rgw1
 ```
 
 ### 基本指令使用
 建立使用者（如果有出現特殊字元就刪除再重建使用者，刪除指令參考下一項）
 ```sh
-radosgw-admin user create \
+$ radosgw-admin user create \
 --uid=test.s3 \
 --display-name="test.s3" \
 --email=test.s3@gmail.com
@@ -136,55 +137,61 @@ radosgw-admin user create \
 
 刪除使用者的指令：
 ```sh
-radosgw-admin user rm --uid=yangbx
+$ radosgw-admin user rm --uid=test.s3
 ```
 
 建立subuser，建完請確認要有紅字的內容，沒有subuser，swift client無法連線
 ```sh
-radosgw-admin subuser create --uid=yangbx --subuser=yangbx:swift --access=full
+$ radosgw-admin subuser create --uid=test.s3 \
+--subuser=test.s3:swift --access=full
 ```
 
 產生secret-key(如果有secret有特殊字元就重複執行產生key的指令)
 ```sh
-radosgw-admin key create --gen-secret --subuser=yangbx:swift --key-type=swift
+$ radosgw-admin key create --gen-secret \
+--subuser=test.s3:swift --key-type=swift
 ```
 
 Status
 ```sh
-swift -v -A http://10.0.0.11:8080/auth/v1.0 \
--U yangbx:swift \
---key='p4TBc3beiyNayNdPJ7YLq2xpzXQFMpapZI9BdPdC' \
+$ swift -v -A http://10.0.0.11:8080/auth/v1.0 \
+-U test.s3:swift \
+--key='yZsnzDEQtxwVrjSnabuaSEX8xqvfXn8ZVEZ6oQZs' \
 stat
-
 ```
 
 Create bucket
 ```sh
-swift -V 1.0 -A http://10.0.0.11:7480/auth \
--U melon:swift \
--K 1kMJX5j6Um4DJ7FLMeqwtgdBVOVBe0WWx6xTLHHX \
+$ swift -V 1.0 -A http://10.0.0.11:7480/auth \
+-U test.s3:swift \
+-K yZsnzDEQtxwVrjSnabuaSEX8xqvfXn8ZVEZ6oQZs \
 post melon-buc
-
 ```
 
 List Containers
 ```sh
-swift -V 1.0 -A http://10.0.0.11:7480/auth \
--U melon:swift -K 1kMJX5j6Um4DJ7FLMeqwtgdBVOVBe0WWx6xTLHHX \
+$ swift -V 1.0 -A http://10.0.0.11:7480/auth \
+-U test.s3:swift -K yZsnzDEQtxwVrjSnabuaSEX8xqvfXn8ZVEZ6oQZs \
 list
 ```
 
 Upload file
 ```sh
-swift -V 1.0 -A http://10.0.0.11:7480/auth -U melon:swift -K 1kMJX5j6Um4DJ7FLMeqwtgdBVOVBe0WWx6xTLHHX upload melon-buc cirr.img
+$ swift -V 1.0 -A http://10.0.0.11:7480/auth \
+-U test.s3:swift -K yZsnzDEQtxwVrjSnabuaSEX8xqvfXn8ZVEZ6oQZs \
+upload melon-buc cirr.img
 ```
 
 List bucket files
 ```sh
-swift -V 1.0 -A http://10.0.0.11:7480/auth -U melon:swift -K 1kMJX5j6Um4DJ7FLMeqwtgdBVOVBe0WWx6xTLHHX list melon-buc
+$ swift -V 1.0 -A http://10.0.0.11:7480/auth \
+-U test.s3:swift -K yZsnzDEQtxwVrjSnabuaSEX8xqvfXn8ZVEZ6oQZs \
+list melon-buc
 ```
 
 Delete files
-```
-swift -V 1.0 -A http://10.0.0.11:7480/auth -U melon:swift -K 1kMJX5j6Um4DJ7FLMeqwtgdBVOVBe0WWx6xTLHHX delete melen-buc cirr.img
+```sh
+$ swift -V 1.0 -A http://10.0.0.11:7480/auth \
+-U test.s3:swift -K yZsnzDEQtxwVrjSnabuaSEX8xqvfXn8ZVEZ6oQZs \
+delete melen-buc cirr.img
 ```

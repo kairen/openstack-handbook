@@ -114,18 +114,12 @@ $ sudo apt-get install -y mariadb-server python-pymysql
 ```sh
 [mysqld]
 bind-address = 10.0.0.11
-```
-> 這邊的檔案 ```mysqld_openstack.cnf``` 是可以修改名稱的。
-
-一樣在```[mysqld]```部分透過修改以下參數，來提供一些基本設定：
-```sh
-[mysqld]
-...
 default-storage-engine = innodb
 innodb_file_per_table
 collation-server = utf8_general_ci
 character-set-server = utf8
 ```
+> 這邊的檔案 ```mysqld_openstack.cnf``` 是可以修改名稱的。
 
 完成後，重新啟動 MySQL 服務：
 ```sh

@@ -36,7 +36,7 @@
            * [客制化 Horizon](deployments/ubuntu/horizon/customized-ui.md)
        * [Cinder 安裝與設定](deployments/ubuntu/cinder/README.md)
            * [Cinder 與 Ceph 整合](deployments/ubuntu/cinder/ceph-cinder.md)
-           * [NFS Driver 設定](deployments/ubuntu/cinder/nfs.md)
+           * [NFS Driver 設定](deployments/ubuntu/cinder/nfs-driver.md)
        * [Manila 安裝與設定](deployments/ubuntu/manila/README.md)
            * [選項一:無驅動程式支援](deployments/ubuntu/manila/no-driver-support.md)
            * [選項二:有驅動程式支援](deployments/ubuntu/manila/driver-support.md)

@@ -1,320 +1,293 @@
 # Magnum 安裝與設定
-本章節會說明與操作如何安裝```Container as a Service```服務到OpenStack Controller節點上，並設置相關參數與設定。
+本章節會說明與操作如何安裝容器服務到 Controller 節點上，並設置相關參數與設定。。若對於 Murano 不瞭解的人，可以參考[Magnum 容器即服務](../../../conceptions/magnum/README.md)
+
+- [安裝前準備](#安裝前準備)
+- [套件安裝與設定](#套件安裝與設定)
+- [驗證服務](#驗證服務)
+    - [佈署 Kubernetes](#佈署-kubernetes)
+    - [佈署 Mesos](#佈署-mesos)
+    - [佈署 Docker Swarm](#佈署-docker-swarm)
 
 ### 安裝前準備
-我們需要在 Database 底下建立儲存 Magnum 資料庫，利用```mysql```指令進入：
+在開始安裝前，要預先建立一個資料庫給 Magnum 儲存相關資訊，使用以下指令建立資料庫：
+```sh
+$ mysql -u root -p
+```
+
+透過以下命令用來更新現有帳號資料或建立 Magnum 資料庫：
 ```sql
 CREATE DATABASE magnum;
 GRANT ALL PRIVILEGES ON magnum.* TO 'magnum'@'localhost'  IDENTIFIED BY 'MAGNUM_DBPASS';
 GRANT ALL PRIVILEGES ON magnum.* TO 'magnum'@'%'  IDENTIFIED BY 'MAGNUM_DBPASS';
 ```
-> 這邊若```MAGNUM_DBPASS```要更改的話，可以更改。
+> 這邊```MAGNUM_DBPASS```可以隨需求修改。
 
-接著要導入Keystone的```admin```帳號，來建立服務：
+完成後離開資料庫，接著要建立 Service 與 API Endpoint，首先導入 ```admin``` 環境變數：
 ```sh
-source admin-openrc.sh
+$ . admin-openrc
 ```
-透過以下指令建立服務驗證：
+
+接著透過以下流程來建立 Magnum 的使用者、Service 以及 API Endpoint：
 ```sh
 # 建立 Magnum User
-openstack user create --password MAGNUM_PASS --email magnum@example.com magnum
+$ openstack user create --domain default --password MAGNUM_PASS --email magnum@example.com magnum
 
 # 建立 Magnum Role
-openstack role add --project service --user magnum admin
+$ openstack role add --project service --user magnum admin
 
 # 建立 Magnum service
-openstack service create --name magnum  --description "magnum Container Service" container
+$ openstack service create --name magnum \
+--description "Container Service" container
 
-# 建立 Magnum URL
-openstack endpoint create \
---publicurl http://10.0.0.11:9511/v1 \
---internalurl http://10.0.0.11:9511/v1 \
---adminurl http://10.0.0.11:9511/v1 \
---region RegionOne container
+# 建立 Magnum public endpoints
+$ openstack endpoint create --region RegionOne \
+container public http://10.0.0.11:9511/v1
+
+# 建立 Magnum internal endpoints
+$ openstack endpoint create --region RegionOne \
+container internal http://10.0.0.11:9511/v1
+
+# 建立 Magnum admin endpoints
+$ openstack endpoint create --region RegionOne \
+container admin http://10.0.0.11:9511/v1
 ```
-> 這邊若```MAGNUM_PASS```要更改的話，可以更改。
+> 這邊```MAGNUM_PASS```可以隨需求修改。
 
-建立 magnum 使用者與相關檔案放置用目錄：
+### 套件安裝與設定
+在開始設定之前，首先要安裝相關套件與 OpenStack 服務套件，可以透過以下指令進行安裝：
 ```sh
-for SERVICE in magnum
-do
-useradd --home-dir "/var/lib/$SERVICE" \
-    --create-home \
-    --system \
-    --shell /bin/false \
-    $SERVICE
-
-#Create essential dirs
-
-mkdir -p /var/log/$SERVICE
-mkdir -p /etc/$SERVICE
-
-#Set ownership of the dirs
-
-chown -R $SERVICE:$SERVICE /var/log/$SERVICE
-chown -R $SERVICE:$SERVICE /var/lib/$SERVICE
-chown $SERVICE:$SERVICE /etc/$SERVICE
-done
+$ sudo apt-get install magnum-api magnum-conductor
 ```
 
-### 安裝 Container service
-當 endpoint 與 mysql 建立完成，就可以開始進行安裝，由於 Magnum 目前還沒有相關 .deb 安裝套件，故使用 git 的 repository 安裝：
-```sh
-cd ~/
-git clone https://git.openstack.org/openstack/magnum
-cd magnum
-sudo pip install -e .
+安裝完成後，編輯```/etc/magnum/magnum.conf```設定檔，在```[DEFAULT]```部分加入以下內容：
 ```
-建立 ```/etc/magnum``` 放置設定檔：
-```sh
-sudo mkdir -p /etc/magnum
-```
-
-產生 magnum 的設定檔案，可以透過```tox```產生檔案：
-```sh
-tox -e genconfig
-```
-
-複製相關設定與參數檔案於 ```/etc/magnum```：
-```sh
-sudo cp etc/magnum/magnum.conf.sample /etc/magnum/magnum.conf
-sudo cp etc/magnum/policy.json /etc/magnum/policy.json
-sudo chown magnum:magnum -R /etc/magnum
-```
-配置設定檔案```/etc/magnum/magnum.conf```的```[DEFAULT]```：
-```sh
 [DEFAULT]
-logging_exception_prefix = %(color)s%(asctime)s.%(msecs)03d TRACE %(name)s %(instance)s
-logging_debug_format_suffix = from (pid=%(process)d) %(funcName)s %(pathname)s:%(lineno)d
-logging_default_format_string = %(asctime)s.%(msecs)03d %(color)s%(levelname)s %(name)s [-%(color)s] %(instance)s%(color)s%(message)s
-logging_context_format_string = %(asctime)s.%(msecs)03d %(color)s%(levelname)s %(name)s [%(request_id)s %(user_name)s %(project_name)s%(color)s] %(instance)s%(color)s%(message)s
 debug = True
+
+rpc_backend = rabbit
+auth_strategy = keystone
 ```
 
-在 ```[database]```加入連接的資料庫：
-```sh
-[database]
-connection = mysql+pymysql://magnum:MAGNUM_DBPASS@10.0.0.11/magnum?charset=utf8
+接下來，在```[database]```部分修改使用以下方式：
 ```
-在```[oslo_messaging_rabbit]```加入 AMQP 帳號與密碼等：
-```sh
+[database]
+connection = mysql+pymysql://magnum:MAGNUM_DBPASS@10.0.0.11/magnum
+```
+> 這邊```MAGNUM_DBPASS```可以隨需求修改。
+
+在```[oslo_messaging_rabbit]```部分加入以下內容：
+```
 [oslo_messaging_rabbit]
 rabbit_host = 10.0.0.11
 rabbit_userid = openstack
 rabbit_password = RABBIT_PASS
 ```
-在 ```[keystone_authtoken]```加入 keystone 驗證：
-```sh
+> 這邊```RABBIT_PASS```可以隨需求修改。
+
+在```[keystone_authtoken]```部分加入以下內容：
+```
 [keystone_authtoken]
-auth_version = v3
-memcache_servers = localhost:11211
-auth_uri = http://10.0.0.11:5000/v3
-project_domain_id = default
+auth_uri = http://10.0.0.11:5000
+auth_url = http://10.0.0.11:35357
+memcached_servers = 10.0.0.11:11211
+auth_type = password
+project_domain_name = default
+user_domain_name = default
 project_name = service
-user_domain_id = default
 username = magnum
 password = MAGNUM_PASS
-
-auth_url = http://10.0.0.11:35357
-auth_type = password
-admin_tenant_name = service
-admin_user = magnum
-admin_password = MAGNUM_PASS
 ```
-在 ```[api]```加入 bind ip 與 port：
-```sh
+> 這邊```MAGNUM_PASS```可以隨需求修改。
+
+在```[engine]```部分加入以下內容：
+```
 [api]
 port = 9511
 host = 10.0.0.11
 ```
-在```[oslo_policy]```加入 policy 檔案位置：
-```sh
+
+在```[oslo_policy]```部分加入以下內容：
+```
 [oslo_policy]
 policy_file = /etc/magnum/policy.json
 ```
 
-在```[oslo_concurrency]```加入 Lock path：
-```sh
+在```[oslo_concurrency]```部分加入以下內容：
+```
 [oslo_concurrency]
 lock_path = /var/lib/magnum/tmp
 ```
 
-在```[certificates]```加入憑證放置位置：
-```sh
+在```[certificates]```部分加入以下內容：
+```
 [certificates]
 cert_manager_type = local
 storage_path = /var/lib/magnum/certificates/
 ```
-> 若出錯，注意```/var/lib/magnum/certificates/```是否有建立，並設定正確權限。
 
-完成後，透過以下指令初始化與同步資料庫：
-```sh
-magnum-db-manage upgrade
+在```[cinder_client]```部分加入以下內容：
+```
+[cinder_client]
+region_name = RegionOne
 ```
 
-新增 ```magnum-api``` upstart 檔案```/etc/init/magnum-api.conf```：
+完成所有設定後，即可同步資料庫來建立 Magnum 資料表：
 ```sh
-cat > /etc/init/magnum-api.conf << EOF
-description "OpenStack Magnum API"
-author "kyle Bai <kyle.b@inwinStack.com>"
-
-start on runlevel [2345]
-stop on runlevel [!2345]
-
-exec start-stop-daemon --start --chuid magnum --exec /usr/local/bin/magnum-api -- --config-file=/etc/magnum/magnum.conf
-EOF
-```
-新增 ```magnum-conductor``` upstart 檔案```/etc/init/magnum-conductor.conf```：
-```sh
-cat > /etc/init/magnum-conductor.conf << EOF
-description "OpenStack Magnum Conductor"
-author "kyle Bai <kyle.b@inwinStack.com>"
-
-start on runlevel [2345]
-stop on runlevel [!2345]
-
-exec start-stop-daemon --start --chuid magnum --exec /usr/local/bin/magnum-conductor -- --config-file=/etc/magnum/magnum.conf
-EOF
+$ sudo magnum-db-manage upgrade
 ```
 
-完成 upstart 檔案建立後，使用```update-rc.d```指令設定開機啟動：
+重新啟動所有 Magnum 服務：
 ```sh
-sudo update-rc.d magnum-api defaults
-sudo update-rc.d magnum-conductor defaults
+sudo service magnum-api restart
+sudo service magnum-conductor restart
 ```
-啟動服務：
-```sh
-sudo start magnum-api
-sudo start magnum-conductor
-```
-> 也可以在 ```/etc/init.d/``` 下建立相關檔案，來使用服務 daemon。
 
-### 驗證 Container 服務
-首先上傳 magnum 使用的通用映像檔```fedora-21-atomic```，透過```wget```下載檔案：
+### 驗證服務
+首先回到 ```Controller``` 節點並接著導入 ```admin``` 帳號來驗證服務：
 ```sh
-wget https://fedorapeople.org/groups/magnum/fedora-23-atomic-7.qcow2
+$ . admin-openrc
 ```
-透過```glance```指令上傳映像檔至 image service：
+
+透過 Magnum client 來查看服務列表，如以下方式：
 ```sh
-glance image-create --name fedora-23-atomic-7  \
+$ magnum service-list
++----+------------+------------------+-------+
+| id | host       | binary           | state |
++----+------------+------------------+-------+
+| 1  | controller | magnum-conductor | up    |
++----+------------+------------------+-------+
+```
+
+接著下載將使用的 Magnum service 映像檔，以下是提供 k8s 與 docker swarm 使用：
+```sh
+$ wget https://fedorapeople.org/groups/magnum/fedora-23-atomic-20160405.qcow2
+```
+> 其他版本可以參考 [Magnum image elements](https://fedorapeople.org/groups/magnum/)。
+
+透過 Glance client 來上傳映像檔到 OpenStack：
+```sh
+$ glance image-create --name fedora-23-atomic \
 --disk-format=qcow2 --container-format=bare \
 --property os_distro='fedora-atomic' \
---file=fedora-23-atomic-7.qcow2 \
+--file fedora-23-atomic-20160405.qcow2 \
 --visibility public --progress
 ```
 
-若 Mesos 則使用映像檔```ubuntu-mesos```，透過```wget```下載檔案：
+若 Mesos 則下載該映像檔：
 ```sh
-wget https://fedorapeople.org/groups/magnum/ubuntu-14.04.3-mesos-0.25.0.qcow2
+$ wget https://fedorapeople.org/groups/magnum/ubuntu-14.04.3-mesos-0.25.0.qcow2
 ```
-透過```glance```指令上傳映像檔至 image service：
+> 其他版本可以參考 [Magnum image elements](https://fedorapeople.org/groups/magnum/)。
+
+透過 Glance client 來上傳映像檔到 OpenStack：
 ```sh
-glance image-create --name  ubuntu-mesos  \
+$ glance image-create --name ubuntu-mesos \
 --disk-format=qcow2 --container-format=bare \
 --property os_distro='ubuntu' \
---file=ubuntu-mesos.qcow2 \
+--file ubuntu-14.04.3-mesos-0.25.0.qcow2 \
 --visibility public --progress
 ```
 
-#### Kubernetes
-採用 Kubernetes 可以使用以下指令建立 baymodel：
-```sh
-magnum baymodel-create --name k8sbaymodel \
---image-id fedora-23-atomic-7 \
---keypair-id <Your_KEY> \
---external-network-id ext-net \
+### 佈署 Kubernetes
+首先透過 Magnum client 建立 baymodel，來提供虛擬機的規格：
+```
+$ magnum baymodel-create --name k8smodel \
+--image-id fedora-23-atomic \
+--keypair-id KEY_ID \
+--external-network-id EXTERNAL_NETWORK \
 --dns-nameserver 8.8.8.8 \
---flavor-id m1.small \
+--flavor-id m1.medium \
 --docker-volume-size 5 \
 --network-driver flannel \
 --coe kubernetes
 ```
-若成功會類似如下所示資訊呈現：
-```sh
+> 這邊```KEY_ID```請取代成自己個 Key Pair Name。```EXTERNAL_NETWORK```取代成 Provider Network Name。
+
+成功的話，會看到類似以下結果：
+```
 +---------------------+--------------------------------------+
 | Property            | Value                                |
 +---------------------+--------------------------------------+
 | http_proxy          | None                                 |
 | updated_at          | None                                 |
 | master_flavor_id    | None                                 |
-| fixed_network       | None                                 |
-| uuid                | 8bbec1f8-6983-495e-899b-9a8c567c20bc |
+| uuid                | 7c0042f1-0ddc-4b7a-a246-1d6f67a8204e |
 | no_proxy            | None                                 |
 | https_proxy         | None                                 |
 | tls_disabled        | False                                |
-| keypair_id          | kairen                               |
+| keypair_id          | kylebai                              |
 | public              | False                                |
 | labels              | {}                                   |
 | docker_volume_size  | 5                                    |
-| external_network_id | 9cb7c9fb-de9f-4b28-b7b4-4b496aabe2f7 |
+| server_type         | vm                                   |
+| external_network_id | ext-net                              |
 | cluster_distro      | fedora-atomic                        |
-| image_id            | 28d6814e-e6f5-4cdf-9f30-366c1100443e |
+| image_id            | fedora-23-atomic                     |
+| volume_driver       | None                                 |
 | registry_enabled    | False                                |
 | apiserver_port      | None                                 |
-| name                | k8sbaymodels-bai                     |
-| created_at          | 2015-11-17T02:58:34+00:00            |
+| name                | k8smodel                             |
+| created_at          | 2016-04-21T10:55:11+00:00            |
 | network_driver      | flannel                              |
-| ssh_authorized_key  | None                                 |
+| fixed_network       | None                                 |
 | coe                 | kubernetes                           |
 | flavor_id           | m1.medium                            |
 | dns_nameserver      | 8.8.8.8                              |
 +---------------------+--------------------------------------+
 ```
+
 完成後，就可以建立實例的 bay 來部署叢集：
 ```sh
-magnum bay-create --name k8sbay --baymodel k8sbaymodel --node-count 1
+$ magnum bay-create --name k8sbay \
+--baymodel k8smodel --node-count 1
 ```
-> 若要更新節點數可以用以下指令：
+> 若要更新節點數可以用該指令：
 ```sh
-magnum bay-update k8sbay replace node_count=2
+$ magnum bay-update k8sbay replace node_count=2
 ```
 
-使用 kubernetes 範例，下載 Google k8s 資源庫：
-```sh
-wget https://github.com/kubernetes/kubernetes/releases/download/v1.0.1/kubernetes.tar.gz
-tar -xvzf kubernetes.tar.gz
-```
 > 範例操作還是看這邊比較快 [Developer Quick-Start](http://docs.openstack.org/developer/magnum/dev/dev-quickstart.html)。
 
-
-#### Mesos
+### 佈署 Mesos
 採用 Mesos 可以使用以下指令建立 baymodel：
-```sh
-magnum baymodel-create --name mesosbaymodel \
+```
+$ magnum baymodel-create --name mesosbaymodel \
 --image-id ubuntu-mesos \
---keypair-id kairen \
---external-network-id ext-net \
+--keypair-id KEY_ID \
+--external-network-id EXTERNAL_NETWORK \
 --dns-nameserver 8.8.8.8 \
 --flavor-id m1.small \
 --coe mesos
 ```
+> 這邊```KEY_ID```請取代成自己個 Key Pair Name。```EXTERNAL_NETWORK```取代成 Provider Network Name。
 
-若成功的話，會顯示類似以下的內容：
-```sh
+成功的話，會看到類似以下結果：
+```
 +---------------------+--------------------------------------+
 | Property            | Value                                |
 +---------------------+--------------------------------------+
 | http_proxy          | None                                 |
 | updated_at          | None                                 |
 | master_flavor_id    | None                                 |
-| fixed_network       | None                                 |
-| uuid                | c1c6330a-2d51-4052-b82f-097c381b5544 |
+| uuid                | 88134520-7780-43e6-9a6b-62b0d0c7df2b |
 | no_proxy            | None                                 |
 | https_proxy         | None                                 |
 | tls_disabled        | False                                |
-| keypair_id          | kairen                               |
+| keypair_id          | kylebai                              |
 | public              | False                                |
 | labels              | {}                                   |
 | docker_volume_size  | None                                 |
-| external_network_id | 9cb7c9fb-de9f-4b28-b7b4-4b496aabe2f7 |
+| server_type         | vm                                   |
+| external_network_id | ext-net                              |
 | cluster_distro      | ubuntu                               |
 | image_id            | ubuntu-mesos                         |
+| volume_driver       | None                                 |
 | registry_enabled    | False                                |
 | apiserver_port      | None                                 |
 | name                | mesosbaymodel                        |
-| created_at          | 2015-11-17T04:38:09+00:00            |
-| network_driver      | None                                 |
-| ssh_authorized_key  | None                                 |
+| created_at          | 2016-04-21T10:58:49+00:00            |
+| network_driver      | docker                               |
+| fixed_network       | None                                 |
 | coe                 | mesos                                |
 | flavor_id           | m1.small                             |
 | dns_nameserver      | 8.8.8.8                              |
@@ -322,20 +295,19 @@ magnum baymodel-create --name mesosbaymodel \
 ```
 
 完成後，就可以建立實例的 bay 來部署叢集：
-
 ```sh
-magnum bay-create --name mesosbay --baymodel mesosbaymodel --node-count 2
+$ magnum bay-create --name mesosbay \
+--baymodel mesosbaymodel --node-count 2
 ```
 > 範例操作還是看這邊比較快 [Developer Quick-Start](http://docs.openstack.org/developer/magnum/dev/dev-quickstart.html)。
 
-
-#### Docker Swarm
+### 佈署 Docker Swarm
 採用 Docker Swarm 可以使用以下指令建立 baymodel：
 ```
-magnum baymodel-create --name swarmbaymodel \
---image-id fedora-23-atomic-7 \
---keypair-id kairen \
---external-network-id ext-net \
+$ magnum baymodel-create --name swarmbaymodel \
+--image-id fedora-23-atomic \
+--keypair-id KEY_ID \
+--external-network-id EXTERNAL_NETWORK \
 --dns-nameserver 8.8.8.8 \
 --flavor-id m1.small \
 --coe swarm
@@ -349,35 +321,34 @@ magnum baymodel-create --name swarmbaymodel \
 | http_proxy          | None                                 |
 | updated_at          | None                                 |
 | master_flavor_id    | None                                 |
-| fixed_network       | None                                 |
-| uuid                | 7f1c01ea-4006-4e67-9804-a3b36754e781 |
+| uuid                | 6308107c-6cd1-4421-b054-caa06abf3a86 |
 | no_proxy            | None                                 |
 | https_proxy         | None                                 |
 | tls_disabled        | False                                |
-| keypair_id          | kairen                               |
+| keypair_id          | kylebai                              |
 | public              | False                                |
 | labels              | {}                                   |
 | docker_volume_size  | None                                 |
-| external_network_id | 9cb7c9fb-de9f-4b28-b7b4-4b496aabe2f7 |
+| server_type         | vm                                   |
+| external_network_id | ext-net                              |
 | cluster_distro      | fedora-atomic                        |
-| image_id            | fedora-21-atomic-5                   |
+| image_id            | fedora-23-atomic                     |
+| volume_driver       | None                                 |
 | registry_enabled    | False                                |
 | apiserver_port      | None                                 |
 | name                | swarmbaymodel                        |
-| created_at          | 2015-11-17T04:59:38+00:00            |
-| network_driver      | None                                 |
-| ssh_authorized_key  | None                                 |
+| created_at          | 2016-04-21T11:00:55+00:00            |
+| network_driver      | docker                               |
+| fixed_network       | None                                 |
 | coe                 | swarm                                |
 | flavor_id           | m1.small                             |
 | dns_nameserver      | 8.8.8.8                              |
 +---------------------+--------------------------------------+
 ```
+
 完成後，就可以建立實例的 bay 來部署叢集：
 ```sh
-magnum bay-create --name swarmbay --baymodel swarmbaymodel --node-count 2
+$ magnum bay-create --name swarmbay \
+--baymodel swarmbaymodel --node-count 2
 ```
 > 範例操作還是看這邊比較快 [Developer Quick-Start](http://docs.openstack.org/developer/magnum/dev/dev-quickstart.html)。
-
-### 其他參考
-* [Magnum Liberty](http://blog.yaoyumeng.com/2015/10/30/OpenStack-Liberty%E7%89%88%E6%9C%AC%E4%B8%8B%E6%9E%81%E9%80%9F%E4%BD%93%E9%AA%8CMagnum/)
-* [Magnum 架構](http://www.csdn.net/article/2015-11-07/2826146)

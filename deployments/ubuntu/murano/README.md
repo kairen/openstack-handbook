@@ -59,9 +59,9 @@ $ sudo apt-get install murano-api murano-engine python-muranoclient
 安裝完成後，編輯 ```/etc/murano/murano.conf``` 設定檔，在```[DEFAULT]```部分加入以下內容：
 ```
 [DEFAULT]
+home_region = RegionOne
+use_syslog = False
 debug = True
-rpc_backend = rabbit
-auth_strategy = keystone
 ```
 
 接下來，在```[database]```部分修改使用以下方式：
@@ -83,13 +83,16 @@ rabbit_password = RABBIT_PASS
 在```[keystone_authtoken]```部分加入以下內容：
 ```
 [keystone_authtoken]
+memcached_servers = 10.0.0.11:11211
 auth_uri = http://10.0.0.11:5000
 auth_url = http://10.0.0.11:35357
-memcached_servers = 10.0.0.11:11211
-auth_type = password
 project_domain_name = default
-user_domain_name = default
 project_name = service
+user_domain_name = default
+admin_tenant_name = default
+auth_type = password
+admin_user = murano
+admin_password = MURANO_PASS
 username = murano
 password = MURANO_PASS
 ```
@@ -101,6 +104,12 @@ password = MURANO_PASS
 enable_model_policy_enforcer = False
 ```
 
+在```[murano]```部分加入以下內容：
+```
+[murano]
+url = http://127.0.0.1:8082
+```
+
 在```[networking]```部分加入以下內容：
 ```
 [networking]
@@ -108,6 +117,26 @@ create_router = true
 external_network = EXTERNAL_NETWORK
 ```
 > 這邊```EXTERNAL_NETWORK```請取代成環境的 Provider 網路。
+
+在```[oslo_messaging_notifications]```部分加入以下內容：
+```
+[oslo_messaging_notifications]
+driver = messagingv2
+```
+
+在```[rabbitmq]```部分加入以下內容：
+```
+[rabbitmq]
+host = 10.0.0.11
+login = openstack
+password = RABBIT_PASS
+```
+
+在```[keystone]```部分加入以下內容：
+```
+[keystone]
+auth_url = http://10.0.0.11:5000
+```
 
 完成所有設定後，即可同步資料庫來建立 Murano 資料表：
 ```

@@ -9,7 +9,6 @@
 - [啟用 Block Storage Meters](#啟用-block-storage-meters)
 - [啟用 Object Storage Meters](#啟用-object-storage-meters)
 - [驗證服務](#驗證服務)
-- [其他參考網站](#其他參考網站)
 
 # Controller Node
 在 Controller 節點我們需要安裝 Ceilometer 的 API Server 以及用於儲存資料的 MongoDB。
@@ -280,7 +279,6 @@ $ . admin-openrc
 透過 Keystone client 建立 ResellerAdmin role：
 ```sh
 $ openstack role create ResellerAdmin
-```
 
 然後將 ResellerAdmin role 加入到 Server project，並賦予給 ceilometer 使用者：
 ```sh

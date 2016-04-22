@@ -102,7 +102,7 @@ $ sudo apt-get update && sudo apt-get -y dist-upgrade
 > 如果 Upgrade 包含了新的核心套件的話，請重新開機。
 
 # SQL database 安裝
-大部份的 OpenStack 套件服務都是只用 SQL 資料庫來儲存訊息，該資料庫一般運作於```Controller```上。以下我們使用了 MariaDB 或 MySQL 來當作各套件的資訊儲存。OpenStack 也支援了其他資料庫，諸如：PostgreSQL。這邊透過```apt-get```來安裝 MariaDB 套件：
+大部份的 OpenStack 套件服務都是使用 SQL 資料庫來儲存訊息，該資料庫一般運作於```Controller```上。以下我們使用了 MariaDB 或 MySQL 來當作各套件的資訊儲存。OpenStack 也支援了其他資料庫，諸如：PostgreSQL。這邊透過```apt-get```來安裝 MariaDB 套件：
 ```sh
 $ sudo apt-get install -y mariadb-server python-pymysql
 ```

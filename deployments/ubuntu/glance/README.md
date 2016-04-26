@@ -151,7 +151,7 @@ $ wget http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img
 
 這邊透過指令將映像檔上傳，採用 ```QCOW2``` 格式，並且設定為公開的映像檔，來提供給雲端租戶們使用：
 ```sh
-$ glance image-create --name "cirros-0.3.4" \
+$ glance image-create --name "cirros-0.3.4-x86_64" \
 --file cirros-0.3.4-x86_64-disk.img \
 --disk-format qcow2 --container-format bare \
 --visibility public --progress

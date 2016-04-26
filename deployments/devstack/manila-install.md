@@ -1,5 +1,10 @@
 # DevStack Manila 安裝
-若要安裝 manila，可以依照下面方式設定```localrc```安裝：
+若要安裝 manila，可以依照下面方式設定```localrc```安裝，首先下載 DevStack：
+```sh
+$ git clone https://git.openstack.org/openstack-dev/devstack
+```
+
+編輯```localrc```，並加入以下內容：
 ```sh
 HOST_IP=localhost
 enable_service horizon

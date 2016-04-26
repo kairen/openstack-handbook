@@ -1,7 +1,7 @@
 # DevStack all-in-one 安裝
 以下將利用 DevStack 進行單一節點的安裝，來提供一個開發與測試用 OpenStack 環境，首先安裝 Git 套件與下載 OpenStack git 資源庫：
 ```sh
-$ sudo apt-get install -y git
+$ sudo yum install -y git
 $ git clone https://git.openstack.org/openstack-dev/devstack
 $ git checkout stable/mitaka
 ```
@@ -11,10 +11,10 @@ $ git checkout stable/mitaka
 * **Eth0**：Internet 網路，這邊實驗網段為```10.21.20.0/24```。
 * **Eth1**：與 ```eth0``` 同網段，拿來做為 Public 網路存取使用，需將網卡設定為以下：
 ```
-auto eth1
-iface eth1 inet manual
-up ifconfig $IFACE 0.0.0.0 up
-down ifconfig $IFACE 0.0.0.0 down
+DEVICE=eth1
+TYPE=Ethernet
+ONBOOT="yes"
+BOOTPROTO="none"
 ```
 
 ### DevStack localrc 設定
@@ -28,7 +28,7 @@ SERVICE_PASSWORD=$ADMIN_PASSWORD
 SERVICE_TOKEN=$ADMIN_PASSWORD
 
 # Target Path
-DEST=/opt/stack.kilo
+DEST=/opt/stack.mitaka
 
 # Enable Logging
 LOGFILE=$DEST/logs/stack.sh.log

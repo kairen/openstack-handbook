@@ -93,7 +93,7 @@
        * [Glance 安裝與設定](deployments/centos/glance/README.md)
        * [Nova 安裝與設定](deployments/centos/nova/README.md)
        * [Neutron 安裝與設定](deployments/centos/neutron/README.md)
-           * [Open vSwitch VXLAN 安裝](deployments/centos/neutron/openvswitch-vxlan-install.md)
+           * [Linux Bridge VXLAN 安裝](deployments/centos/neutron/linuxbridge-vxlan-install.md)
            * [建立外部網路與租戶網路](deployments/centos/neutron/create-network.md)
        * [Horizon 安裝與設定](deployments/centos/horizon/README.md)
        * [Cinder 安裝與設定](deployments/centos/cinder/README.md)

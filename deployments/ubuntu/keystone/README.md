@@ -45,15 +45,16 @@ libapache2-mod-wsgi python-openstackclient python-memcache
 ```
 
 安裝完後，編輯```/etc/keystone/keystone.conf```設定檔，在```[DEFAULT]```部分加入以下內容：
-```sh
+```
 [DEFAULT]
 admin_token = ADMIN_TOKEN
 ```
 > 其中 ```ADMIN_TOKEN``` 取代成上面步驟建立的亂數 Token。
 
 在```[database]```部分修改使用以下方式：
-```sh
+```
 [database]
+# connection = sqlite:////var/lib/keystone/keystone.db
 connection = mysql+pymysql://keystone:KEYSTONE_DBPASS@10.0.0.11/keystone
 ```
 

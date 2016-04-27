@@ -67,6 +67,7 @@ auth_strategy = keystone
 在```[database]```部分修改使用以下方式：
 ```
 [database]
+# connection=mongodb://localhost:27017/aodh
 connection = mysql+pymysql://aodh:AODH_DBPASS@10.0.0.11/aodh
 ```
 
@@ -113,7 +114,12 @@ region_name = RegionOne
 oslo_config_project = aodh
 ```
 
-完成後，即可重新啟動服務：
+完成以上後即可同步資料庫來建立資料表：
+```sh
+$ sudo aodh-dbsync
+```
+
+完成後即可重新啟動服務：
 ```sh
 sudo service aodh-api restart
 sudo service aodh-evaluator restart
@@ -122,3 +128,30 @@ sudo service aodh-listener restart
 ```
 
 # 驗證服務
+導入該環境參數，來透過 Ceilometer client 查看服務狀態：
+```sh
+$ . admin-openrc
+```
+
+這邊可以透過 Ceilometer client 建立一個 alarm，如以下方式：
+```sh
+$ INSTANCE_ID=<YOUR_INSTANCE_ID>
+$ ceilometer alarm-threshold-create --name cpu_hi \
+--description 'instance running hot' \
+--meter-name cpu_util --threshold 10.0 \
+--comparison-operator gt --statistic avg \
+--period 600 --evaluation-periods 3 \
+--alarm-action 'log://' \
+--query resource_id=${INSTANCE_ID}
+```
+> 更多資訊可以查看 [Alarms](http://docs.openstack.org/admin-guide/telemetry-alarms.html)。
+
+接著就就可以透過 Ceilometer client 查看所有 alarm：
+```sh
+$ ceilometer alarm-list
++--------------------------------------+--------+-------------------+----------+---------+------------+--------------------------------------+------------------+
+| Alarm ID                             | Name   | State             | Severity | Enabled | Continuous | Alarm condition                      | Time constraints |
++--------------------------------------+--------+-------------------+----------+---------+------------+--------------------------------------+------------------+
+| 3fe8cde8-627b-47a1-b5af-8f923478a893 | cpu_hi | insufficient data | low      | True    | False      | avg(cpu_util) > 10.0 during 3 x 600s | None             |
++--------------------------------------+--------+-------------------+----------+---------+------------+--------------------------------------+------------------+
+```

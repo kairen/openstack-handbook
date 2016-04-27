@@ -61,4 +61,3 @@
        * [Congress 安裝與設定](deployments/ubuntu/congress/README.md)
        * [Zaqar 安裝與設定](deployments/ubuntu/zaqar/README.md)
        * [Barbican 安裝與設定](deployments/ubuntu/barbican-install.md)
-   * [OpenStack 故障排錯](management/openstack-troubleshooting.md)

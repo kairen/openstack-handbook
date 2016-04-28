@@ -11,6 +11,7 @@
        * [DevStack Murano 安裝](deployments/devstack/murano-install.md)
        * [DevStack Magnum 安裝](deployments/devstack/magnum-install.md)
        * [DevStack Manila 安裝](deployments/devstack/manila-install.md)
+       * [DevStack DragonFlow 安裝](deployments/devstack/dragonflow-install.md)
    * [OpenStack Source Code 安裝指南](deployments/source-code/README.md)
        * [Horizon 安裝與設定](deployments/source-code/git-horizon.md)
    * [Ubuntu Manual 多節點安裝](deployments/ubuntu/README.md)

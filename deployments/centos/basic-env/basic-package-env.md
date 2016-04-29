@@ -24,6 +24,11 @@ server 0.asia.pool.ntp.org
 將 ```NTP_SERVER``` 替換為主機名稱或更準確的（lower stratum） NTP 伺服器 IP 地址。這個設定支援多個 server 關鍵字。
 > 如果系統有```/var/lib/ntp/ntp.conf.dhcp```存在，請將它刪除。
 
+設定正確的 Time Zone：
+```sh
+$ sudo timedatectl set-timezone Asia/Taiwan
+```
+
 完成後重新啟動 NTP 服務：
 ```sh
 sudo systemctl enable ntp.service
@@ -51,6 +56,11 @@ $ sudo yum install chrony
 server 10.0.0.11 iburst
 ```
 > 如果系統有```/var/lib/ntp/ntp.conf.dhcp```存在，請將它刪除。
+
+設定正確的 Time Zone：
+```sh
+$ sudo timedatectl set-timezone Asia/Taiwan
+```
 
 完成後重新啟動 NTP 服務：
 ```sh

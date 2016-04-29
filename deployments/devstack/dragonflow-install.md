@@ -8,16 +8,19 @@ $ git clone https://git.openstack.org/openstack-dev/devstack
 編輯```local.conf```，並加入以下內容：
 ```sh
 [[local|localrc]]
-
 HOST_IP=10.0.0.191
-
-Q_ENABLE_DRAGONFLOW_LOCAL_CONTROLLER=True
 
 DATABASE_PASSWORD=password
 RABBIT_PASSWORD=password
 SERVICE_PASSWORD=password
 SERVICE_TOKEN=password
 ADMIN_PASSWORD=password
+
+GIT_BASE=https://github.com:/
+FLAT_INTERFACE=eth0
+FLOATING_RANGE=172.16.1.0/24
+
+Q_ENABLE_DRAGONFLOW_LOCAL_CONTROLLER=True
 
 enable_plugin dragonflow http://git.openstack.org/openstack/dragonflow
 enable_service df-etcd

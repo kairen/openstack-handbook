@@ -69,6 +69,7 @@ auth_strategy = keystone
 在```[database]```部分修改使用以下方式：
 ```
 [database]
+# connection=mongodb://localhost:27017/aodh
 connection = mysql+pymysql://aodh:AODH_DBPASS@10.0.0.11/aodh
 ```
 
@@ -115,6 +116,11 @@ region_name = RegionOne
 oslo_config_project = aodh
 ```
 
+完成以上後即可同步資料庫來建立資料表：
+```sh
+$ sudo aodh-dbsync
+```
+
 完成後設定開機時啟動服務：
 ```sh
 $ sudo systemctl enable openstack-aodh-api.service \
@@ -132,17 +138,29 @@ openstack-aodh-listener.service
 ```
 
 # 驗證服務
-首先接著導入 ```admin``` 帳號來驗證服務：
+導入該環境參數，來透過 Ceilometer client 查看服務狀態：
 ```sh
 $ . admin-openrc
 ```
 
-接著透過 aodh client 建立 alarm：
+這邊可以透過 Ceilometer client 建立一個 alarm，如以下方式：
 ```sh
-$ aodh alarm create -t threshold --name alarm1 -m cpu_util --threshold 5
+$ INSTANCE_ID=<YOUR_INSTANCE_ID>
+$ ceilometer alarm-threshold-create --name cpu_hi \
+--description 'instance running hot' \
+--meter-name cpu_util --threshold 10.0 \
+--comparison-operator gt --statistic avg \
+--period 600 --evaluation-periods 3 \
+--alarm-action 'log://' \
+--query resource_id=${INSTANCE_ID}
 ```
+> 更多資訊可以查看 [Alarms](http://docs.openstack.org/admin-guide/telemetry-alarms.html)。
 
-完成後，可以透過 aodh client 來查看所有 Alarm，指令如下：
+接著就就可以透過 Ceilometer client 查看所有 alarm：
 ```sh
-$ aodh alarm list
-```
+$ ceilometer alarm-list
++--------------------------------------+--------+-------------------+----------+---------+------------+--------------------------------------+------------------+
+| Alarm ID                             | Name   | State             | Severity | Enabled | Continuous | Alarm condition                      | Time constraints |
++--------------------------------------+--------+-------------------+----------+---------+------------+--------------------------------------+------------------+
+| 3fe8cde8-627b-47a1-b5af-8f923478a893 | cpu_hi | insufficient data | low      | True    | False      | avg(cpu_util) > 10.0 during 3 x 600s | None             |
++--------------------------------------+--------+-------------------+----------+---------+------------+--------------------------------------+------------------+

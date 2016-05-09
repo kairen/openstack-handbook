@@ -23,6 +23,12 @@ server 0.asia.pool.ntp.org
 將 ```NTP_SERVER``` 替換為主機名稱或更準確的（lower stratum） NTP 伺服器 IP 地址。這個設定支援多個 server 關鍵字。
 > 如果系統有```/var/lib/ntp/ntp.conf.dhcp```存在，請將它刪除。
 
+> 如果需要切換系統時區至台灣可以使用以下指令：
+```sh
+$ sudo timedatectl set-timezone Asia/Taipei
+```
+
+
 完成後，重啟服務：
 ```sh
 $ sudo service ntp restart
@@ -39,6 +45,11 @@ $ sudo apt-get install -y ntp
 server 10.0.0.11 iburst
 ```
 > 如果系統有```/var/lib/ntp/ntp.conf.dhcp```存在，請將它刪除。
+
+> 如果需要切換系統時區至台灣可以使用以下指令：
+```sh
+$ sudo timedatectl set-timezone Asia/Taipei
+```
 
 完成後，重啟服務：
 ```sh

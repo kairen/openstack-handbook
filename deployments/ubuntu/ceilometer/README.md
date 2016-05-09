@@ -279,6 +279,7 @@ $ . admin-openrc
 透過 Keystone client 建立 ResellerAdmin role：
 ```sh
 $ openstack role create ResellerAdmin
+```
 
 然後將 ResellerAdmin role 加入到 Server project，並賦予給 ceilometer 使用者：
 ```sh

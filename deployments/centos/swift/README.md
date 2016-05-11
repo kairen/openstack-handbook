@@ -36,6 +36,7 @@
 * IP address：10.0.0.51
 * Network mask：255.255.255.0 (or /24)
 * Default gateway：10.0.0.1
+* DNS1="8.8.8.8"
 
 > 另一台以尾數 IP 類推。
 

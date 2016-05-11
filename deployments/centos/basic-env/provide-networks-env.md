@@ -46,7 +46,6 @@ IPADDR="10.0.0.11"
 PREFIX="24"
 GATEWAY="10.0.0.1"
 DNS1="8.8.8.8"
-DNS2="8.8.8.4"
 ```
 > 若要改網卡名稱，可以編輯```/etc/udev/rules.d/70-persistent-net.rules```。
 

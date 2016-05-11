@@ -145,9 +145,7 @@ $ sudo yum install mariadb mariadb-server python2-PyMySQL
 ```
 > 記住 Python MySQL 和 MariaDB 是相容的。
 
-安裝過程中需要設定```root```帳號的密碼，這邊設定為```passwd```，。
-
-完成安裝後，需要建立並編輯```/etc/mysql/conf.d/mysqld_openstack.cnf```來設定資料庫。在```[mysqld]```部分加入以下修改：
+完成安裝後，需要建立並編輯``` /etc/my.cnf.d/openstack.cnf```來設定資料庫。在```[mysqld]```部分加入以下修改：
 ```sh
 [mysqld]
 bind-address = 10.0.0.11
@@ -169,6 +167,12 @@ sudo systemctl start mariadb.service
 ```sh
 $ sudo mysql_secure_installation
 ```
+> 因為資料庫預設沒有 root 密碼所以看到
+```sh
+Enter current password for root (enter for none):
+```
+直接按 Enter 就可以進行資料庫密碼變更
+
 > 若要備份資料庫可以用以下指令：
 ```sh
 $ mysqldump --user=root -p --all-databases > mysql.sql

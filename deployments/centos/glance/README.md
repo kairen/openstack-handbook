@@ -158,6 +158,10 @@ $ openstack image create "cirros-0.3.4-x86_64" \
 --disk-format qcow2 --container-format bare \
 --public
 ```
+> 如果發現無法上傳 img 可以嘗試更改檔案目錄權限使用以下指令：
+> ```sh
+chown glance:glance /var/lib/glance
+```
 > * 其他指令的參數，可以參考 [OpenStack image create](http://docs.openstack.org/cli-reference/openstack.html#openstack-image-create) 的指令指南。
 * 有關映像檔格式的資訊，可以參考 [Disk and container formats for images](http://docs.openstack.org/image-guide/content/image-formats.html)。
 

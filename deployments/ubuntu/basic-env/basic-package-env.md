@@ -173,7 +173,7 @@ Setting permissions for user "openstack" in vhost "/" ...
 ...done.
 ```
 
-# 提醒
+# <font color=red> 提醒 </font>
 接下來會依序針對 OpenStack 的基礎套件進行安裝與設定教學，若發現有設定格式中有 ```...``` 代表上面有預設設定的其他參數，若沒提示```要註解掉```，請不要修改：
 ```
 [DEFAULT]
@@ -181,3 +181,13 @@ Setting permissions for user "openstack" in vhost "/" ...
 admin_token = 74e00617afa2008fcf25
 ```
 > P.S. 若在設定時，找不到對應的```[section]```部分，請自行新增。
+
+如果想要 log 能有顏色區隔提高閱讀方式，可以透過修改個套件的 conf 檔案透過以下方式：
+```
+[DEFAULT]
+...
+logging_exception_prefix = %(color)s%(asctime)s.%(msecs)d TRACE %(name)s %(instance)s
+logging_debug_format_suffix = from (pid=%(process)d) %(funcName)s %(pathname)s:%(lineno)d
+logging_default_format_string = %(asctime)s.%(msecs)d %(color)s%(levelname)s %(name)s [-%(color)s] %(instance)s%(color)s%(message)s
+logging_context_format_string = %(asctime)s.%(msecs)d %(color)s%(levelname)s %(name)s [%(request_id)s %(user_id)s %(project_id)s%(color)s] %(instance)s%(color)s%(message)s
+```

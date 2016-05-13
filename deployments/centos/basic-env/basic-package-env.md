@@ -211,7 +211,9 @@ Setting permissions for user "openstack" in vhost "/" ...
 ...done.
 ```
 
-# 提醒
+# <font color=red> 提醒 </font>
+## 在以下的操作中，我們建議使用 root 權限操作，避免以些權限上的問題
+
 接下來會依序針對 OpenStack 的基礎套件進行安裝與設定教學，若發現有設定格式中有 ```...``` 代表上面有預設設定的其他參數，若沒提示```要註解掉```，請不要修改：
 ```
 [DEFAULT]

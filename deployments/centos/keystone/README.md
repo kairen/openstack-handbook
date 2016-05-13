@@ -133,6 +133,10 @@ sudo systemctl enable memcached.service
 sudo systemctl start httpd.service
 sudo systemctl start memcached.service
 ```
+如果不是在root 權限下安裝需要給 Keystone.log 避免發生錯誤可以使用以下指令：
+```sh
+sudo chown keystone:keystone /var/log/keystone/keystone.log
+```
 
 ### 建立 Service 與 API Endpoint
 在建立 Keystone service 與 Endpoint 之前，要先導入一些環境變數，由於 OpenStack client 會自動抓取系統某些環境變數來提供 API 的存取，首先透過以下指令導入：

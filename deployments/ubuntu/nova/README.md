@@ -186,9 +186,10 @@ my_ip = MANAGEMENT_IP
 [vnc]
 enabled = True
 vncserver_listen = 0.0.0.0
-vncserver_proxyclient_address = 10.0.0.31
+vncserver_proxyclient_address = MANAGEMENT_IP
 novncproxy_base_url = http://10.0.0.11:6080/vnc_auto.html
 ```
+> P.S. ```MANAGEMENT_IP```這邊為```10.0.0.31```。
 > 這邊```novncproxy_base_url```的 port 要隨著 proxy 節點設定改變。
 
 在```[oslo_messaging_rabbit]```部分加入以下內容：

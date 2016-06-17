@@ -115,7 +115,7 @@ password = SAHARA_PASS
 policy_file = /etc/sahara/policy.json
 ```
 
-完成所有設定後，即可同步資料庫來建立 Magnum 資料表：
+完成所有設定後，即可同步資料庫來建立 Sahara 資料表：
 ```sh
 $ sudo sahara-db-manage upgrade head
 ```

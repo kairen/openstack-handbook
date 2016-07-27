@@ -3,7 +3,7 @@ GRE（Generic Routing Encapsulation，通用路由封裝）是一種 IP-over-IP 
 
 ![](images/gre2.jpg)
 
-如下圖所示，GRE 將原本一個普通的 IP 網路協定封裝，又依照 IP 網路協定的路由方試進行路由。可以看出 GRE 運作於 IP 曾之上，且對真正的 IP （Inner IP）做處理，最後封裝後成為 Outer IP，這樣就可以依照路由表來運作，然而當封包傳達目的地時會在還原為真正的 IP。
+如下圖所示，GRE 將原本一個普通的 IP 網路協定封裝，又依照 IP 網路協定的路由方試進行路由。可以看出 GRE 運作於 IP 層之上，且對真正的 IP （Inner IP）做處理，最後封裝後成為 Outer IP，這樣就可以依照路由表來運作，然而當封包傳達目的地時會在還原為真正的 IP。
 
 ![](images/gre-encapsulation.png)
 

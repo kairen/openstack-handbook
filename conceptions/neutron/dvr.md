@@ -17,4 +17,4 @@ DVR（Distributed Virtual Router）將增強的 L3 Agent 也可以部署到每�
 然後由於以上問題，透過使用 DVR 使 L3 的轉發與 NAT 會被分散在 Compute 節點上，這使得 Compute 節點也成為了一部分的 Network 節點，這樣原有集中式的 Network 節點乘載的負擔被減輕了。
 ![dvr](images/dvr-arch.png)
 
-然而也可以實現[分散式的 DHCP Agent](https://blueprints.launchpad.net/neutron/+spec/distributed-dhcp)，這樣可以進一步分擔集中式 Network 結點的負載壓力。
+然而也可以實現[分散式的 DHCP Agent](https://blueprints.launchpad.net/neutron/+spec/distributed-dhcp)，這樣可以進一步分擔集中式 Network 節點的負載壓力。

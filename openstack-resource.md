@@ -1,5 +1,5 @@
 ## OpenStack 資源整理
-* [OpenStack 基金](http://www.openstack.org/)
+* [OpenStack 基金會](http://www.openstack.org/)
 * [OpenStack Docs](http://docs.openstack.org/)
 * [OpenStack Launchpad](https://launchpad.net/openstack)
 * [OpenStack Wiki](https://wiki.openstack.org)

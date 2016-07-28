@@ -24,7 +24,7 @@
 | Networking       	| Neutron  	| 提供 OpenStack 其他服務擁有網路連接功能，好比提供給 OpenStack 虛擬機實例虛擬化網路、建立虛擬路由器、管理容器（LXC、Docker）網路等，也支援了多家廠商的硬體外掛（Plugins）與驅動（Driver）來進行串接。 	|
 | Dashboard        	| Horizon  	| 提供一個基於 Web 的自助服務，讓 OpenStack 使用者可以與各套件服務進行互動操作，比如建立虛擬機、虛擬路由與網路、上傳檔案到物件儲存等。                                                                 	|
 | Block Storage    	| Cinder   	| 提供持久性儲存服務（Persistent Block Storage）給 OpenStack 虛擬機實例，該服務的隨插即用驅動架構簡化了區塊儲存裝置的建立、管理與快照等。                                                              	|
-| Object Storage   	| Swift    	| 提供基於 RESTful API 的物件儲存服務，透過 HTTP 就能任意查看非結構畫的資料物件，且該服務擁有高度容錯機制、資料副本以及橫向擴展架構。該服務不需要安裝一個集中式的檔案目錄伺服器。                      	|
+| Object Storage   	| Swift    	| 提供基於 RESTful API 的物件儲存服務，透過 HTTP 就能任意查看非結構化的資料物件，且該服務擁有高度容錯機制、資料副本以及橫向擴展架構。該服務不需要安裝一個集中式的檔案目錄伺服器。                      	|
 
 隨著 IT 人員的需求，有些特有的功能需要不同的 OpenStack 套件來提供，好比容器服務就可以使用 Magnum，由於安裝會進行到一些第三方服務，這邊說明以下幾個第三方服務名稱與功能：
 
